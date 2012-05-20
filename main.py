@@ -25,7 +25,7 @@ class AddModulesHandler(webapp2.RequestHandler):
 <input type="submit"/>
 </form>''')
     def post(self):
-        if self.request.get('upload_password') != 'hellotheresir':
+        if hashlib.md5(self.request.get('upload_password')).hexdigest() != '1fb02e8ea692944e211252903db8544a':
             self.respond.write('Sorry. That was the incorrect input password')
             return
         #filename = 'rng.lua'
