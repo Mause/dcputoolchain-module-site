@@ -1,7 +1,7 @@
 import webapp2
 import sqlite3
 import datetime
-
+import hashlib
 
 class HomeHandler(webapp2.RequestHandler):
     def get(self):
@@ -15,56 +15,25 @@ class HomeHandler(webapp2.RequestHandler):
 
 class AddModulesHandler(webapp2.RequestHandler):
     def get(self):
+        filename = 'rng.lua'
+        file_cur = open(filename, 'r')
+        data = file_cur.read()
+        file_cur.close()
+        if filename.endswith(".lua"):
+            filename = str('.'.join(filename.split('.')[:-1])+'-'+hashlib.sha1('hello world').hexdigest()+'.lua')
+        else:
+            return
         conn = sqlite3.connect('lua_file_data.db')
+
+        
         with conn:
             cursor = conn.cursor()
-            cursor.execute("""INSERT INTO FILES VALUES(NULL,'rng.lua','
--- if the emulator is at a path like: path/to/dtemu.exe
--- then put this in a path like:      path/to/hw/rng.lua
-
--- interrupt values
-local INT_GENERATE = 0;
-local INT_SEED = 1;
-
-function interrupt(cpu)
-  -- cpu is a table that lets you do things to the CPU.
-  if (cpu.registers.A == INT_GENERATE) then
-    cpu.registers.B = math.random(0x0, 0xFFFF);
-  elseif (cpu.registers.A == INT_SEED) then
-    math.randomseed(cpu.registers.B);
-  end
-end
-
-function cycle(cpu)
-  -- cpu is a table that lets you do things to the CPU.
-  -- according to hardware standards, this is not called
-  -- until the first interrupt has been received and handled,
-  -- however at the moment the toolchain ignores this
-  -- requirement and its called anyway :P
-  
-  --[[print(string.format("0x%X", cpu.ram[0x0]))
-  print(cpu.registers.Z)
-  print(cpu.registers.PC)
-  cpu.registers.Z = math.random(0x0, 0xFFFF);
-  cpu.ram[0x0] = 0x0;]]--
-end
-
-function write(cpu, pos)
-  -- cpu is a table that lets you do things to the CPU.
-  -- pos is the memory address that was written to.
-end
-
-MODULE = {
-  Type = "Hardware",
-  Name = "RNG Hardware",
-  Version = "1.0"
-};
-
-HARDWARE = {
-  ID = 0x739df773,
-  Version = 0x0001,
-  Manufacturer = 0x93765997
-};',"""+str(datetime.date.today())+")")
+            # CREATE TABLE FILES(Id INTEGER PRIMARY KEY, Filename TEXT, Data LONGTEXT, Date DATE, Hash TEXT);
+            cursor.execute("INSERT INTO FILES VALUES(NULL,'"+
+                           filename+"','"+
+                           data+"','"+
+                           str(datetime.date.today())+"', '"+
+                           hashlib.sha1(data).hexdigest()+"')")
 
 
 class SearchModulesHandler(webapp2.RequestHandler):
@@ -133,11 +102,11 @@ class ListModulesHandler(webapp2.RequestHandler):
 
 
 app = webapp2.WSGIApplication([
-    ('/', HomeHandler),
     ('/modules/search*', SearchModulesHandler),
     ('/modules/add*', AddModulesHandler),
     ('/modules/download*', DownloadModulesHandler),
-    ('/modules/list', ListModulesHandler)
+    ('/modules/list', ListModulesHandler),
+    ('/', HomeHandler)
 ], debug=True)
 
 def main():
