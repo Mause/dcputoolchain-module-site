@@ -20,27 +20,17 @@ class AddModulesHandler(webapp2.RequestHandler):
 <form action="/modules/add" enctype="multipart/form-data" method="post">
 <div><label>File:</label></div>
 <div><input type="file" name="file" required /></div>
-<div><label>Password to upload file:</label></div>
-<input type="password" name="upload_password" required><br>
+<!--<div><label>Password to upload file:</label></div>
+<input type="password" name="upload_password" required><br>-->
 <input type="submit"/>
 </form>''')
     def post(self):
-        if hashlib.md5(self.request.get('upload_password')).hexdigest() != '1fb02e8ea692944e211252903db8544a':
-            self.respond.write('Sorry. That was the incorrect input password')
-            return
-        #filename = 'rng.lua'
+#        if hashlib.md5(self.request.get('upload_password')).hexdigest() != '1fb02e8ea692944e211252903db8544a':
+ #           self.respond.write('Sorry. That was the incorrect input password')
+  #          return
         data = self.request.POST[u'file'].value
         filename = self.request.POST[u'file'].filename
-#        file_cur = open(filename, 'r')
- #       data = file_cur.read()
-  #      file_cur.close()
-#        if filename.endswith(".lua"):
- #           filename = str('.'.join(filename.split('.')[:-1])+'-'+hashlib.sha1('hello world').hexdigest()+'.lua')
-  #      else:
-   #         return
-        conn = sqlite3.connect('lua_file_data.db')
-
-        
+        conn = sqlite3.connect('lua_file_data.db')        
         with conn:
             cursor = conn.cursor()
             # CREATE TABLE FILES(Id INTEGER PRIMARY KEY, Filename TEXT, Data LONGTEXT, Date DATE, Hash TEXT);
@@ -71,8 +61,6 @@ class SearchModulesHandler(webapp2.RequestHandler):
 class DownloadModulesHandler(webapp2.RequestHandler):
     def get(self):
         self.response.headers['Content-Type'] = 'text/plain'
-        #self.response.write(self.request.get('name'))
-        #self.response.write(self.request.get('name')+'</br>')
         try:
             conn = None
             conn = sqlite3.connect('lua_file_data.db')
@@ -102,17 +90,12 @@ class ListModulesHandler(webapp2.RequestHandler):
             cursor.execute('SELECT * FROM FILES')
             data = cursor.fetchall()
             for x in data:
-                self.response.write(str(x[1])+'</br>')
+                if x != '': self.response.write(str(x[1])+'</br>')
         except sqlite3.Error, e:
             print "Error %s:" % e.args[0]
         finally:
             if conn:
                 conn.close()
-
-
-
-
-
 
 
 
