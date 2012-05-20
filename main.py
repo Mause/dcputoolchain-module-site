@@ -85,6 +85,7 @@ class SearchModulesHandler(webapp2.RequestHandler):
 
 class DownloadModulesHandler(webapp2.RequestHandler):
     def get(self):
+        self.response.headers['Content-Type'] = 'text/plain'
         #self.response.write(self.request.get('name'))
         #self.response.write(self.request.get('name')+'</br>')
         try:
@@ -94,7 +95,7 @@ class DownloadModulesHandler(webapp2.RequestHandler):
             command = 'SELECT data FROM files WHERE filename = "'+self.request.get('name')+'";'
             cursor.execute(command)
             data = cursor.fetchall()
-            self.response.write(str(data[0]))
+            self.response.write(str(data[0][0]))
         except sqlite3.Error, e:
             pass # we cant really throw an error, can we?
             #print "Error %s:" % e.args[0]
@@ -105,6 +106,7 @@ class DownloadModulesHandler(webapp2.RequestHandler):
 
 class ListModulesHandler(webapp2.RequestHandler):
     def get(self):
+        self.response.headers['Content-Type'] = 'text/plain'
         #self.response.write(self.request.get('name'))
         self.response.write(self.request.get('name')+'</br>')
         try:
@@ -138,7 +140,7 @@ app = webapp2.WSGIApplication([
 
 def main():
     from paste import httpserver
-    httpserver.serve(app, host='', port='8080')#127.0.0.1
+    httpserver.serve(app, host='0.0.0.0', port='8080')#127.0.0.1
 
 if __name__ == '__main__':
     main()
