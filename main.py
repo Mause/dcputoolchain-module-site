@@ -19,10 +19,10 @@ class AddModulesHandler(webapp2.RequestHandler):
         file_cur = open(filename, 'r')
         data = file_cur.read()
         file_cur.close()
-        if filename.endswith(".lua"):
-            filename = str('.'.join(filename.split('.')[:-1])+'-'+hashlib.sha1('hello world').hexdigest()+'.lua')
-        else:
-            return
+#        if filename.endswith(".lua"):
+ #           filename = str('.'.join(filename.split('.')[:-1])+'-'+hashlib.sha1('hello world').hexdigest()+'.lua')
+  #      else:
+   #         return
         conn = sqlite3.connect('lua_file_data.db')
 
         
