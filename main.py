@@ -75,8 +75,9 @@ class SearchModulesHandler(webapp2.RequestHandler):
             cursor = (conn).cursor()
             cursor.execute('SELECT filename FROM FILES WHERE filename LIKE "%'+self.request.get('q')+'%"')
             data = cursor.fetchall()
-            for entry in data:
-                self.response.write(entry[0]+'\n')
+            if len(data) != 0:
+                for entry in data:
+                    self.response.write(entry[0]+'\n')
         except sqlite3.Error, e:
             print "Error %s:" % e.args[0]
         finally:
@@ -95,7 +96,8 @@ class DownloadModulesHandler(webapp2.RequestHandler):
             command = 'SELECT data FROM files WHERE filename = "'+self.request.get('name')+'";'
             cursor.execute(command)
             data = cursor.fetchall()
-            self.response.write(str(data[0][0]))
+            if len(data) != 0:
+                self.response.write(str(data[0][0]))
         except sqlite3.Error, e:
             pass # we cant really throw an error, can we?
             #print "Error %s:" % e.args[0]
