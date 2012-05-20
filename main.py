@@ -11,13 +11,13 @@ class HomeHandler(webapp2.RequestHandler):
 </form>''')
 
 
-class AddModuleHandler(webapp2.RequestHandler):
+class AddModulesHandler(webapp2.RequestHandler):
     def get(self):
         conn = lite.connect('test.db')
         with con:
             cursor = con.cursor()
             cursor.execute("CREATE TABLE FILES(Id INT, Filename TEXT, Path TEXT)")
-            cur.execute("INSERT INTO Cars VALUES(1,'Audi',52642)")
+            cur.execute("INSERT INTO Cars VALUES(1,'rng.lua',')")
 
 
 class SearchModulesHandler(webapp2.RequestHandler):
