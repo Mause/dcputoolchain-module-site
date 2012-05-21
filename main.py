@@ -82,7 +82,7 @@ class ListModulesHandler(webapp2.RequestHandler):
     def get(self):
         #self.response.headers['Content-Type'] = 'text/plain'
         #self.response.write(self.request.get('name'))
-        self.response.write(self.request.get('name')+'</br>')
+#        self.response.write(self.request.get('name')+'</br>')
         try:
             conn = None
             conn = sqlite3.connect('lua_file_data.db')
