@@ -90,7 +90,7 @@ class ListModulesHandler(webapp2.RequestHandler):
             cursor.execute('SELECT * FROM FILES')
             data = cursor.fetchall()
             for x in data:
-                if x != '': self.response.write(str(x[1]))
+                if x != '': self.response.write(str(x[1])+'\n')
         except sqlite3.Error, e:
             print "Error %s:" % e.args[0]
         finally:
