@@ -53,7 +53,8 @@ class SearchModulesHandler(webapp2.RequestHandler):
                 for entry in data:
                     self.response.write(entry[0]+'\n')
         except sqlite3.Error, e:
-            print "Error %s:" % e.args[0]
+            pass # we cant really throw an error, can we?
+            #print "Error %s:" % e.args[0]
         finally:
             if conn:
                 conn.close()
@@ -80,9 +81,6 @@ class DownloadModulesHandler(webapp2.RequestHandler):
 
 class ListModulesHandler(webapp2.RequestHandler):
     def get(self):
-        #self.response.headers['Content-Type'] = 'text/plain'
-        #self.response.write(self.request.get('name'))
-#        self.response.write(self.request.get('name')+'</br>')
         try:
             conn = None
             conn = sqlite3.connect('lua_file_data.db')
@@ -92,7 +90,8 @@ class ListModulesHandler(webapp2.RequestHandler):
             for x in data:
                 if x != '': self.response.write(str(x[1])+'\n')
         except sqlite3.Error, e:
-            print "Error %s:" % e.args[0]
+            pass # we cant really throw an error, can we?
+            #print "Error %s:" % e.args[0]
         finally:
             if conn:
                 conn.close()
@@ -109,7 +108,7 @@ app = webapp2.WSGIApplication([
 
 def main():
     from paste import httpserver
-    httpserver.serve(app, host='0.0.0.0', port='8080')#127.0.0.1
+    httpserver.serve(app, host='0.0.0.0', port='8010')#127.0.0.1
 
 if __name__ == '__main__':
     main()
