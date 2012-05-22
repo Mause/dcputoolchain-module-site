@@ -2,6 +2,10 @@ import webapp2
 import sqlite3
 import datetime
 import hashlib
+import urllib
+import base64
+import json
+
 
 class HomeHandler(webapp2.RequestHandler):
     def get(self):
@@ -62,41 +66,34 @@ class SearchModulesHandler(webapp2.RequestHandler):
 class DownloadModulesHandler(webapp2.RequestHandler):
     def get(self):
         self.response.headers['Content-Type'] = 'text/plain'
-        try:
-            conn = None
-            conn = sqlite3.connect('lua_file_data.db')
-            cursor = (conn).cursor()
-            command = 'SELECT data FROM files WHERE filename = "'+self.request.get('name')+'";'
-            cursor.execute(command)
-            data = cursor.fetchall()
-            if len(data) != 0:
-                self.response.write(str(data[0][0]))
-        except sqlite3.Error, e:
-            pass # we cant really throw an error, can we?
-            #print "Error %s:" % e.args[0]
-        finally:
-            if conn:
-                conn.close()
+        data = json.loads(urllib.urlopen('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master').read())
+        for x in data['tree']:
+            if x['path'].split('/')[-1] == self.request.get('name'):
+                #self.response.out.write(x['content']))
+                self.response.out.write(base64.b64decode(json.loads(urllib.urlopen(x['url']).read())['content']))
+                
+#        try:
+ #           conn = None
+  #          conn = sqlite3.connect('lua_file_data.db')
+   #         cursor = (conn).cursor()
+    #        command = 'SELECT data FROM files WHERE filename = "'+self.request.get('name')+'";'
+     #       cursor.execute(command)
+      #      data = cursor.fetchall()
+       #     if len(data) != 0:
+        #        self.response.write(str(data[0][0]))
+#        except sqlite3.Error, e:
+ #           pass # we cant really throw an error, can we?
+  #          #print "Error %s:" % e.args[0]
+   #     finally:
+    #        if conn:
+     #           conn.close()
 
 
 class ListModulesHandler(webapp2.RequestHandler):
     def get(self):
-        try:
-            conn = None
-            conn = sqlite3.connect('lua_file_data.db')
-            cursor = (conn).cursor()
-            cursor.execute('SELECT * FROM FILES')
-            data = cursor.fetchall()
-            for x in data:
-                if x != '': self.response.write(str(x[1])+'\n')
-        except sqlite3.Error, e:
-            pass # we cant really throw an error, can we?
-            #print "Error %s:" % e.args[0]
-        finally:
-            if conn:
-                conn.close()
-
-
+        data = json.loads(urllib.urlopen('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master').read())
+        for x in data['tree']:
+            self.response.out.write(x['path']+'\n')
 
 app = webapp2.WSGIApplication([
     ('/modules/search*', SearchModulesHandler),
