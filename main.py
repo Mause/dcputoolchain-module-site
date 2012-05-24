@@ -57,8 +57,9 @@ class DownloadModulesHandler(webapp2.RequestHandler):
 class ListModulesHandler(webapp2.RequestHandler):
     def get(self):
         data = json.loads(urllib.urlopen('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master').read())
-        for x in data['tree']:
-            self.response.out.write(x['path']+'\n')
+        tree = [str(x['path'].split('/')[-1])+'\n' for x in data['tree']]
+        for filename in tree:
+            self.response.out.write(filename)
 
 
 app = webapp2.WSGIApplication([
