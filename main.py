@@ -1,10 +1,27 @@
+#!/usr/bin/env python
+#
+# Copyright 2007 Google Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 import webapp2
-import sqlite3
+#import sqlite3
 import datetime
 import hashlib
 import urllib
 import base64
 import json
+import logging
 
 
 class HomeHandler(webapp2.RequestHandler):
@@ -17,51 +34,16 @@ class HomeHandler(webapp2.RequestHandler):
 </form>''')
 
 
-class AddModulesHandler(webapp2.RequestHandler):
-    def get(self):
-        self.response.write('''
-<h3>Add a file to the database</h3>
-<form action="/modules/add" enctype="multipart/form-data" method="post">
-<div><label>File:</label></div>
-<div><input type="file" name="file" required /></div>
-<!--<div><label>Password to upload file:</label></div>
-<input type="password" name="upload_password" required><br>-->
-<input type="submit"/>
-</form>''')
-    def post(self):
-#        if hashlib.md5(self.request.get('upload_password')).hexdigest() != '1fb02e8ea692944e211252903db8544a':
- #           self.respond.write('Sorry. That was the incorrect input password')
-  #          return
-        data = self.request.POST[u'file'].value
-        filename = self.request.POST[u'file'].filename
-        conn = sqlite3.connect('lua_file_data.db')        
-        with conn:
-            cursor = conn.cursor()
-            # CREATE TABLE FILES(Id INTEGER PRIMARY KEY, Filename TEXT, Data LONGTEXT, Date DATE, Hash TEXT);
-            cursor.execute("INSERT INTO FILES VALUES(NULL,'"+
-                           filename+"','"+
-                           data+"','"+
-                           str(datetime.date.today())+"', '"+
-                           hashlib.sha1(data).hexdigest()+"')")
 
 
 class SearchModulesHandler(webapp2.RequestHandler):
     def get(self):
-        try:
-            conn = None
-            conn = sqlite3.connect('lua_file_data.db')
-            cursor = (conn).cursor()
-            cursor.execute('SELECT filename FROM FILES WHERE filename LIKE "%'+self.request.get('q')+'%"')
-            data = cursor.fetchall()
-            if len(data) != 0:
-                for entry in data:
-                    self.response.write(entry[0]+'\n')
-        except sqlite3.Error, e:
-            pass # we cant really throw an error, can we?
-            #print "Error %s:" % e.args[0]
-        finally:
-            if conn:
-                conn.close()
+        self.response.headers['Content-Type'] = 'text/plain'
+        data = json.loads(urllib.urlopen('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master').read())
+        tree = [str(x['path'].split('/')[-1])+'\n' for x in data['tree'] if x['path'].endswith('.lua')and self.request.get('q') in x['path'].split('/')[-1]]
+        logging.info('tree:'+str(tree))
+        for filename in tree:
+            self.response.out.write(filename)
 
 class DownloadModulesHandler(webapp2.RequestHandler):
     def get(self):
@@ -69,24 +51,7 @@ class DownloadModulesHandler(webapp2.RequestHandler):
         data = json.loads(urllib.urlopen('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master').read())
         for x in data['tree']:
             if x['path'].split('/')[-1] == self.request.get('name'):
-                #self.response.out.write(x['content']))
                 self.response.out.write(base64.b64decode(json.loads(urllib.urlopen(x['url']).read())['content']))
-                
-#        try:
- #           conn = None
-  #          conn = sqlite3.connect('lua_file_data.db')
-   #         cursor = (conn).cursor()
-    #        command = 'SELECT data FROM files WHERE filename = "'+self.request.get('name')+'";'
-     #       cursor.execute(command)
-      #      data = cursor.fetchall()
-       #     if len(data) != 0:
-        #        self.response.write(str(data[0][0]))
-#        except sqlite3.Error, e:
- #           pass # we cant really throw an error, can we?
-  #          #print "Error %s:" % e.args[0]
-   #     finally:
-    #        if conn:
-     #           conn.close()
 
 
 class ListModulesHandler(webapp2.RequestHandler):
@@ -95,9 +60,10 @@ class ListModulesHandler(webapp2.RequestHandler):
         for x in data['tree']:
             self.response.out.write(x['path']+'\n')
 
+
 app = webapp2.WSGIApplication([
     ('/modules/search*', SearchModulesHandler),
-    ('/modules/add*', AddModulesHandler),
+#    ('/modules/add*', AddModulesHandler),
     ('/modules/download*', DownloadModulesHandler),
     ('/modules/list', ListModulesHandler),
     ('/', HomeHandler)
