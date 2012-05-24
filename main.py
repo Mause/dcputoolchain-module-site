@@ -40,7 +40,7 @@ class SearchModulesHandler(webapp2.RequestHandler):
     def get(self):
         self.response.headers['Content-Type'] = 'text/plain'
         data = json.loads(urllib.urlopen('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master').read())
-        tree = [str(x['path'].split('/')[-1])+'\n' for x in data['tree'] if x['path'].endswith('.lua')and self.request.get('q') in x['path'].split('/')[-1]]
+        tree = [str(x['path'].split('/')[-1])+'\n' for x in data['tree'] if x['path'].endswith('.lua') and self.request.get('q') in x['path'].split('/')[-1]]
         logging.info('tree:'+str(tree))
         for filename in tree:
             self.response.out.write(filename)
@@ -57,7 +57,7 @@ class DownloadModulesHandler(webapp2.RequestHandler):
 class ListModulesHandler(webapp2.RequestHandler):
     def get(self):
         data = json.loads(urllib.urlopen('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master').read())
-        tree = [str(x['path'].split('/')[-1])+'\n' for x in data['tree']]
+        tree = [str(x['path'].split('/')[-1])+'\n' for x in data['tree'] if x['path'].endswith('.lua')]
         for filename in tree:
             self.response.out.write(filename)
 
