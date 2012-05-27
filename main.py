@@ -99,7 +99,18 @@ def flusher(handler):
 class SmartFlushHandler(webapp2.RequestHandler):
     def get(self):
         self.response.out.write('The Smart Flusher Handler can be reached at this address')
+        sendmail('STFU i can hear you!')
     def post(self):
+        logging.info('#############################################################################')
+        logging.info('Okay, the hook seems to have worked :D')
+        logging.info('#############################################################################')
+        payload = self.request.get('payload')
+        logging.info('This:'+str(payload))
+        payload = json.loads(payload)
+        changed_files = []
+        for commit in payload['commits']:
+            changed_files += commit['modified']
+        sendmail('Here is a list of changed files:\n\n'+str(changed_files))
 #        flusher(self)
         
 
