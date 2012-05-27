@@ -22,6 +22,7 @@ import urllib
 import base64
 import json
 import logging
+from mailer import sendmail
 from google.appengine.api import memcache
 
 # this is a caching function, to help keep wait time short
@@ -95,6 +96,16 @@ def flusher(handler):
         handler.response.out.write('<strong>Memcache could not be flushed. Contact the <a href="mailto:jack.thatch@gmail.com">administrator</a></strong>')
 
 
+class SmartFlushHandler(webapp2.RequestHandler):
+    def get(self):
+        self.response.out.write('The Smart Flusher Handler can be reached at this address')
+    def post(self):
+#        flusher(self)
+        
+
+
+
+
 class FlushHandler(webapp2.RequestHandler):
     def get(self):
         flusher(self)
@@ -106,7 +117,9 @@ app = webapp2.WSGIApplication([
     ('/modules/search*', SearchModulesHandler),
     ('/modules/download*', DownloadModulesHandler),
     ('/modules/list', ListModulesHandler),
-    ('/flush', FlushHandler),
+   # ('/flush', FlushHandler),
+    ('/flush', SmartFlushHandler),
+   # ('/smart_flush', SmartFlushHandler),
     ('/', HomeHandler)
 ], debug=True)
 
