@@ -22,6 +22,26 @@ import urllib
 import base64
 import json
 import logging
+from google.appengine.api import memcache
+
+# this is a caching function, to help keep wait time short
+def get_url_content(url):
+    result = None   
+    url_hash = hashlib.md5(str(url)).hexdigest()
+    try:
+        result = memcache.get(str(url_hash))
+        if result != None:
+            logging.debug('Memcache get successful')
+    except:
+        logging.debug('"content" memcache get excepted')
+    if result == None:
+        x=None
+        result = json.loads(urllib.urlopen(url).read())
+        memcache.add(str(url_hash), result, 3600)
+        return result
+    else:
+        return result
+
 
 
 class HomeHandler(webapp2.RequestHandler):
@@ -34,45 +54,65 @@ class HomeHandler(webapp2.RequestHandler):
 </form>''')
 
 
-
-
 class SearchModulesHandler(webapp2.RequestHandler):
     def get(self):
         self.response.headers['Content-Type'] = 'text/plain'
-        data = json.loads(urllib.urlopen('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master').read())
+#        data = json.loads(urllib.urlopen('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master').read())
+        data = get_url_content('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master')
         tree = [str(x['path'].split('/')[-1])+'\n' for x in data['tree'] if x['path'].endswith('.lua') and self.request.get('q') in x['path'].split('/')[-1]]
-        logging.info('tree:'+str(tree))
+        logging.info('tree:' + str(tree))
         for filename in tree:
             self.response.out.write(filename)
+
 
 class DownloadModulesHandler(webapp2.RequestHandler):
     def get(self):
         self.response.headers['Content-Type'] = 'text/plain'
-        data = json.loads(urllib.urlopen('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master').read())
+#        data = json.loads(urllib.urlopen('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master').read())
+        data = get_url_content('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master')
         for x in data['tree']:
             if x['path'].split('/')[-1] == self.request.get('name'):
-                self.response.out.write(base64.b64decode(json.loads(urllib.urlopen(x['url']).read())['content']))
+                #self.response.out.write(base64.b64decode(json.loads(urllib.urlopen(x['url']).read())['content']))
+                self.response.out.write(base64.b64decode(
+                    get_url_content(x['url'])['content']))
 
 
 class ListModulesHandler(webapp2.RequestHandler):
     def get(self):
-        data = json.loads(urllib.urlopen('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master').read())
+        self.response.headers['Content-Type'] = 'text/plain'
+        #data = json.loads(urllib.urlopen('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master').read())
+        data = get_url_content('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master')
         tree = [str(x['path'].split('/')[-1])+'\n' for x in data['tree'] if x['path'].endswith('.lua')]
         for filename in tree:
             self.response.out.write(filename)
 
 
+def flusher(handler):
+    try:
+        memcache.flush_all()
+        handler.response.out.write('<strong>Memcache should have just been flushed</strong>')
+    except:
+        handler.response.out.write('<strong>Memcache could not be flushed. Contact the <a href="mailto:jack.thatch@gmail.com">administrator</a></strong>')
+
+
+class FlushHandler(webapp2.RequestHandler):
+    def get(self):
+        flusher(self)
+    def post(self):
+        flusher(self)
+
+
 app = webapp2.WSGIApplication([
     ('/modules/search*', SearchModulesHandler),
-#    ('/modules/add*', AddModulesHandler),
     ('/modules/download*', DownloadModulesHandler),
     ('/modules/list', ListModulesHandler),
+    ('/flush', FlushHandler),
     ('/', HomeHandler)
 ], debug=True)
 
 def main():
     from paste import httpserver
-    httpserver.serve(app, host='0.0.0.0', port='8010')#127.0.0.1
+    httpserver.serve(app, host='0.0.0.0', port='8010')
 
 if __name__ == '__main__':
     main()
