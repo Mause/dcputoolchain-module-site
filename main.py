@@ -15,13 +15,13 @@
 # limitations under the License.
 #
 import webapp2
-#import sqlite3
 import datetime
 import hashlib
 import urllib
 import base64
 import json
 import logging
+import time
 from mailer import sendmail
 from google.appengine.api import memcache
 
@@ -37,7 +37,6 @@ def get_url_content(url):
     except:
         logging.debug('"content" memcache get excepted')
     if result == None:
-        x=None
         result = json.loads(urllib.urlopen(url).read())
         memcache.set(str(url_hash), result, 3600)
         return result
@@ -45,45 +44,69 @@ def get_url_content(url):
         return result
 
 
-
-
-
 def get_tree():
+    logging.info('Lets go cut down a tree!')
     url = 'https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master'
     result = None
     key = 'tree'
     try:
         result = memcache.get(str(key))
         if result != None:
-            logging.debug('Memcache get successful; got the repo tree')
-    except: #10
-        logging.debug('tree memcache get excepted')
+            #pass
+            logging.info('Memcache get successful; got the repo tree\nlength: '+str(len(str(result))))
+    except:
+       # pass
+        logging.info('tree memcache get excepted')
     if result == None:
-        x=None
+        logging.info('Getting the result from the GitHub API')
         result = json.loads(urllib.urlopen(url).read())
         memcache.set(str(key), result, 86400)
+        logging.info('length: '+str(len(str(result))))
+    logging.info([commit['path'] for commit in result['tree']])
+    logging.info('Okay, done the main part of the get_tree function')
     # okay, the tree is special,
     # so we have to do some special stuff to it :P
-    tree = result['tree']
-    items = [item for item in tree if item['type'] == 'blob']
+    data = result['tree']
+    logging.info([commit['path'] for commit in result['tree']])
+    logging.info('gotten the tree out of the result')
+    items = []
+    tree = []
+    logging.info(
+        '''Created the items variable,
+        this is how many items are in the root level of the the tree '''+str(len(tree)))
+    #logging.info(str(tree))
+    for item in range(len(data)):
+        logging.info(str(data[item]['path']))
+     #   time.sleep(2)
+        if data[item]['type'] == 'blob':
+            tree.append(data[item])
+    
+    logging.info(
+        '''Okay, worked out what needs to be cached.
+        now, how many items to be cached:'''+str(len(items)))
+    #time.sleep(5)
     tobesent = {}
+    logging.info('tobesent')
+    logging.info([commit['path'] for commit in result['tree']])
     for item in items:
-        #cur_item = item['url']
+     #   logging.info(str(item['path']))
         cur_item = memcache.get(str(item['path']).split('/')[-1])
         #if cur_item == None:
-         #   for item in 
-        logging.info('Trying to get this: '+str(str(item['path']).split('/')[-1]))
+         #   for item in
+        logging.info('Trying to get this: ' +
+                     str(str(item['path']).split('/')[-1]))
         if cur_item == None or cur_item != item['url']:
             if type(cur_item) == list:
                 cur_item.append(item['url'])
-                memcache.set(str(item['path']).split('/')[-1], item['url'], 86400)
+                memcache.set(str(item['path']).split('/')[-1],
+                             item['url'], 86400)
             else:
-                memcache.set(str(item['path']).split('/')[-1], item['url'], 86400)
+                memcache.set(str(item['path']).split('/')[-1],
+                             item['url'], 86400)
             tobesent[str(item['path']).split('/')[-1]] = item['url']
     #if tobesent != {}: sendmail('Dict of values \n\n'+str(tobesent))
+    logging.info([commit['path'] for commit in result['tree']])
     return result['tree']
-
-
 
 
 class HomeHandler(webapp2.RequestHandler):
@@ -100,26 +123,23 @@ class SearchModulesHandler(webapp2.RequestHandler):
     def get(self):
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'
-#        data = get_url_content('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master')
         data = get_tree()
+        logging.info(str(data))
         tree = []
-        for x in data:
-            if x['path'].endswith('.lua') and self.request.get('q') in x['path'].split('/')[-1]:
-                tree.append(str(x['path'].split('/')[-1])+'\n')
-        for filename in tree:
-            self.response.out.write(filename)
+        for fragment in data:
+            if fragment['path'].endswith('.lua'):
+                if self.request.get('q') in fragment['path'].split('/')[-1]:
+                    self.response.out.write(str(fragment['path'].split('/')[-1]) + '\n')
 
 
 class DownloadModulesHandler(webapp2.RequestHandler):
     def get(self):
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'
-        #data = get_url_content('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master')
         module_found = False
         data = get_tree()
         for x in data:
             if x['path'].split('/')[-1] == self.request.get('name'):
-                #self.response.out.write(base64.b64decode(json.loads(urllib.urlopen(x['url']).read())['content']))
                 module_found = True
                 self.response.out.write(base64.b64decode(
                     get_url_content(x['url'])['content']))
@@ -131,28 +151,29 @@ class ListModulesHandler(webapp2.RequestHandler):
     def get(self):
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'
-        #data = get_url_content('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master')
         data = get_tree()
-        tree = [str(x['path'].split('/')[-1])+'\n' for x in data if x['path'].endswith('.lua')]
-        for filename in tree:
-            self.response.out.write(filename)
+        tree = []
+        for fragment in data:
+            if fragment['path'].endswith('.lua'):
+                self.response.out.write(str(fragment['path'].split('/')[-1]) + '\n')
 
 
 def flusher(handler):
     try:
         memcache.flush_all()
-        handler.response.out.write('<strong>Memcache should have just been flushed</strong>')
     except:
-        handler.response.out.write('<strong>Memcache could not be flushed. Contact the <a href="mailto:jack.thatch@gmail.com">administrator</a></strong>')
+        handler.response.out.write('An error occured')
 
 
 class SmartFlushHandler(webapp2.RequestHandler):
     def get(self):
-        self.response.out.write('The Smart Flusher Handler can be reached at this address')
+        self.response.out.write(
+            'The Smart Flusher Handler can be reached at this address')
+
     def post(self):
         payload = self.request.get('payload')
         payload = json.loads(payload)
-        files_changed=False
+        files_changed = False
         changed_files = []
         info_dict = {}
         for commit in payload['commits']:
@@ -161,65 +182,61 @@ class SmartFlushHandler(webapp2.RequestHandler):
                 changed_files += commit['removed']
             except:
                 pass
-        for file in changed_files:
-            info_dict[str(file)] = False
+        for changed_file in changed_files:
+            info_dict[str(changed_file)] = False
         if len(changed_files) != 0 and changed_files != []:
-            files_changed=True
-            for file in changed_files:
-                logging.info('type: '+str(file))
-                if file != None and file != '':
-                    logging.info(file+':'+str(memcache.get(file)))
-                    if memcache.get(file) != None: memcache.delete(memcache.get(file))####################################################################################################################################
-                    memcache.delete(file)
+            files_changed = True
+            for changed_file in changed_files:
+                logging.info('type: ' + str(changed_file))
+                if changed_file != None and changed_file != '':
+                    logging.info(
+                        changed_file + ':' + str(memcache.get(changed_file)))
+                    if memcache.get(changed_file) != None:
+                        memcache.delete(memcache.get(changed_file))
+                    memcache.delete(changed_file)
                     try:
-                        info_dict[str(file)] = True
+                        info_dict[str(changed_file)] = True
                     except:
                         pass
-            sendmail('Here is a list \n\n'+str(changed_files)+'\n\n\n\n\n\n\n'+str(info_dict))
+            sendmail(
+                'Here is a list \n\n' +
+                str(changed_files) + '\n\n\n\n\n\n\n' + str(info_dict))
 
-        removed_files = []        
+        removed_files = []
         for commit in payload['commits']:
             removed_files += commit['removed']
         if len(removed_files) != 0 and removed_files != []:
-            files_changed=True
+            files_changed = True
             for file in removed_files:
                 if file != None and file != '':
-                    if memcache.get(file) != None: memcache.delete(memcache.get(file))
+                    if memcache.get(file) != None:
+                        memcache.delete(memcache.get(file))
                     memcache.delete(file)
 
         added_files = []
         for commit in payload['commits']:
             added_files += commit['added']
         if len(added_files) != 0 and added_files != []:
-            files_changed=True
+            files_changed = True
             get_tree()
-#            for file in removed_files:
- #               if file != None and file != '':
-  #                  if memcache.get(file) != None: memcache.delete(memcache.get(file))
-   #                 memcache.delete(file)
-        if not files_changed: sendmail('Odd. No files were changed in this commit')
-    #        flusher(self)
-        
+        if not files_changed:
+            sendmail('Odd. No files were changed in this commit')
 
-
-
-
-class CalmHandler(webapp2.RequestHandler):
+class TreeHandler(webapp2.RequestHandler):
     def get(self):
-        self.error(420)
-        #flusher(self)
-
+        self.response.write('hello!')
+    #    self.response.write(str(get_url_content('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master')))
+        self.response.out.write(str(get_tree()))
 
 app = webapp2.WSGIApplication([
     ('/modules/search*', SearchModulesHandler),
     ('/modules/download*', DownloadModulesHandler),
     ('/modules/list', ListModulesHandler),
-   # ('/flush', FlushHandler),
     ('/flush', SmartFlushHandler),
-    ('/calm', CalmHandler),
-   # ('/smart_flush', SmartFlushHandler),
+    ('/tree', TreeHandler),
     ('/', HomeHandler)
 ], debug=True)
+
 
 def main():
     from paste import httpserver
@@ -227,4 +244,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
