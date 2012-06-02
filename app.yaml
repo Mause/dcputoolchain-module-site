@@ -1,14 +1,19 @@
 application: dcputoolchain-module-site
-version: 1-0009
+version: 1-0013
 runtime: python27
 api_version: 1
-threadsafe: yes
+threadsafe: no
 
 handlers:
 - url: /favicon\.ico
   static_files: favicon.ico
   upload: favicon\.ico
 
+- url: /xy/.*
+  script: $PYTHON_LIB/google/appengine/ext/admin
+  login: admin
+ 
+  
 - url: .*
   script: main.app
 

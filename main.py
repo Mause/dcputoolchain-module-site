@@ -25,6 +25,7 @@ import logging
 from mailer import sendmail
 from google.appengine.api import memcache
 
+
 # this is a caching function, to help keep wait time short
 def get_url_content(url):
     result = None
@@ -38,15 +39,15 @@ def get_url_content(url):
     if result == None:
         x=None
         result = json.loads(urllib.urlopen(url).read())
-        memcache.add(str(url_hash), result, 3600)
+        memcache.set(str(url_hash), result, 3600)
         return result
     else:
         return result
 
 
 
-from google.appengine.api import memcache
-import simplejson as json
+
+
 def get_tree():
     url = 'https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master'
     result = None
@@ -60,14 +61,26 @@ def get_tree():
     if result == None:
         x=None
         result = json.loads(urllib.urlopen(url).read())
-        memcache.add(str(key), result, 86400)
+        memcache.set(str(key), result, 86400)
     # okay, the tree is special,
     # so we have to do some special stuff to it :P
     tree = result['tree']
     items = [item for item in tree if item['type'] == 'blob']
+    tobesent = {}
     for item in items:
-        if memcache.get(str(item['path']).split('/')[-1]) == None:
-           memcache.set(str(item['path']).split('/')[-1], item['url'], 86400)
+        #cur_item = item['url']
+        cur_item = memcache.get(str(item['path']).split('/')[-1])
+        #if cur_item == None:
+         #   for item in 
+        logging.info('Trying to get this: '+str(str(item['path']).split('/')[-1]))
+        if cur_item == None or cur_item != item['url']:
+            if type(cur_item) == list:
+                cur_item.append(item['url'])
+                memcache.set(str(item['path']).split('/')[-1], item['url'], 86400)
+            else:
+                memcache.set(str(item['path']).split('/')[-1], item['url'], 86400)
+            tobesent[str(item['path']).split('/')[-1]] = item['url']
+    #if tobesent != {}: sendmail('Dict of values \n\n'+str(tobesent))
     return result['tree']
 
 
@@ -86,9 +99,9 @@ class HomeHandler(webapp2.RequestHandler):
 class SearchModulesHandler(webapp2.RequestHandler):
     def get(self):
         self.response.headers['Content-Type'] = 'text/plain'
+        self.response.headers['Cache-Control'] = 'no-Cache'
 #        data = get_url_content('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master')
         data = get_tree()
-        logging.info('tree: '+str(data))
         tree = []
         for x in data:
             if x['path'].endswith('.lua') and self.request.get('q') in x['path'].split('/')[-1]:
@@ -100,6 +113,7 @@ class SearchModulesHandler(webapp2.RequestHandler):
 class DownloadModulesHandler(webapp2.RequestHandler):
     def get(self):
         self.response.headers['Content-Type'] = 'text/plain'
+        self.response.headers['Cache-Control'] = 'no-Cache'
         #data = get_url_content('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master')
         data = get_tree()
         for x in data:
@@ -112,6 +126,7 @@ class DownloadModulesHandler(webapp2.RequestHandler):
 class ListModulesHandler(webapp2.RequestHandler):
     def get(self):
         self.response.headers['Content-Type'] = 'text/plain'
+        self.response.headers['Cache-Control'] = 'no-Cache'
         #data = get_url_content('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master')
         data = get_tree()
         tree = [str(x['path'].split('/')[-1])+'\n' for x in data if x['path'].endswith('.lua')]
@@ -132,20 +147,64 @@ class SmartFlushHandler(webapp2.RequestHandler):
         self.response.out.write('The Smart Flusher Handler can be reached at this address')
         #sendmail('STFU i can hear you!')
     def post(self):
-        logging.info('#############################################################################')
-        logging.info('Okay, the hook seems to have worked :D')
-        logging.info('#############################################################################')
+        #logging.info('#############################################################################')
+        #logging.info('Okay, the hook seems to have worked :D')
+        #logging.info('#############################################################################')
         payload = self.request.get('payload')
-        logging.info('This:'+str(payload))
+        #logging.info('This:'+str(payload))
         payload = json.loads(payload)
+        files_changed=False
         changed_files = []
+        info_dict = {}
         for commit in payload['commits']:
             changed_files += commit['modified']
+            try:
+                changed_files += commit['removed']
+            except:
+                pass
         for file in changed_files:
-            logging.log(file+':'+memcache.get(file))
-            memcache.delete(memcache.get(file))
-        sendmail('Here is a list \n\n'+str(changed_files))
-#        flusher(self)
+            info_dict[str(file)] = False
+        if len(changed_files) != 0 and changed_files != []:
+            files_changed=True
+            for file in changed_files:
+                logging.info('type: '+str(file))
+                if file != None and file != '':
+                    assert file != None
+                    assert file != ''
+                    assert file != {}
+                    assert file != []
+                    assert file != ()
+                    logging.info(file+':'+str(memcache.get(file)))
+                    if memcache.get(file) != None: memcache.delete(memcache.get(file))####################################################################################################################################
+                    memcache.delete(file)
+                    try:
+                        info_dict[str(file)] = True
+                    except:
+                        pass
+            sendmail('Here is a list \n\n'+str(changed_files)+'\n\n\n\n\n\n\n'+str(info_dict))
+
+        removed_files = []        
+        for commit in payload['commits']:
+            removed_files += commit['removed']
+        if len(removed_files) != 0 and removed_files != []:
+            files_changed=True
+            for file in removed_files:
+                if file != None and file != '':
+                    if memcache.get(file) != None: memcache.delete(memcache.get(file))
+                    memcache.delete(file)
+
+        added_files = []
+        for commit in payload['commits']:
+            added_files += commit['added']
+        if len(added_files) != 0 and added_files != []:
+            files_changed=True
+            get_tree()
+#            for file in removed_files:
+ #               if file != None and file != '':
+  #                  if memcache.get(file) != None: memcache.delete(memcache.get(file))
+   #                 memcache.delete(file)
+        if files_changed: sendmail('Odd. No files were changed in this commit')
+    #        flusher(self)
         
 
 
