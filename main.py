@@ -106,8 +106,12 @@ class SearchModulesHandler(webapp2.RequestHandler):
         for x in data:
             if x['path'].endswith('.lua') and self.request.get('q') in x['path'].split('/')[-1]:
                 tree.append(str(x['path'].split('/')[-1])+'\n')
-        for filename in tree:
-            self.response.out.write(filename)
+        if len(tree) != 0:
+            for filename in tree:
+                self.response.out.write(filename)
+        else:
+            self.error(404)
+        
 
 
 class DownloadModulesHandler(webapp2.RequestHandler):
@@ -115,12 +119,16 @@ class DownloadModulesHandler(webapp2.RequestHandler):
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'
         #data = get_url_content('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master')
+        module_found = False
         data = get_tree()
         for x in data:
             if x['path'].split('/')[-1] == self.request.get('name'):
                 #self.response.out.write(base64.b64decode(json.loads(urllib.urlopen(x['url']).read())['content']))
+                module_found = True
                 self.response.out.write(base64.b64decode(
                     get_url_content(x['url'])['content']))
+        if not module_found:
+            self.error(404)
 
 
 class ListModulesHandler(webapp2.RequestHandler):
@@ -145,13 +153,8 @@ def flusher(handler):
 class SmartFlushHandler(webapp2.RequestHandler):
     def get(self):
         self.response.out.write('The Smart Flusher Handler can be reached at this address')
-        #sendmail('STFU i can hear you!')
     def post(self):
-        #logging.info('#############################################################################')
-        #logging.info('Okay, the hook seems to have worked :D')
-        #logging.info('#############################################################################')
         payload = self.request.get('payload')
-        #logging.info('This:'+str(payload))
         payload = json.loads(payload)
         files_changed=False
         changed_files = []
@@ -169,11 +172,6 @@ class SmartFlushHandler(webapp2.RequestHandler):
             for file in changed_files:
                 logging.info('type: '+str(file))
                 if file != None and file != '':
-                    assert file != None
-                    assert file != ''
-                    assert file != {}
-                    assert file != []
-                    assert file != ()
                     logging.info(file+':'+str(memcache.get(file)))
                     if memcache.get(file) != None: memcache.delete(memcache.get(file))####################################################################################################################################
                     memcache.delete(file)
@@ -203,18 +201,17 @@ class SmartFlushHandler(webapp2.RequestHandler):
  #               if file != None and file != '':
   #                  if memcache.get(file) != None: memcache.delete(memcache.get(file))
    #                 memcache.delete(file)
-        if files_changed: sendmail('Odd. No files were changed in this commit')
+        if not files_changed: sendmail('Odd. No files were changed in this commit')
     #        flusher(self)
         
 
 
 
 
-class FlushHandler(webapp2.RequestHandler):
+class CalmHandler(webapp2.RequestHandler):
     def get(self):
-        flusher(self)
-    def post(self):
-        flusher(self)
+        self.error(420)
+        #flusher(self)
 
 
 app = webapp2.WSGIApplication([
@@ -223,6 +220,7 @@ app = webapp2.WSGIApplication([
     ('/modules/list', ListModulesHandler),
    # ('/flush', FlushHandler),
     ('/flush', SmartFlushHandler),
+    ('/calm', CalmHandler),
    # ('/smart_flush', SmartFlushHandler),
     ('/', HomeHandler)
 ], debug=True)
