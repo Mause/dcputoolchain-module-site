@@ -106,12 +106,8 @@ class SearchModulesHandler(webapp2.RequestHandler):
         for x in data:
             if x['path'].endswith('.lua') and self.request.get('q') in x['path'].split('/')[-1]:
                 tree.append(str(x['path'].split('/')[-1])+'\n')
-        if len(tree) != 0:
-            for filename in tree:
-                self.response.out.write(filename)
-        else:
-            self.error(404)
-        
+        for filename in tree:
+            self.response.out.write(filename)
 
 
 class DownloadModulesHandler(webapp2.RequestHandler):
