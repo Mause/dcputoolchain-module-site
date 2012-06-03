@@ -190,9 +190,9 @@ class SmartFlushHandler(webapp2.RequestHandler):
                 logging.info('type: ' + str(changed_file))
                 if changed_file != None and changed_file != '':
                     logging.info(
-                        changed_file + ':' + str(memcache.get(changed_file)))
+                        changed_file + ':' + str(memcache.get(changed_file)) + ':' + hashlib.md5(str(memcache.get(changed_file))).hexdigest())
                     if memcache.get(changed_file) != None:
-                        memcache.delete(memcache.get(changed_file))
+                        memcache.delete(hashlib.md5(memcache.get(changed_file)).hexdigest())
                     memcache.delete(changed_file)
                     try:
                         info_dict[str(changed_file)] = True
@@ -207,11 +207,11 @@ class SmartFlushHandler(webapp2.RequestHandler):
             removed_files += commit['removed']
         if len(removed_files) != 0 and removed_files != []:
             files_changed = True
-            for file in removed_files:
-                if file != None and file != '':
-                    if memcache.get(file) != None:
-                        memcache.delete(memcache.get(file))
-                    memcache.delete(file)
+            for removed_file in removed_files:
+                if removed_file != None and removed_file != '':
+                    if memcache.get(removed_file) != None:
+                        memcache.delete(hashlib.md5(memcache.get(removed_file)).hexdigest())
+                    memcache.delete(removed_file)
 
         added_files = []
         for commit in payload['commits']:
