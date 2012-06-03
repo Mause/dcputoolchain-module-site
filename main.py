@@ -22,6 +22,8 @@ import base64
 import json
 import logging
 import time
+import re
+from slpp import slpp as lua
 from mailer import sendmail
 from google.appengine.api import memcache
 
@@ -45,56 +47,35 @@ def get_url_content(url):
 
 
 def get_tree():
-    logging.info('Lets go cut down a tree!')
     url = 'https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master'
     result = None
     key = 'tree'
     try:
         result = memcache.get(str(key))
         if result != None:
-            #pass
-            logging.info('Memcache get successful; got the repo tree\nlength: '+str(len(str(result))))
+            logging.info(
+                'Memcache get successful; got the repo tree\nlength: ' +
+                str(len(str(result))))
     except:
-       # pass
         logging.info('tree memcache get excepted')
     if result == None:
         logging.info('Getting the result from the GitHub API')
         result = json.loads(urllib.urlopen(url).read())
         memcache.set(str(key), result, 86400)
-        logging.info('length: '+str(len(str(result))))
-    logging.info([commit['path'] for commit in result['tree']])
     logging.info('Okay, done the main part of the get_tree function')
     # okay, the tree is special,
     # so we have to do some special stuff to it :P
     data = result['tree']
-    logging.info([commit['path'] for commit in result['tree']])
-    logging.info('gotten the tree out of the result')
     items = []
     tree = []
-    logging.info(
-        '''Created the items variable,
-        this is how many items are in the root level of the the tree '''+str(len(tree)))
-    #logging.info(str(tree))
     for item in range(len(data)):
-        logging.info(str(data[item]['path']))
-     #   time.sleep(2)
         if data[item]['type'] == 'blob':
             tree.append(data[item])
-    
-    logging.info(
-        '''Okay, worked out what needs to be cached.
-        now, how many items to be cached:'''+str(len(items)))
-    #time.sleep(5)
     tobesent = {}
-    logging.info('tobesent')
-    logging.info([commit['path'] for commit in result['tree']])
     for item in items:
-     #   logging.info(str(item['path']))
         cur_item = memcache.get(str(item['path']).split('/')[-1])
         #if cur_item == None:
          #   for item in
-        logging.info('Trying to get this: ' +
-                     str(str(item['path']).split('/')[-1]))
         if cur_item == None or cur_item != item['url']:
             if type(cur_item) == list:
                 cur_item.append(item['url'])
@@ -105,7 +86,6 @@ def get_tree():
                              item['url'], 86400)
             tobesent[str(item['path']).split('/')[-1]] = item['url']
     #if tobesent != {}: sendmail('Dict of values \n\n'+str(tobesent))
-    logging.info([commit['path'] for commit in result['tree']])
     return result['tree']
 
 
@@ -123,13 +103,32 @@ class SearchModulesHandler(webapp2.RequestHandler):
     def get(self):
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'
+        query = self.request.get('q')
+        type = self.request.get('type')
+        module_types = ['preprocessor', 'debugger', 'hardware']
+        if type.lower() not in module_types:
+            type = None
+        else:
+            type = type.lower()
         data = get_tree()
-        logging.info(str(data))
         tree = []
-        for fragment in data:
-            if fragment['path'].endswith('.lua'):
-                if self.request.get('q') in fragment['path'].split('/')[-1]:
-                    self.response.out.write(str(fragment['path'].split('/')[-1]) + '\n')
+        if type != None:
+            logging.info('Type was specified: '+str(type))
+            for fragment in data:
+                if fragment['path'].endswith('.lua'):
+                    logging.info(str(type) + ':' + str(get_module_data(fragment)))
+                    logging.info('fragment: '+str(fragment))
+                    if (query in fragment['path'].split('/')[-1] and
+                        type == get_module_data(fragment)['Type'].lower()):
+                                self.response.out.write(
+                                    str(fragment['path'].split('/')[-1]) + '\n')
+        else:
+            logging.info('Type was not specified')
+            for fragment in data:
+                if (fragment['path'].endswith('.lua') and
+                    query in fragment['path'].split('/')[-1]):
+                            self.response.out.write(
+                                str(fragment['path'].split('/')[-1]) + '\n')
 
 
 class DownloadModulesHandler(webapp2.RequestHandler):
@@ -155,7 +154,8 @@ class ListModulesHandler(webapp2.RequestHandler):
         tree = []
         for fragment in data:
             if fragment['path'].endswith('.lua'):
-                self.response.out.write(str(fragment['path'].split('/')[-1]) + '\n')
+                self.response.out.write(
+                    str(fragment['path'].split('/')[-1]) + '\n')
 
 
 def flusher(handler):
@@ -190,9 +190,14 @@ class SmartFlushHandler(webapp2.RequestHandler):
                 logging.info('type: ' + str(changed_file))
                 if changed_file != None and changed_file != '':
                     logging.info(
-                        changed_file + ':' + str(memcache.get(changed_file)) + ':' + hashlib.md5(str(memcache.get(changed_file))).hexdigest())
+                        changed_file + ':' +
+                        str(memcache.get(changed_file)) + ':' +
+                        hashlib.md5(
+                            str(memcache.get(changed_file))).hexdigest())
                     if memcache.get(changed_file) != None:
-                        memcache.delete(hashlib.md5(memcache.get(changed_file)).hexdigest())
+                        memcache.delete(
+                            hashlib.md5(
+                                memcache.get(changed_file)).hexdigest())
                     memcache.delete(changed_file)
                     try:
                         info_dict[str(changed_file)] = True
@@ -210,7 +215,9 @@ class SmartFlushHandler(webapp2.RequestHandler):
             for removed_file in removed_files:
                 if removed_file != None and removed_file != '':
                     if memcache.get(removed_file) != None:
-                        memcache.delete(hashlib.md5(memcache.get(removed_file)).hexdigest())
+                        memcache.delete(
+                            hashlib.md5(
+                                memcache.get(removed_file)).hexdigest())
                     memcache.delete(removed_file)
 
         added_files = []
@@ -222,11 +229,50 @@ class SmartFlushHandler(webapp2.RequestHandler):
         if not files_changed:
             sendmail('Odd. No files were changed in this commit')
 
+# MODULE = {
+#  Type = "Preprocessor",
+#  Name = ".ASSERT directive",
+#  Version = "1.0"
+#};
+
+
+def get_module_data(fragment):
+    """Given a get_tree fragment,
+    returns module data in a python dict"""
+    file_data = base64.b64decode(
+        get_url_content(
+            fragment['url'])['content'])
+    module_data = (
+        re.search('MODULE\s*=\s*\{([^}]*)\}',
+                  file_data))
+    try:
+        module_data = lua.decode(module_data.group(0).strip('MODULE=').strip('MODULE ='))
+    except AttributeError:
+        logging.info('module_data: '+str(module_data))
+    return module_data
+
+
 class TreeHandler(webapp2.RequestHandler):
     def get(self):
-        self.response.write('hello!')
-    #    self.response.write(str(get_url_content('https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master')))
-        self.response.out.write(str(get_tree()))
+        self.response.write('<h2>Basic overview</h2>')
+        data = get_tree()
+        tree = []
+        for fragment in data:
+            if fragment['path'].endswith('.lua'):
+                module_data = get_module_data(fragment)
+                self.response.write('<h4>MODULE</h4>')
+                self.response.write('<ul>')     # start the list
+                self.response.write(
+                    '<li>Filename: ' +
+                    str(fragment['path'].split('/')[-1]) + '</li>')
+                self.response.write(
+                    '<li>Type: ' + module_data['Type'] + '</li>')
+                self.response.write(
+                    '<li>Name: ' + module_data['Name'] + '</li>')
+                self.response.write(
+                    '<li>Version: ' + module_data['Version'] + '</li>')
+                self.response.write('</ul>')    # end the list
+
 
 app = webapp2.WSGIApplication([
     ('/modules/search*', SearchModulesHandler),
