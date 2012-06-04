@@ -23,13 +23,18 @@ files and provides said files in their original formats, ready to be served to
 the DCPUToolchain executables that make use of them.
 """
 
-import webapp2
+
 import hashlib
 import urllib
 import base64
 import json
 import logging
 import re
+from colorsys import hsv_to_rgb
+import random
+import math
+
+import webapp2
 from slpp import slpp as lua
 from mailer import sendmail
 from google.appengine.api import memcache
@@ -58,15 +63,12 @@ def get_tree():
     but with extra features"""
     url = 'https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master'
     result = None
-    try:
-        result = memcache.get(str('tree'))
-        if result != None:
-            logging.info(
-                'Memcache get successful; got the repo tree\nlength: ' +
-                str(len(str(result))))
-    except:
-        logging.info('tree memcache get excepted')
-    if result == None:
+    result = memcache.get(str('tree'))
+    if result != None:
+        logging.info(
+            'Memcache get successful; got the repo tree\nlength: ' +
+            str(len(str(result))))
+    else:
         logging.info('Getting the result from the GitHub API')
         result = json.loads(urllib.urlopen(url).read())
         memcache.set(str('tree'), result, 86400)
@@ -99,13 +101,64 @@ def get_tree():
 
 class HomeHandler(webapp2.RequestHandler):
     def get(self):
-        "handler get requests"
+        "handles get requests"
+        output = ''
+        output += '<ul>'
+        pages = ['search', 'tree', 'tree/pretty']
+        for page in pages:
+            output += '<li><a href="/human/%s">%s</a></li>' % (page, page)
+        self.response.write(output)
+
+
+class HumanSearch(webapp2.RequestHandler):
+    "Handler searching of the repo"
+    def get(self):
+        "provides search interface"
         self.response.write('''
 <h3>Search the available modules</h3>
-<form action="/modules/search">
+<form method="POST" action="/human/search">
 <input name="q"/>
+<select name="type">
+  <option value="">All results</option>
+  <option value="hardware">Hardware</option>
+  <option value="debugger">Debugger</option>
+  <option value="preprocessor">Preprocessor</option>
+</select>
 <input type="submit"/>
 </form>''')
+
+    def post(self):
+        "Handles get requests"
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.headers['Cache-Control'] = 'no-Cache'
+        query = self.request.get('q')
+        type = self.request.get('type')
+        module_types = ['preprocessor', 'debugger', 'hardware']
+        if type.lower() not in module_types:
+            type = None
+        else:
+            type = type.lower()
+        data = get_tree()
+        if type != None:
+            logging.info('Type was specified: '+str(type))
+            for fragment in data:
+                if fragment['path'].endswith('.lua'):
+                    logging.info(str(type) + ':' +
+                        str(get_module_data(fragment)))
+                    logging.info('fragment: '+str(fragment))
+                    if (query in fragment['path'].split('/')[-1] and
+                        type == get_module_data(fragment)['Type'].lower()):
+                                self.response.out.write(
+                                  str(fragment['path'].split('/')[-1]) + '\n')
+        else:
+            logging.info('Type was not specified')
+            for fragment in data:
+                if (fragment['path'].endswith('.lua') and
+                    query in fragment['path'].split('/')[-1]):
+                            self.response.out.write(
+                                str(fragment['path'].split('/')[-1]) + '\n')
+
+
 
 
 class SearchModulesHandler(webapp2.RequestHandler):
@@ -115,26 +168,7 @@ class SearchModulesHandler(webapp2.RequestHandler):
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'
         query = self.request.get('q')
-#        type = self.request.get('type')
- #       module_types = ['preprocessor', 'debugger', 'hardware']
-  #      if type.lower() not in module_types:
-   #         type = None
-    #    else:
-     #       type = type.lower()
         data = get_tree()
-        #if type != None:
-         #   logging.info('Type was specified: '+str(type))
-          #  for fragment in data:
-           #     if fragment['path'].endswith('.lua'):
-            #        logging.info(str(type) + ':' +
-             #           str(get_module_data(fragment)))
-              #      logging.info('fragment: '+str(fragment))
-               #     if (query in fragment['path'].split('/')[-1] and
-                #        type == get_module_data(fragment)['Type'].lower()):
-                 #               self.response.out.write(
-                  #                str(fragment['path'].split('/')[-1]) + '\n')
-#        else:
- #       logging.info('Type was not specified')
         for fragment in data:
             if (fragment['path'].endswith('.lua') and
                 query in fragment['path'].split('/')[-1]):
@@ -157,11 +191,14 @@ class DownloadModulesHandler(webapp2.RequestHandler):
                     get_url_content(fragment['url'])['content']))
         if not module_found:
             self.error(404)
+
     def post(self):
         "Handlers post requests"
         self.response.write('This uri does not handle post requests')
 
+
 class ListModulesHandler(webapp2.RequestHandler):
+    "returns a list of accessable modules"
     def get(self):
         "Handlers get requests"
         self.response.headers['Content-Type'] = 'text/plain'
@@ -270,45 +307,141 @@ def get_module_data(fragment):
         module_data = module_data.strip('MODULE =')
         module_data = lua.decode(module_data)
     except AttributeError:
-        logging.info('module_data: '+str(module_data))
+        logging.info('module_data: ' + str(module_data))
     return module_data
+
+
+def mine(hue, saturation, value):
+    "a dumb hsv-rgb converter"
+    hue = hue/1*256
+    saturation = saturation/1*256
+    value = value/1*256
+    return [hue, saturation, value]
+
+
+def pretty_colours(how_many):
+    """uses golden ratio to create pleasant/pretty colours
+    returns in rgb form"""
+    golden_ratio_conjugate = (1+math.sqrt(5))/2
+    logging.info('golden_ratio_conjugate: ' + str(golden_ratio_conjugate))
+    #h = random.random()#1,5000) # use random start value
+    colours = []
+    hue = 0
+    blocks = 1001
+    for tmp in range(blocks):
+        hue += golden_ratio_conjugate#*(tmp/5)
+        hue = hue % 1
+        colours.append(hsv_to_rgb(hue, 0.5, 0.95))
+
+    logging.info('colours: '+str(colours))
+    final_colours = []
+    for colour in colours:
+        temp_c = mine(colour[0], colour[1], colour[2])
+        temp_c = (int(round(temp_c[0])),
+            int(round(temp_c[1])),
+            int(round(temp_c[2])))
+        final_colours.append('rgb('+(str(temp_c[0])+', '+
+            str(temp_c[1])+', '+
+            str(temp_c[2])+')'))
+    return final_colours
+
+
+class PrettyTreeHandler(webapp2.RequestHandler):
+    "Basically the same as /tree, but pretty <3"
+    def get(self):
+        "handlers get requests"
+        colours = pretty_colours(50)
+        logging.info(('length: ' + str(len(colours))))
+        module_data = pretty_data_tree(get_tree())
+        output = ''
+        #output += '<div style="center">'
+        logging.info(str(module_data))
+        output += (
+            '''<table border=0 style="
+                    border-collapse: collapse;
+                    width: 800px;
+                    height: 500px;
+                    margin-left: -250px;
+                    margin-top: -400px;
+                    top: 50%;
+                    left: 50%;
+                ">''')
+        output += '<tr>'
+        for fragment in module_data:
+            output += '<td style="width: 50px; height: 50px; '
+            output += ('background-color: %s;">%s</td>' %
+                (random.choice(colours), fragment))
+        output += '</table>'
+        self.response.write(output)
+
 
 
 class TreeHandler(webapp2.RequestHandler):
     """A simple debugging interface"""
     def get(self):
         "Handles get requests"
-        output = None
+        output = ''
         output = ('<h2>Basic overview</h2>')
         data = get_tree()
-        for fragment in data:
-            if fragment['path'].endswith('.lua'):
-                module_data = get_module_data(fragment)
-                output += '<h4>MODULE</h4>'
-                output += '<ul>'     # start the list
-                output += (
-                    '<li>Filename: ' +
-                    str(fragment['path'].split('/')[-1]) + '</li>')
-                output += (
-                    '<li>Type: ' + module_data['Type'] + '</li>')
-                output += (
-                    '<li>Name: ' + module_data['Name'] + '</li>')
-                output += (
-                    '<li>Version: ' + module_data['Version'] + '</li>')
-                output += ('</ul>')    # end the list
-                self.response.write(output)
+        output += data_tree(data)
+        self.response.write(output)
+
     def post(self):
         "Handlers POST requests"
         self.response.write('POST not handled at this URI')
 
 
+def pretty_data_tree(data):
+    "given a data tree, will return a dict version"
+    output = {}
+    for fragment in data:
+        if fragment['path'].endswith('.lua'):
+            cur_path = str(fragment['path'].split('/')[-1])
+            module_data = get_module_data(fragment)
+            output[cur_path] = {}
+            output[cur_path]['filename'] = cur_path
+            output[cur_path]['type'] = module_data['Type']
+            output[cur_path]['name'] = module_data['Name']
+            output[cur_path]['Version'] = module_data['Version']
+    return output
+
+
+def data_tree(data):
+    "given a data tree, will return a html-based representation"
+    output = ''
+    for fragment in data:
+        if fragment['path'].endswith('.lua'):
+            cur_path = str(fragment['path'].split('/')[-1])
+            logging.info('Path: '+str(cur_path))
+            module_data = get_module_data(fragment)
+            output += '<h4>MODULE</h4>'
+            output += '<ul>'     # start the list
+            output += '<li>Filename: %s</li>' % cur_path
+            output += '<li>Type: %s</li>' % module_data['Type']
+            output += '<li>Name: %s</li>' % module_data['Name']
+            output += '<li>Version: %s</li>' % module_data['Version']
+            output += '</ul>'    # end the list
+    return output
+
+
+class RedirectToHumanHandler(webapp2.RequestHandler):
+    "redirects the user to /human"
+    def get(self):
+        "hnadles get requests"
+        self.redirect('/human')
+
+
 app = webapp2.WSGIApplication([
-    ('/modules/search*', SearchModulesHandler),
-    ('/modules/download*', DownloadModulesHandler),
-    ('/modules/list', ListModulesHandler),
-    ('/flush', SmartFlushHandler),
-    ('/tree', TreeHandler),
-    ('/', HomeHandler)
+    (r'/human/tree/pretty', PrettyTreeHandler),
+    (r'/human/tree*', TreeHandler),
+    (r'/human/search*', HumanSearch),
+    (r'/human/*', HomeHandler),
+    (r'/human*', HomeHandler),
+    (r'/modules/search*', SearchModulesHandler),
+    (r'/modules/download*', DownloadModulesHandler),
+    (r'/modules/list', ListModulesHandler),
+    (r'/flush', SmartFlushHandler),
+    (r'/', RedirectToHumanHandler)
     ], debug=True)
 
 
