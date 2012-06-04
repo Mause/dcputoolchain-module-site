@@ -12,8 +12,7 @@ handlers:
 - url: /xy/.*
   script: $PYTHON_LIB/google/appengine/ext/admin
   login: admin
- 
-  
+
 - url: .*
   script: main.app
 

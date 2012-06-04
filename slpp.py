@@ -1,7 +1,7 @@
 import re
 
 class SLPP:
-
+    """Provides a number of function for interpreting lua in python"""
     def __init__(self):
         self.text = ''
         self.ch = ''
@@ -16,7 +16,7 @@ class SLPP:
     def decode(self, text):
         if not text or type(text) is not str:
             return
-        #FIXME: only short comments removed
+        #  FIXME: only short comments removed
         reg = re.compile('--.*$', re.M)
         text = reg.sub('', text, 0)
         self.text = text

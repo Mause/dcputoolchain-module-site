@@ -18,22 +18,17 @@ from google.appengine.api import mail
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp import util
 
-
+# reference code;
 # www.lysdev.com/mailer?dest=jack.thatch@gmail.com&message=This person has RVSPed: Dominic May&dest_name=Dominic&addr=/events?hash=d31d9e54997706f8caec751a788aa053&subject=RSVP
 
 def sendmail(message):
-    #message=self.request.get('message')
-    dest_name = 'Dominic' #dest_name=self.request.get('dest_name')
-    dest = 'jack.thatch@gmail.com' #dest=self.request.get('dest')
-    subject = 'DTMM Debug Message' #subject=self.request.get('subject')
+    dest_name = 'Dominic'
+    dest = 'jack.thatch@gmail.com'
+    subject = 'DTMM Debug Message'
     mail.send_mail(sender="Admin Jones <admin@lysdev.com>",
           to=dest,
           subject=subject,
-          body=('''
-Dear '''+dest_name+'''
-
-'''+message+'''
-
+          body=('''\nDear '''+dest_name+'''\n'''+message+'''\n
 Please let us know if you have any questions.
 
 The Lysdev.com Team
