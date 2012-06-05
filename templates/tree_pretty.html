@@ -1,0 +1,26 @@
+<style type="text/css">
+.container {
+	border-collapse: collapse;
+	width: 800px;
+	height: 500px;
+	margin-left: -250px;
+	margin-top: -400px;
+	top: 50%;
+	left: 50%;
+	font-color: black;
+}
+</style>
+
+<table border=0 class="container">
+	<tr>
+	{% for breadcrumb in tree %}
+		{% ifequal breadcrumb.row True %}
+		</tr>
+		<tr>
+		{% endifequal %}	
+        <td style="width: 50px; height: 50px; background-color: {{ breadcrumb.background }};">
+        	{{ breadcrumb.filename }}
+	    </td>
+	{% endfor %}
+	</tr>
+</table>

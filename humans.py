@@ -20,67 +20,78 @@ to interact with the dtmm server
 in a variety of ways :)
 """
 
-import webapp2
+# generic imports
 import math
-from utils import get_module_data
-from utils import get_tree
-from colorsys import hsv_to_rgb
 import random
 import logging
+# the colorsys module is required for color convertion
+from colorsys import hsv_to_rgb
 
+# the dtmm_utils file
+from dtmm_utils import get_module_data
+from dtmm_utils import get_tree
+from dtmm_utils import dorender
+
+
+# google appengine imports
+import webapp2
 
 
 class HumanSearch(webapp2.RequestHandler):
     "Handler searching of the repo"
     def get(self):
         "provides search interface"
-        self.response.write('''
-<h3>Search the available modules</h3>
-<form method="POST" action="/human/search">
-<input name="q"/>
-<select name="type">
-  <option value="">All results</option>
-  <option value="hardware">Hardware</option>
-  <option value="debugger">Debugger</option>
-  <option value="preprocessor">Preprocessor</option>
-</select>
-<input type="submit"/>
-</form>''')
+        output = ''
+        output += '<h3>Search the available modules</h3>'
+        output += '<form method="POST" action="/human/search">'
+        output += '<input name="q"/>'
+        output += '<select name="type">'
+        output += '  <option value="">All results</option>'
+        output += '  <option value="hardware">Hardware</option>'
+        output += '  <option value="debugger">Debugger</option>'
+        output += '  <option value="preprocessor">Preprocessor</option>'
+        output += '</select>'
+        output += '<input type="submit"/>'
+        output += '</form>'
+        self.response.write(output)
 
     def post(self):
         "Handles get requests"
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'
         query = self.request.get('q')
-        type = self.request.get('type')
+        requested_type = self.request.get('type')
         module_types = ['preprocessor', 'debugger', 'hardware']
-        if type.lower() not in module_types:
-            type = None
+        output = ''
+        if requested_type.lower() not in module_types:
+            requested_type = None
         else:
-            type = type.lower()
+            requested_type = requested_type.lower()
         data = get_tree()
-        if type != None:
-            logging.info('Type was specified: '+str(type))
+        if requested_type != None:
+            logging.info('Type was specified: '+str(requested_type))
             for fragment in data:
+                mod_data_frag = get_module_data(fragment)
                 if fragment['path'].endswith('.lua'):
-                    logging.info(str(type) + ':' +
-                        str(get_module_data(fragment)))
-                    logging.info('fragment: '+str(fragment))
-                    if (query in fragment['path'].split('/')[-1] and
-                        type == get_module_data(fragment)['Type'].lower()):
-                                self.response.out.write(
-                                  str(fragment['path'].split('/')[-1]) + '\n')
+                    logging.info(str(requested_type) + ':' +
+                        str(mod_data_frag))
+                    if query in fragment['path'].split('/')[-1]:
+                        if requested_type == mod_data_frag['Type'].lower():
+                            output += (
+                                str(fragment['path'].split('/')[-1]) + '\n')
         else:
             logging.info('Type was not specified')
             for fragment in data:
-                if (fragment['path'].endswith('.lua') and
-                    query in fragment['path'].split('/')[-1]):
-                            self.response.out.write(
-                                str(fragment['path'].split('/')[-1]) + '\n')
+                if fragment['path'].endswith('.lua'):
+                    if query in fragment['path'].split('/')[-1]:
+                        output += (
+                            str(fragment['path'].split('/')[-1]) + '\n')
+        self.response.out.write(output)
 
 
 
 class HomeHandler(webapp2.RequestHandler):
+    "Returns a list of the human pages"
     def get(self):
         "handles get requests"
         output = ''
@@ -93,10 +104,11 @@ class HomeHandler(webapp2.RequestHandler):
 
 
 def mine(hue, saturation, value):
-    "a dumb hsv-rgb converter"
-    hue = hue/1*256
-    saturation = saturation/1*256
-    value = value/1*256
+    """a dumb hsv-rgb converter
+    really just mutliplies the input values by 256"""
+    hue = hue*256
+    saturation = saturation*256
+    value = value*256
     return [hue, saturation, value]
 
 
@@ -105,16 +117,17 @@ def pretty_colours(how_many):
     returns in rgb form"""
     golden_ratio_conjugate = (1+math.sqrt(5))/2
     logging.info('golden_ratio_conjugate: ' + str(golden_ratio_conjugate))
-    #h = random.random()#1,5000) # use random start value
+    hue = random.random()#1,5000) # use random start value
     colours = []
-    hue = 0
-    blocks = 1001
-    for tmp in range(blocks):
-        hue += golden_ratio_conjugate#*(tmp/5)
+    #hue = 0
+    #blocks = 1001
+    for tmp in range(how_many):
+        hue += golden_ratio_conjugate*(tmp/5)
         hue = hue % 1
         colours.append(hsv_to_rgb(hue, 0.5, 0.95))
 
-    logging.info('colours: '+str(colours))
+    #logging.info('colours: '+str(colours))
+    logging.info('one colour: '+str(colours[0]))
     final_colours = []
     for colour in colours:
         temp_c = mine(colour[0], colour[1], colour[2])
@@ -133,27 +146,18 @@ class PrettyTreeHandler(webapp2.RequestHandler):
         "handlers get requests"
         colours = pretty_colours(50)
         logging.info(('length: ' + str(len(colours))))
-        module_data = pretty_data_tree(get_tree())
-        output = ''
-        #output += '<div style="center">'
-        logging.info(str(module_data))
-        output += (
-            '''<table border=0 style="
-                    border-collapse: collapse;
-                    width: 800px;
-                    height: 500px;
-                    margin-left: -250px;
-                    margin-top: -400px;
-                    top: 50%;
-                    left: 50%;
-                ">''')
-        output += '<tr>'
+        module_data = pretty_data_tree(get_tree(), colours)
+        logging.info('module_data: '+str(module_data))
+        tree = []
+        fragment_num = 0
         for fragment in module_data:
-            output += '<td style="width: 50px; height: 50px; '
-            output += ('background-color: %s;">%s</td>' %
-                (random.choice(colours), fragment))
-        output += '</table>'
-        self.response.write(output)
+            if fragment_num % 10 == 0:
+                module_data[fragment]['row'] = True
+            else:
+                module_data[fragment]['row'] = False
+            tree.append(module_data[fragment])
+            fragment_num += 1
+        dorender(self, 'tree_pretty.html', {'tree': tree})
 
 
 
@@ -172,7 +176,7 @@ class TreeHandler(webapp2.RequestHandler):
         self.response.write('POST not handled at this URI')
 
 
-def pretty_data_tree(data):
+def pretty_data_tree(data, colours):
     "given a data tree, will return a dict version"
     output = {}
     for fragment in data:
@@ -184,6 +188,7 @@ def pretty_data_tree(data):
             output[cur_path]['type'] = module_data['Type']
             output[cur_path]['name'] = module_data['Name']
             output[cur_path]['Version'] = module_data['Version']
+            output[cur_path]['background'] = random.choice(colours)
     return output
 
 

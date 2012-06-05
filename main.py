@@ -23,26 +23,29 @@ files and provides said files in their original formats, ready to be served to
 the DCPUToolchain executables that make use of them.
 """
 
-
+# generic imports
 import hashlib
-import urllib
 import base64
 import json
 import logging
-import re
 
+# gooogle appengine imports
 import webapp2
-from mailer import sendmail
 from google.appengine.api import memcache
 
+# the humans.py file
 from humans import HomeHandler
 from humans import PrettyTreeHandler
 from humans import TreeHandler
 from humans import HumanSearch
 from humans import RedirectToHumanHandler
 
-from utils import get_url_content
-from utils import get_tree
+# the mailer.py file
+from mailer import sendmail
+
+# the dtmm_utils file
+from dtmm_utils import get_url_content
+from dtmm_utils import get_tree
 
 
 
@@ -95,6 +98,9 @@ class ListModulesHandler(webapp2.RequestHandler):
                     str(fragment['path'].split('/')[-1]) + '\n')
 
 
+# depreciated, now the smart flusher is used.
+# though afaik the smart flusher is non
+# operational
 def flusher(handler):
     "Performs a memcache flush"
     try:
@@ -102,6 +108,14 @@ def flusher(handler):
     except:
         handler.response.out.write('An error occured')
 
+class FlushHandler(webapp2.RequestHandler):
+    "Flushes the memcache, like an idiot"
+    def get(self):
+        "handles get requests"
+        flusher(self)
+    def post(self):
+        "handles post requests"
+        flusher(self)
 
 class SmartFlushHandler(webapp2.RequestHandler):
     "Tries to efficiently flush the memcache"
