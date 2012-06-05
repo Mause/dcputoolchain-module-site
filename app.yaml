@@ -1,10 +1,13 @@
 application: dcputoolchain-module-site
-version: 1-0020
+version: 1-0022
 runtime: python27
 api_version: 1
 threadsafe: no
 
 handlers:
+- url: /static
+  static_dir: static
+
 - url: /favicon\.ico
   static_files: favicon.ico
   upload: favicon\.ico
