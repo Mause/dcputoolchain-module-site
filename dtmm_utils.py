@@ -51,11 +51,11 @@ TIMEOUT = 10
 #};
 
 
-def get_module_data(fragment):
+def get_module_data(handler, fragment):
     """Given a get_tree fragment,
     returns module data in a python dict"""
     file_data = base64.b64decode(
-        get_url_content(
+        get_url_content(handler,
             fragment['url'])['content'])
     module_data = (
         re.search('MODULE\s*=\s*\{([^}]*)\}',

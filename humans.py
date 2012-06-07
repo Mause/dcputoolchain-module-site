@@ -65,7 +65,7 @@ class PrettyTreeHandler(webapp2.RequestHandler):
     "Basically the same as /tree, but pretty <3"
     def get(self):
         "handles get requests"
-        module_data = pretty_data_tree(get_tree(self), pretty_colours(500))
+        module_data = pretty_data_tree(self, get_tree(self), pretty_colours(500))
         tree = []
         fragment_num = 0
         break_on = 3
@@ -111,7 +111,7 @@ class TreeHandler(webapp2.RequestHandler):
         output = ''
         output = ('<h2>Basic overview</h2>')
         data = get_tree(self)
-        output += data_tree(data)
+        output += data_tree(self, data)
         self.response.write(output)
 
     def post(self):
@@ -131,7 +131,7 @@ class InspectHandler(webapp2.RequestHandler):
             if fragment != {}:
                 if fragment['path'].split('/')[-1] == module_name:
                     to_give.append(fragment)
-        self.response.write(data_tree(to_give))
+        self.response.write(data_tree(self, to_give))
 
 
 
@@ -170,7 +170,7 @@ class HumanSearch(webapp2.RequestHandler):
         if requested_type != None:
             logging.info('Type was specified: '+str(requested_type))
             for fragment in data:
-                mod_data_frag = get_module_data(fragment)
+                mod_data_frag = get_module_data(self, fragment)
                 if fragment['path'].endswith('.lua'):
                     logging.info(str(requested_type) + ':' +
                         str(mod_data_frag))
@@ -183,7 +183,7 @@ class HumanSearch(webapp2.RequestHandler):
                 if fragment['path'].endswith('.lua'):
                     if query in fragment['path'].split('/')[-1]:
                         output.append(fragment)
-        self.response.out.write(data_tree(output))
+        self.response.out.write(data_tree(self, output))
 
 
 def iround(num):
@@ -214,13 +214,13 @@ def pretty_colours(how_many):
     return final_colours
 
 
-def pretty_data_tree(data, colours=None):
+def pretty_data_tree(handler, data, colours=None):
     "given a data tree, will return a dict version"
     output = {}
     for fragment in data:
         if fragment['path'].endswith('.lua'):
             cur_path = str(fragment['path'].split('/')[-1])
-            module_data = get_module_data(fragment)
+            module_data = get_module_data(handler, fragment)
             output[cur_path] = {}
             output[cur_path]['filename'] = cur_path
             output[cur_path]['type'] = module_data['Type']
@@ -231,13 +231,13 @@ def pretty_data_tree(data, colours=None):
     return output
 
 
-def data_tree(data):
+def data_tree(handler, data):
     "given a data tree, will return a html-based representation"
     output = ''
     for fragment in data:
         if fragment['path'].endswith('.lua'):
             cur_path = str(fragment['path'].split('/')[-1])
-            module_data = get_module_data(fragment)
+            module_data = get_module_data(handler, fragment)
             output += '<h4>MODULE</h4>'
             output += '<ul>'     # start the list
             output += '<li>Filename: %s</li>' % cur_path
