@@ -7,32 +7,29 @@
         <div style="width:
         {% ifnotequal breadcrumb.width '' %}{{ breadcrumb.width }}{% else %}50{% endifnotequal %}px; display: block;
         float: left; height: 50px; background-color: {{ breadcrumb.background }};">
-        	<span class="filename"><a href="/human/inspect?name={{ breadcrumb.filename }}">{{ breadcrumb.filename }}</a></span>
+        	<a class="filename" href="/human/inspect?name={{ breadcrumb.filename }}">{{ breadcrumb.filename }}</a>
 	    </div>
 	{% endfor %}
 </div>
 
 <style type="text/css">
 	.filename {
-		/*top: 3px;*/
-		margin: 7px;
+		/*margin: 7px;*/
+		a:link { color: #000000; }      /* unvisited link */
+		a:visited { color:black; }  /* visited link */
+		a:hover {color:black;}  /* mouse over link */
+		a:active {color:black;}  /* selected link */
 	}
 	.container {
 		border-collapse: collapse;
-		/*overflow: hidden;*/
 		top: 50%;
 		left: 50%;
 		font-color: white;
-		/*font-size: 30px;*/
 		font-family: 'Segoe UI Light','Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;
 		font-weight: 500;
 		line-height: 130%;
 		position: absolute;
 		text-align: center;
-		a:link {color:black;}      /* unvisited link */
-		a:visited {color:black;}  /* visited link */
-		a:hover {color:black;}  /* mouse over link */
-		a:active {color:black;}  /* selected link */
 		width: {{ calc.width }}px;
 		margin-left: -{{ calc.margin_width }}px;
 		height: {{ calc.height }}px;
