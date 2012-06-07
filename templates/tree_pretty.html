@@ -1,28 +1,37 @@
+<div border=5 class="container">
+	{% for breadcrumb in tree %}
+		{% ifequal breadcrumb.row 'yes' %}
+		</br></br>
+		<!-- row == true!-->
+		{% endifequal %}
+        <div style="width:
+        {% ifnotequal breadcrumb.width '' %}{{ breadcrumb.width }}{% else %}50{% endifnotequal %}px; display: block;
+        float: left; height: 50px; background-color: {{ breadcrumb.background }};">
+        	<span class="filename"><a href="/human/inspect?name={{ breadcrumb.filename }}">{{ breadcrumb.filename }}</a></span>
+	    </div>
+	{% endfor %}
+</div>
+
 <style type="text/css">
+	.filename {
+		/*top: 3px;*/
+		margin: 7px;
+	}
 	.container {
 		border-collapse: collapse;
-		width: 800px;
-		height: 500px;
-		margin-left: -400px;
-		margin-right: -400px;
-		margin-top: -250px;
+		/*overflow: hidden;*/
 		top: 50%;
 		left: 50%;
-		font-color: black;
+		font-color: white;
+		/*font-size: 30px;*/
+		font-family: 'Segoe UI Light','Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;
+		font-weight: 500;
+		line-height: 130%;
 		position: absolute;
+		text-align: center;
+		width: {{ calc.width }}px;
+		margin-left: -{{ calc.margin_width }}px;
+		height: {{ calc.height }}px;
+		margin-top: -{{ calc.margin_height }}px;
 	}
 </style>
-
-<table border=0 class="container">
-	<tr>
-	{% for breadcrumb in tree %}
-		{% ifequal breadcrumb.row True %}
-		</tr>
-		<tr>
-		{% endifequal %}	
-        <td style="width: 50px; height: 50px; background-color: {{ breadcrumb.background }};">
-        	{{ breadcrumb.filename }}
-	    </td>
-	{% endfor %}
-	</tr>
-</table>

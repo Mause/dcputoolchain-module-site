@@ -34,6 +34,7 @@ from colorsys import hsv_to_rgb
 from dtmm_utils import get_module_data
 from dtmm_utils import get_tree
 from dtmm_utils import dorender
+from dtmm_utils import FourOhFourErrorLog
 
 # google appengine imports
 import webapp2
@@ -44,7 +45,9 @@ class RedirectToHumanHandler(webapp2.RequestHandler):
     def get(self):
         "handles get requests"
         self.redirect('/human')
-
+    def post(self):
+        "handles post requests"
+        self.redirect('/human')
 
 class HomeHandler(webapp2.RequestHandler):
     "Returns a list of the human pages"
@@ -52,7 +55,7 @@ class HomeHandler(webapp2.RequestHandler):
         "handles get requests"
         output = ''
         output += '<ul>'
-        pages = ['search', 'tree', 'tree/pretty']
+        pages = ['search', 'tree', 'tree/pretty', 'listing']
         for page in pages:
             output += '<li><a href="/human/%s">%s</a></li>' % (page, page)
         self.response.write(output)
@@ -62,18 +65,43 @@ class PrettyTreeHandler(webapp2.RequestHandler):
     "Basically the same as /tree, but pretty <3"
     def get(self):
         "handles get requests"
-        module_data = pretty_data_tree(get_tree(), pretty_colours(50))
-        logging.info('module_data: '+str(module_data))
+        module_data = pretty_data_tree(get_tree(self), pretty_colours(500))
         tree = []
         fragment_num = 0
+        break_on = 3
+        cell_height = 50 # in pixels :D
         for fragment in module_data:
-            if fragment_num % 10 == 0:
-                module_data[fragment]['row'] = True
+            if fragment_num % break_on == 0:
+                module_data[fragment]['row'] = 'yes'
             else:
-                module_data[fragment]['row'] = False
+                module_data[fragment]['row'] = 'no'
+            module_data[fragment]['width'] = ''
             tree.append(module_data[fragment])
             fragment_num += 1
-        dorender(self, 'tree_pretty.html', {'tree': tree})
+        calc = {}
+        if len(module_data) % break_on == 1:
+            calc['height'] = ((((len(module_data)-2)/break_on) +
+                ((len(module_data)-2)%break_on)) *
+                cell_height)
+            calc['margin_height'] = calc['height']/2
+        calc['width'] = 800
+        calc['margin_width'] = calc['width']/2
+        for fragment in tree:
+            fragment['width'] = calc['width']/break_on
+        if len(module_data) % break_on != 0:
+            logging.info(str(len(module_data)) + ' % ' +
+                str(break_on) + ' = ' + str(len(module_data) % break_on))
+            if len(module_data) % break_on == 1:
+                logging.info(str(tree[-1]['filename']))
+                tree[-1]['width'] = calc['width']
+            if len(module_data) % break_on == 2:
+                logging.info(str(tree[-1]['filename']))
+                logging.info(str(tree[-2]['filename']))
+                tree[-1]['width'] = calc['width']/2
+                tree[-2]['width'] = calc['width']/2
+        tree[0]['row'] = 'no'
+        dorender(self, 'tree_pretty.html', {'tree': tree,
+                                            'calc': calc})
 
 
 class TreeHandler(webapp2.RequestHandler):
@@ -82,7 +110,7 @@ class TreeHandler(webapp2.RequestHandler):
         "Handles get requests"
         output = ''
         output = ('<h2>Basic overview</h2>')
-        data = get_tree()
+        data = get_tree(self)
         output += data_tree(data)
         self.response.write(output)
 
@@ -90,6 +118,37 @@ class TreeHandler(webapp2.RequestHandler):
         "Handlers POST requests"
         self.response.write('POST not handled at this URI')
 
+
+class InspectHandler(webapp2.RequestHandler):
+    """Returns a data tree specific to a module"""
+    def get(self):
+        "handlers get requests"
+        data = get_tree(self)
+        to_give = []
+        #logging.info(tree)
+        module_name = self.request.get('name')
+        for fragment in data:
+            if fragment != {}:
+                if fragment['path'].split('/')[-1] == module_name:
+                    to_give.append(fragment)
+        self.response.write(data_tree(to_give))
+
+
+
+class ListingHandler(webapp2.RequestHandler):
+    """Lists failed module requests"""
+    def get(self):
+        "handlers get requests"
+        requests = FourOhFourErrorLog.all()
+        output = ''
+        output += '<strong>These modules were requested by users,'
+        output += ' but they do not exist in the repository</strong></br>'
+        output += 'You may <a href=#>delete</a> these entries if you wish'
+        for fragment in requests:
+            output += (str(fragment.datetimer) + ' - ' +
+                str(fragment.address) + ' - ' +
+                str(fragment.requested_module) + '</br>')
+        self.response.write(output)
 
 class HumanSearch(webapp2.RequestHandler):
     "Handler searching of the repo"
@@ -107,7 +166,7 @@ class HumanSearch(webapp2.RequestHandler):
             requested_type = None
         else:
             requested_type = requested_type.lower()
-        data = get_tree()
+        data = get_tree(self)
         if requested_type != None:
             logging.info('Type was specified: '+str(requested_type))
             for fragment in data:
@@ -135,7 +194,7 @@ def pretty_colours(how_many):
     """uses golden ratio to create pleasant/pretty colours
     returns in rgb form"""
     golden_ratio_conjugate = (1+math.sqrt(5))/2
-    logging.info('golden_ratio_conjugate: ' + str(golden_ratio_conjugate))
+    #logging.info('golden_ratio_conjugate: ' + str(golden_ratio_conjugate))
     hue = random.random()#1,5000) # use random start value
     colours = []
     for tmp in range(how_many):

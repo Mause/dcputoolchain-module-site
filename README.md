@@ -5,4 +5,4 @@ This is a simple webapp2 based application for the Google App Engine PaaS; it us
 It decodes the json returned by the API and the thence linked to base64 encoded files and provides said files in their original formats, ready to be served to the DCPUToolchain executables that make use of them.
 
 
-Also, if you make use of some of the code here, please let me know and/or attribute some credit to me :) :smile:
+Also, if you make use of some of the code here, please let me know and/or attribute some credit to me :smile:

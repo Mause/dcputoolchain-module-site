@@ -38,6 +38,8 @@ from humans import PrettyTreeHandler
 from humans import TreeHandler
 from humans import HumanSearch
 from humans import RedirectToHumanHandler
+from humans import ListingHandler
+from humans import InspectHandler
 
 # the mailer.py file
 from mailer import sendmail
@@ -45,6 +47,7 @@ from mailer import sendmail
 # the dtmm_utils file
 from dtmm_utils import get_url_content
 from dtmm_utils import get_tree
+from dtmm_utils import FourOhFourErrorLog
 
 
 
@@ -55,7 +58,7 @@ class SearchModulesHandler(webapp2.RequestHandler):
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'
         query = self.request.get('q')
-        data = get_tree()
+        data = get_tree(self)
         for fragment in data:
             if (fragment['path'].endswith('.lua') and
                 query in fragment['path'].split('/')[-1]):
@@ -69,14 +72,19 @@ class DownloadModulesHandler(webapp2.RequestHandler):
         "Handlers get requests"
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'
+        module_name = self.request.get('name')
         module_found = False
-        data = get_tree()
+        data = get_tree(self)
         for fragment in data:
-            if fragment['path'].split('/')[-1] == self.request.get('name'):
-                module_found = True
-                self.response.out.write(base64.b64decode(
-                    get_url_content(fragment['url'])['content']))
+            if fragment != {}:
+                if fragment['path'].split('/')[-1] == module_name:
+                    module_found = True
+                    self.response.out.write(base64.b64decode(
+                        get_url_content(self, fragment['url'])['content']))
         if not module_found:
+            logging.info("Module not found: "+str(module_name))
+            entry = FourOhFourErrorLog(address=self.request.remote_addr, requested_module=str(module_name))
+            entry.put()
             self.error(404)
 
     def post(self):
@@ -90,7 +98,7 @@ class ListModulesHandler(webapp2.RequestHandler):
         "Handlers get requests"
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'
-        data = get_tree()
+        data = get_tree(self)
         for fragment in data:
             if fragment['path'].endswith('.lua'):
                 self.response.out.write(
@@ -151,7 +159,7 @@ class SmartFlushHandler(webapp2.RequestHandler):
                     memcache.delete(changed_file)
                     try:
                         info_dict[str(changed_file)] = True
-                    except:
+                    except KeyError:
                         pass
             sendmail(
                 'Here is a list \n\n' +
@@ -175,7 +183,7 @@ class SmartFlushHandler(webapp2.RequestHandler):
             added_files += commit['added']
         if len(added_files) != 0 and added_files != []:
             files_changed = True
-            get_tree()
+            get_tree(self)
         if not files_changed:
             sendmail('Odd. No files were changed in this commit')
 
@@ -185,12 +193,15 @@ app = webapp2.WSGIApplication([
     (r'/human/tree/pretty', PrettyTreeHandler),
     (r'/human/tree*', TreeHandler),
     (r'/human/search*', HumanSearch),
+    (r'/human/listing', ListingHandler),
+    (r'/human/inspect', InspectHandler),
     (r'/human/*', HomeHandler),
     (r'/human*', HomeHandler),
     (r'/modules/search*', SearchModulesHandler),
     (r'/modules/download*', DownloadModulesHandler),
     (r'/modules/list', ListModulesHandler),
-    (r'/flush', SmartFlushHandler),
+#    (r'/flush', SmartFlushHandler),
+    (r'/flush', FlushHandler),
     (r'/', RedirectToHumanHandler)
     ], debug=True)
 
