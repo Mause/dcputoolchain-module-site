@@ -18,9 +18,8 @@
 contains some functions
 required by both main.py and humans.py
 """
-
-
-
+# this could be dangerous D:
+from __future__ import division
 
 # generic imports
 import logging
@@ -38,6 +37,9 @@ from slpp import slpp as lua
 from google.appengine.ext import db
 from google.appengine.api import memcache
 from google.appengine.ext.webapp import template
+
+
+
 
 # timeout for urlopen functions
 TIMEOUT = 10

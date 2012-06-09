@@ -65,7 +65,7 @@ class PrettyTreeHandler(webapp2.RequestHandler):
     "Basically the same as /tree, but pretty <3"
     def get(self):
         "handles get requests"
-        module_data = pretty_data_tree(self, get_tree(self), pretty_colours(500))
+        module_data = pretty_data_tree(self, get_tree(self), pretty_colours(50))
         tree = []
         fragment_num = 0
         break_on = 3
@@ -84,7 +84,7 @@ class PrettyTreeHandler(webapp2.RequestHandler):
                 ((len(module_data)-2)%break_on)) *
                 cell_height)
             calc['margin_height'] = calc['height']/2
-        calc['width'] = 800
+        calc['width'] = 900
         calc['margin_width'] = calc['width']/2
         for fragment in tree:
             fragment['width'] = calc['width']/break_on
@@ -125,12 +125,12 @@ class InspectHandler(webapp2.RequestHandler):
         "handlers get requests"
         data = get_tree(self)
         to_give = []
-        #logging.info(tree)
         module_name = self.request.get('name')
         for fragment in data:
             if fragment != {}:
                 if fragment['path'].split('/')[-1] == module_name:
                     to_give.append(fragment)
+        logging.info(str(to_give))
         self.response.write(data_tree(self, to_give))
 
 
@@ -154,36 +154,51 @@ class HumanSearch(webapp2.RequestHandler):
     "Handler searching of the repo"
     def get(self):
         "provides search interface"
-        dorender(self, 'human_search.html', {})
+        query = self.request.get('q')
+        requested_type = self.request.get('type')
+        if query == None and requested_type == None:
+            dorender(self, 'human_search.html', {})
+        else:
+            output = search(self, query, requested_type)
+            self.response.out.write(data_tree(self, output))
+
 
     def post(self):
         "Handles get requests"
         query = self.request.get('q')
         requested_type = self.request.get('type')
-        module_types = ['preprocessor', 'debugger', 'hardware']
-        output = []
-        if requested_type.lower() not in module_types:
-            requested_type = None
-        else:
-            requested_type = requested_type.lower()
-        data = get_tree(self)
-        if requested_type != None:
-            logging.info('Type was specified: '+str(requested_type))
-            for fragment in data:
-                mod_data_frag = get_module_data(self, fragment)
-                if fragment['path'].endswith('.lua'):
-                    logging.info(str(requested_type) + ':' +
-                        str(mod_data_frag))
-                    if query in fragment['path'].split('/')[-1]:
-                        if requested_type == mod_data_frag['Type'].lower():
-                            output.append(fragment)
-        else:
-            logging.info('Type was not specified')
-            for fragment in data:
-                if fragment['path'].endswith('.lua'):
-                    if query in fragment['path'].split('/')[-1]:
-                        output.append(fragment)
+        output = search(self, query, requested_type)
         self.response.out.write(data_tree(self, output))
+
+
+def search(handler, query, requested_type):
+    "filters fragment accourding to input"
+    module_types = ['preprocessor', 'debugger', 'hardware']
+    output = []
+    if requested_type.lower() not in module_types:
+        requested_type = None
+    else:
+        requested_type = requested_type.lower()
+    data = get_tree(handler)
+    if requested_type != None:
+        logging.info('Type was specified: '+str(requested_type))
+        for fragment in data:
+            mod_data_frag = get_module_data(handler, fragment)
+            if fragment['path'].endswith('.lua'):
+#                logging.info(str(requested_type) + ':' +
+ #                   str(mod_data_frag))
+                if query in fragment['path'].split('/')[-1]:
+                    if requested_type == mod_data_frag['Type'].lower():
+                        output.append(fragment)
+    else:
+        logging.info('Type was not specified')
+        for fragment in data:
+            if fragment['path'].endswith('.lua'):
+                if query in fragment['path'].split('/')[-1]:
+                    output.append(fragment)
+    return output
+
+
 
 
 def iround(num):
@@ -194,8 +209,7 @@ def pretty_colours(how_many):
     """uses golden ratio to create pleasant/pretty colours
     returns in rgb form"""
     golden_ratio_conjugate = (1+math.sqrt(5))/2
-    #logging.info('golden_ratio_conjugate: ' + str(golden_ratio_conjugate))
-    hue = random.random()#1,5000) # use random start value
+    hue = random.random()  # use random start value
     colours = []
     for tmp in range(how_many):
         hue += golden_ratio_conjugate*(tmp/(5*random.random()))
@@ -214,9 +228,12 @@ def pretty_colours(how_many):
     return final_colours
 
 
+# the theory for this colour generator was taken from;
+# martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
 def pretty_data_tree(handler, data, colours=None):
     "given a data tree, will return a dict version"
     output = {}
+    colour_num = 0
     for fragment in data:
         if fragment['path'].endswith('.lua'):
             cur_path = str(fragment['path'].split('/')[-1])
@@ -227,7 +244,9 @@ def pretty_data_tree(handler, data, colours=None):
             output[cur_path]['name'] = module_data['Name']
             output[cur_path]['Version'] = module_data['Version']
             if colours != None:
-                output[cur_path]['background'] = random.choice(colours)
+                output[cur_path]['background'] = colours[colour_num]
+                #random.choice(colours)
+                colour_num += 1
     return output
 
 
@@ -238,11 +257,14 @@ def data_tree(handler, data):
         if fragment['path'].endswith('.lua'):
             cur_path = str(fragment['path'].split('/')[-1])
             module_data = get_module_data(handler, fragment)
-            output += '<h4>MODULE</h4>'
-            output += '<ul>'     # start the list
-            output += '<li>Filename: %s</li>' % cur_path
-            output += '<li>Type: %s</li>' % module_data['Type']
-            output += '<li>Name: %s</li>' % module_data['Name']
-            output += '<li>Version: %s</li>' % module_data['Version']
-            output += '</ul>'    # end the list
+            output += '<h4>MODULE</h4>\n'
+            output += '<ul>\n'     # start the list
+            #output += str(fragment)
+            output += ('''<li>Filename: <a href="/modules/download?name=%s">%s
+                </a></li>\n''' % (cur_path, cur_path))
+            output += ('<li>Type: <a href="/human/search?type=%s">%s</a></li>\n'
+                % (module_data['Type'], module_data['Type']))
+            output += '<li>Name: %s</li>\n' % module_data['Name']
+            output += '<li>Version: %s</li>\n' % module_data['Version']
+            output += '</ul>\n'    # end the list
     return output
