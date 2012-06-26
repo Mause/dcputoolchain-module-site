@@ -46,11 +46,43 @@ TIMEOUT = 10
 
 
 
-# MODULE = {
-#  Type = "Preprocessor",
-#  Name = ".ASSERT directive",
-#  Version = "1.0"
+#MODULE = {
+#    Type = "Hardware",
+#    Name = "HMD2043",
+#    Version = "1.1"
 #};
+
+#HARDWARE = {
+#    ID = 0x74fa4cae,
+#    Version = 0x07c2,
+#    Manufacturer = 0x21544948 -- HAROLD_IT 
+#};
+
+
+def get_hardware_data(handler, fragment):
+    """Given a get_tree fragment,
+    returns hardware data in a python dict"""
+    file_data = base64.b64decode(
+        get_url_content(handler,
+            fragment['url'])['content'])
+    hardware_data = (
+        re.search('HARDWARE\s*=\s*\{([^}]*)\}',
+                  file_data))
+    try:
+        hardware_data = hardware_data.group(0)
+        hardware_data = hardware_data.strip('HARDWARE=')
+        hardware_data = hardware_data.strip('HARDWARE =')
+        hardware_data = lua.decode(hardware_data)
+    except AttributeError:
+        logging.info('hardware_data: ' + str(hardware_data))
+    logging.info('hardware_data: ' + str(hardware_data))
+    new_output = {}
+    new_output['Version'] = '0'+str(hardware_data[1])
+    new_output['ID'] = '0'+str(hardware_data[3])
+    new_output['Manufacturer'] = '0'+str(hardware_data[5])
+    #return hardware_data
+    return new_output
+
 
 
 def get_module_data(handler, fragment):

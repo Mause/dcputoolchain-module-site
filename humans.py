@@ -32,6 +32,7 @@ from colorsys import hsv_to_rgb
 
 # the dtmm_utils file
 from dtmm_utils import get_module_data
+from dtmm_utils import get_hardware_data
 from dtmm_utils import get_tree
 from dtmm_utils import dorender
 from dtmm_utils import FourOhFourErrorLog
@@ -143,24 +144,25 @@ class ListingHandler(webapp2.RequestHandler):
         output = ''
         output += '<strong>These modules were requested by users,'
         output += ' but they do not exist in the repository</strong></br>'
-        output += 'You may <a href=#>delete</a> these entries if you wish'
+        output += 'You may <a href=#>delete</a> these entries if you wish<br>'
         for fragment in requests:
             output += (str(fragment.datetimer) + ' - ' +
                 str(fragment.address) + ' - ' +
                 str(fragment.requested_module) + '</br>')
         self.response.write(output)
 
+
 class HumanSearch(webapp2.RequestHandler):
     "Handler searching of the repo"
     def get(self):
         "provides search interface"
-        query = self.request.get('q')
-        requested_type = self.request.get('type')
-        if query == None and requested_type == None:
-            dorender(self, 'human_search.html', {})
-        else:
-            output = search(self, query, requested_type)
-            self.response.out.write(data_tree(self, output))
+        #query = self.request.get('q')
+        #requested_type = self.request.get('type')
+        #if query == None and requested_type == None:
+        dorender(self, 'human_search.html', {})
+        #else:
+         #   output = search(self, query, requested_type)
+          #  self.response.out.write(data_tree(self, output))
 
 
     def post(self):
@@ -266,5 +268,13 @@ def data_tree(handler, data):
                 % (module_data['Type'], module_data['Type']))
             output += '<li>Name: %s</li>\n' % module_data['Name']
             output += '<li>Version: %s</li>\n' % module_data['Version']
+            if module_data['Type'].lower() == 'hardware':
+                hardware_data = get_hardware_data(handler, fragment)
+                output += "</br>"
+                output += "<li>Hardware ID: %s</li>" % str(hardware_data['ID'])
+                output += ("<li>Hardware version: %s</li>" %
+                    str(hardware_data['Version']))
+                output += ("<li>Hardware Manufacturer: %s</li>" %
+                    str(hardware_data['Manufacturer']))
             output += '</ul>\n'    # end the list
     return output
