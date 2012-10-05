@@ -1,5 +1,6 @@
 import re
 
+
 class SLPP:
     """Provides a number of function for interpreting lua in python"""
     def __init__(self):
@@ -45,14 +46,14 @@ class SLPP:
             s += str(obj).lower()
         elif tp in [list, tuple, dict]:
             self.depth += 1
-            if len(obj) == 0 or ( tp is not dict and len(filter( 
+            if len(obj) == 0 or (tp is not dict and len(filter(
                     lambda x:  type(x) in (int,  float,  long) \
                     or (type(x) is str and len(x) < 10),  obj
-                )) == len(obj) ):
+                )) == len(obj)):
                 newline = tab = ''
-            dp = tab * self.depth            
+            dp = tab * self.depth
             s += "%s{%s" % (tab * (self.depth - 2), newline)
-            if tp is dict:                
+            if tp is dict:
                 s += (',%s' % newline).join(
                     [self.__encode(v) if type(k) is int \
                         else dp + '%s = %s' % (k, self.__encode(v)) \
@@ -119,7 +120,7 @@ class SLPP:
         if self.ch and self.ch == '}':
             self.depth -= 1
             self.next_chr()
-            return o #Exit here
+            return o  # Exit here
         else:
             while self.ch:
                 self.white()
@@ -131,13 +132,13 @@ class SLPP:
                     self.depth -= 1
                     self.next_chr()
                     if k:
-                       o[idx] = k
-                    if not numeric_keys and len([ key for key in o if type(key) in (str,  float,  bool,  tuple)]) == 0:
+                        o[idx] = k
+                    if not numeric_keys and len([key for key in o if type(key) in (str,  float,  bool,  tuple)]) == 0:
                         ar = []
-                        for key in o: 
-                           ar.insert(key, o[key])
+                        for key in o:
+                            ar.insert(key, o[key])
                         o = ar
-                    return o #or here
+                    return o  # or here
                 else:
                     if self.ch == ',':
                         self.next_chr()
@@ -160,12 +161,12 @@ class SLPP:
                         o[idx] = k
                         idx += 1
                         k = ''
-        print "Unexpected end of table while parsing Lua string."#Bad exit here
+        print "Unexpected end of table while parsing Lua string."  # Bad exit here
 
     def word(self):
         s = ''
         if self.ch != '\n':
-          s = self.ch
+            s = self.ch
         while self.next_chr():
             if self.alnum.match(self.ch):
                 s += self.ch
@@ -196,7 +197,7 @@ class SLPP:
             self.next_chr()
             if not self.ch or not self.ch.isdigit():
                 print "Malformed number %s (no digits after decimal point)" % self.ch
-                return n+'0'
+                return n + '0'
             else:
                 n += self.ch
             while self.ch and self.ch.isdigit():

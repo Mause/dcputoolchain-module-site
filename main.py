@@ -50,9 +50,8 @@ from dtmm_utils import get_tree
 from dtmm_utils import FourOhFourErrorLog
 
 
-
 class SearchModulesHandler(webapp2.RequestHandler):
-    "Handler searching of the repo"
+    "Handle searching of the repo"
     def get(self):
         "Handles get requests"
         self.response.headers['Content-Type'] = 'text/plain'
@@ -82,7 +81,7 @@ class DownloadModulesHandler(webapp2.RequestHandler):
                     self.response.out.write(base64.b64decode(
                         get_url_content(self, fragment['url'])['content']))
         if not module_found:
-            logging.info("Module not found: "+str(module_name))
+            logging.info("Module not found: " + str(module_name))
             entry = FourOhFourErrorLog(address=self.request.remote_addr, requested_module=str(module_name))
             entry.put()
             self.error(404)
@@ -116,9 +115,11 @@ class FlushHandler(webapp2.RequestHandler):
     def get(self):
         "handles get requests"
         flusher(self)
+
     def post(self):
         "handles post requests"
         flusher(self)
+
 
 class SmartFlushHandler(webapp2.RequestHandler):
     "Tries to efficiently flush the memcache"
@@ -188,7 +189,6 @@ class SmartFlushHandler(webapp2.RequestHandler):
             sendmail('Odd. No files were changed in this commit')
 
 
-
 app = webapp2.WSGIApplication([
     (r'/human/tree/pretty', PrettyTreeHandler),
     (r'/human/tree*', TreeHandler),
@@ -204,12 +204,3 @@ app = webapp2.WSGIApplication([
     (r'/flush', FlushHandler),
     (r'/', RedirectToHumanHandler)
     ], debug=True)
-
-
-def main():
-    "Runs the paste httpserver"
-    from paste import httpserver
-    httpserver.serve(app, host='0.0.0.0', port='8010')
-
-if __name__ == '__main__':
-    main()

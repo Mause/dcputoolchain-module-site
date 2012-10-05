@@ -21,7 +21,6 @@ in a variety of ways :)
 """
 
 
-
 # generic imports
 import math
 import random
@@ -46,9 +45,11 @@ class RedirectToHumanHandler(webapp2.RequestHandler):
     def get(self):
         "handles get requests"
         self.redirect('/human')
+
     def post(self):
         "handles post requests"
         self.redirect('/human')
+
 
 class HomeHandler(webapp2.RequestHandler):
     "Returns a list of the human pages"
@@ -70,7 +71,7 @@ class PrettyTreeHandler(webapp2.RequestHandler):
         tree = []
         fragment_num = 0
         break_on = 3
-        cell_height = 50 # in pixels :D
+        cell_height = 50  # in pixels :D
         for fragment in module_data:
             if fragment_num % break_on == 0:
                 module_data[fragment]['row'] = 'yes'
@@ -81,14 +82,14 @@ class PrettyTreeHandler(webapp2.RequestHandler):
             fragment_num += 1
         calc = {}
         if len(module_data) % break_on == 1:
-            calc['height'] = ((((len(module_data)-2)/break_on) +
-                ((len(module_data)-2)%break_on)) *
+            calc['height'] = ((((len(module_data) - 2) / break_on) +
+                ((len(module_data) - 2) % break_on)) *
                 cell_height)
-            calc['margin_height'] = calc['height']/2
+            calc['margin_height'] = calc['height'] / 2
         calc['width'] = 900
-        calc['margin_width'] = calc['width']/2
+        calc['margin_width'] = calc['width'] / 2
         for fragment in tree:
-            fragment['width'] = calc['width']/break_on
+            fragment['width'] = calc['width'] / break_on
         if len(module_data) % break_on != 0:
             logging.info(str(len(module_data)) + ' % ' +
                 str(break_on) + ' = ' + str(len(module_data) % break_on))
@@ -98,8 +99,8 @@ class PrettyTreeHandler(webapp2.RequestHandler):
             if len(module_data) % break_on == 2:
                 logging.info(str(tree[-1]['filename']))
                 logging.info(str(tree[-2]['filename']))
-                tree[-1]['width'] = calc['width']/2
-                tree[-2]['width'] = calc['width']/2
+                tree[-1]['width'] = calc['width'] / 2
+                tree[-2]['width'] = calc['width'] / 2
         tree[0]['row'] = 'no'
         dorender(self, 'tree_pretty.html', {'tree': tree,
                                             'calc': calc})
@@ -135,7 +136,6 @@ class InspectHandler(webapp2.RequestHandler):
         self.response.write(data_tree(self, to_give))
 
 
-
 class ListingHandler(webapp2.RequestHandler):
     """Lists failed module requests"""
     def get(self):
@@ -156,14 +156,7 @@ class HumanSearch(webapp2.RequestHandler):
     "Handler searching of the repo"
     def get(self):
         "provides search interface"
-        #query = self.request.get('q')
-        #requested_type = self.request.get('type')
-        #if query == None and requested_type == None:
         dorender(self, 'human_search.html', {})
-        #else:
-         #   output = search(self, query, requested_type)
-          #  self.response.out.write(data_tree(self, output))
-
 
     def post(self):
         "Handles get requests"
@@ -183,12 +176,10 @@ def search(handler, query, requested_type):
         requested_type = requested_type.lower()
     data = get_tree(handler)
     if requested_type != None:
-        logging.info('Type was specified: '+str(requested_type))
+        logging.info('Type was specified: ' + str(requested_type))
         for fragment in data:
             mod_data_frag = get_module_data(handler, fragment)
             if fragment['path'].endswith('.lua'):
-#                logging.info(str(requested_type) + ':' +
- #                   str(mod_data_frag))
                 if query in fragment['path'].split('/')[-1]:
                     if requested_type == mod_data_frag['Type'].lower():
                         output.append(fragment)
@@ -201,37 +192,36 @@ def search(handler, query, requested_type):
     return output
 
 
-
-
 def iround(num):
     "returns input rounded and int'ed"
     return int(round(num))
 
-def pretty_colours(how_many):
-    """uses golden ratio to create pleasant/pretty colours
-    returns in rgb form"""
-    golden_ratio_conjugate = (1+math.sqrt(5))/2
-    hue = random.random()  # use random start value
-    colours = []
-    for tmp in range(how_many):
-        hue += golden_ratio_conjugate*(tmp/(5*random.random()))
-        hue = hue % 1
-        colours.append(hsv_to_rgb(hue, 0.5, 0.95))
-
-    logging.info('one colour: '+str(colours[0]))
-    final_colours = []
-    for colour in colours:
-        temp_c = (iround(colour[0]*256),
-            iround(colour[1]*256),
-            iround(colour[2]*256))
-        final_colours.append('rgb('+(str(temp_c[0])+', '+
-            str(temp_c[1])+', '+
-            str(temp_c[2])+')'))
-    return final_colours
-
 
 # the theory for this colour generator was taken from;
 # martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
+def pretty_colours(how_many):
+    """uses golden ratio to create pleasant/pretty colours
+    returns in rgb form"""
+    golden_ratio_conjugate = (1 + math.sqrt(5)) / 2
+    hue = random.random()  # use random start value
+    colours = []
+    for tmp in range(how_many):
+        hue += golden_ratio_conjugate * (tmp / (5 * random.random()))
+        hue = hue % 1
+        colours.append(hsv_to_rgb(hue, 0.5, 0.95))
+
+    logging.info('one colour: ' + str(colours[0]))
+    final_colours = []
+    for colour in colours:
+        temp_c = (iround(colour[0] * 256),
+            iround(colour[1] * 256),
+            iround(colour[2] * 256))
+        final_colours.append('rgb(' + (str(temp_c[0]) + ', ' +
+            str(temp_c[1]) + ', ' +
+            str(temp_c[2]) + ')'))
+    return final_colours
+
+
 def pretty_data_tree(handler, data, colours=None):
     "given a data tree, will return a dict version"
     output = {}

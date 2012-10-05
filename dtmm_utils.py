@@ -39,12 +39,8 @@ from google.appengine.api import memcache
 from google.appengine.ext.webapp import template
 
 
-
-
 # timeout for urlopen functions
 TIMEOUT = 10
-
-
 
 #MODULE = {
 #    Type = "Hardware",
@@ -55,7 +51,7 @@ TIMEOUT = 10
 #HARDWARE = {
 #    ID = 0x74fa4cae,
 #    Version = 0x07c2,
-#    Manufacturer = 0x21544948 -- HAROLD_IT 
+#    Manufacturer = 0x21544948 -- HAROLD_IT
 #};
 
 
@@ -77,12 +73,11 @@ def get_hardware_data(handler, fragment):
         logging.info('hardware_data: ' + str(hardware_data))
     logging.info('hardware_data: ' + str(hardware_data))
     new_output = {}
-    new_output['Version'] = '0'+str(hardware_data[1])
-    new_output['ID'] = '0'+str(hardware_data[3])
-    new_output['Manufacturer'] = '0'+str(hardware_data[5])
+    new_output['Version'] = '0' + str(hardware_data[1])
+    new_output['ID'] = '0' + str(hardware_data[3])
+    new_output['Manufacturer'] = '0' + str(hardware_data[5])
     #return hardware_data
     return new_output
-
 
 
 def get_module_data(handler, fragment):
@@ -104,7 +99,6 @@ def get_module_data(handler, fragment):
     return module_data
 
 
-
 def get_tree(handler):
     """this is a hard coded version of the get_url_content function
     but with extra features"""
@@ -117,10 +111,10 @@ def get_tree(handler):
             str(len(str(result))))
     else:
         logging.info('Getting the result from the GitHub API')
-        try:
-            url_data = urllib2.urlopen(url, timeout = TIMEOUT).read()
-        except timeout:
-            handler.error(408)
+        # try:
+        url_data = urllib2.urlopen(url, timeout=TIMEOUT).read()
+        # except timeout:
+        #     handler.error(408)
         result = json.loads(url_data)
         memcache.set(str('tree'), result, 86400)
     logging.info('Okay, done the main part of the get_tree function')
@@ -160,10 +154,10 @@ def get_url_content(handler, url):
         return result
     else:
         logging.info('Getting the result from the GitHub API')
-        try:
-            url_data = urllib2.urlopen(url, timeout = TIMEOUT).read()
-        except timeout:
-            handler.error(408)
+        # try:
+        url_data = urllib2.urlopen(url, timeout=TIMEOUT).read()
+        # except timeout:
+        #     handler.error(408)
         result = json.loads(url_data)
         memcache.set(str(url_hash), result, 3600)
         return result
@@ -181,6 +175,7 @@ def dorender(handler, tname='base.html', values=None):
     else:
         handler.response.out.write(template.render(path, {}))
     return True
+
 
 class FourOhFourErrorLog(db.Model):
     address = db.StringProperty(required=True)

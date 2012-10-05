@@ -11,6 +11,7 @@ class loggr:
 
 logging = loggr()
 
+
 def get_hardware_data(data):
     """Given a get_tree fragment,
     returns hardware data in a python dict"""
@@ -25,12 +26,11 @@ def get_hardware_data(data):
     except AttributeError:
         logging.info('hardware_data: ' + str(hardware_data))
     new_output = {}
-    new_output['Version'] = '0'+str(hardware_data[1])
-    new_output['ID'] = '0'+str(hardware_data[3])
-    new_output['Manufacturer'] = '0'+str(hardware_data[5])
+    new_output['Version'] = '0' + str(hardware_data[1])
+    new_output['ID'] = '0' + str(hardware_data[3])
+    new_output['Manufacturer'] = '0' + str(hardware_data[5])
     #return hardware_data
     return new_output
-
 
 
 def get_module_data(data):
@@ -49,9 +49,6 @@ def get_module_data(data):
     return module_data
 
 
-
-
-
 if __name__ == '__main__':
     if len(sys.argv) == 2:
         if os.path.exists(sys.argv[1]):
@@ -61,7 +58,7 @@ if __name__ == '__main__':
             print 'Name:', module_data['Name']
             print 'Type:', module_data['Type']
             print 'Version:', module_data['Version']
-            print 
+            print
             if module_data['Type'].lower() == 'hardware':
                 hardware_data = get_hardware_data(data)
                 print 'Hardware Version:', hardware_data['Version']
@@ -71,4 +68,3 @@ if __name__ == '__main__':
             print 'File could not be found'
     else:
         print "This program requires at least one argument"
-
