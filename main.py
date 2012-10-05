@@ -199,7 +199,7 @@ app = webapp2.WSGIApplication([
     (r'/human*', HomeHandler),
     (r'/modules/search*', SearchModulesHandler),
     (r'/modules/download*', DownloadModulesHandler),
-#    (r'/modules/list', ListModulesHandler),
+    (r'/modules/list', ListModulesHandler),
 #    (r'/flush', SmartFlushHandler),
     (r'/flush', FlushHandler),
     (r'/', RedirectToHumanHandler)
