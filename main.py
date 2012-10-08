@@ -23,10 +23,16 @@ files and provides said files in their original formats, ready to be served to
 the DCPUToolchain executables that make use of them.
 """
 # generic imports
+import os
+import urllib2
 import hashlib
 import base64
 import json
 import logging
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 # gooogle appengine imports
 import webapp2
@@ -189,6 +195,37 @@ class SmartFlushHandler(webapp2.RequestHandler):
             sendmail('Odd. No files were changed in this commit')
 
 
+class BuildStatusHandler(webapp2.RequestHandler):
+    def get(self, platform):
+        end_status = 'unknown'
+        if platform in ['mac', 'linux', 'windows']:
+            url = 'http://irc.lysdev.com:8080/json/builders/build_for_%s/builds?select=-1&select=-1&as_text=1' % (platform)
+            cached_status = memcache.get('build_status_%s' % (platform))
+            if not cached_status:
+                logging.info('Okay, no cached status, hitting the buildbot')
+                try:
+                    raw_data = json.load(urllib2.urlopen(url))
+                except urllib2.URLError:
+                    logging.info('Could not get the info from the build server')
+                    end_status = 'unknown'
+                else:
+                    if '-1' in raw_data and 'successful' in raw_data['-1']['text']:
+                        logging.info('Builds are passing')
+                        end_status = 'passing'
+                    else:
+                        logging.info('Builds are failing')
+                        end_status = 'failing'
+                memcache.set('build_status_%s' % (platform), end_status, 60)
+            else:
+                logging.info('Cached status found')
+                end_status = cached_status
+
+        filename = os.path.join(os.getcwd(), 'results/%s.png' % (end_status))
+        self.response.headers['Content-Type'] = 'image/png'
+        with open(filename, 'rb') as fh:
+            self.response.write(fh.read())
+
+
 app = webapp2.WSGIApplication([
     (r'/human/tree/pretty', PrettyTreeHandler),
     (r'/human/tree*', TreeHandler),
@@ -200,6 +237,7 @@ app = webapp2.WSGIApplication([
     (r'/modules/search*', SearchModulesHandler),
     (r'/modules/download*', DownloadModulesHandler),
     (r'/modules/list', ListModulesHandler),
+    (r'/status/(?P<platform>.*).png', BuildStatusHandler),
 #    (r'/flush', SmartFlushHandler),
     (r'/flush', FlushHandler),
     (r'/', RedirectToHumanHandler)
