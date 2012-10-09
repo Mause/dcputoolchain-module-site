@@ -24,10 +24,10 @@ the DCPUToolchain executables that make use of them.
 """
 # generic imports
 import os
+import json
+import base64
 import urllib2
 import hashlib
-import base64
-import json
 import logging
 try:
     import json
@@ -92,10 +92,6 @@ class DownloadModulesHandler(webapp2.RequestHandler):
             entry.put()
             self.error(404)
 
-    def post(self):
-        "Handlers post requests"
-        self.response.write('This uri does not handle post requests')
-
 
 class ListModulesHandler(webapp2.RequestHandler):
     "returns a list of accessable modules"
@@ -119,23 +115,19 @@ def flusher(handler):
 class FlushHandler(webapp2.RequestHandler):
     "Flushes the memcache, like an idiot"
     def get(self):
-        "handles get requests"
         flusher(self)
 
     def post(self):
-        "handles post requests"
         flusher(self)
 
 
 class SmartFlushHandler(webapp2.RequestHandler):
     "Tries to efficiently flush the memcache"
     def get(self):
-        "Handles get requests to this uri"
         self.response.out.write(
             'The Smart Flusher Handler can be reached at this address')
 
     def post(self):
-        "Handles post requests to this uri"
         payload = self.request.get('payload')
         payload = json.loads(payload)
         files_changed = False
@@ -197,32 +189,58 @@ class SmartFlushHandler(webapp2.RequestHandler):
 
 class BuildStatusHandler(webapp2.RequestHandler):
     def get(self, platform):
+        # we assume that the build status is unknown
         end_status = 'unknown'
+        # ensure the platform is valid
         if platform in ['mac', 'linux', 'windows']:
+            # create the build status url
             url = 'http://irc.lysdev.com:8080/json/builders/build_for_%s/builds?select=-1&select=-1&as_text=1' % (platform)
+            # check whether the build status is cached
             cached_status = memcache.get('build_status_%s' % (platform))
+            # if it was not cached, or is no longer in the cache
             if not cached_status:
+                # inform the logger of such
                 logging.info('Okay, no cached status, hitting the buildbot')
                 try:
+                    # try to pull build status from the buildbot
                     raw_data = json.load(urllib2.urlopen(url))
                 except urllib2.URLError:
+                    # inform the logger that we could not get the build status
                     logging.info('Could not get the info from the build server')
+                    # if it errors out, set the build status to unknown
+                    # this is done to ensure unambiguity
                     end_status = 'unknown'
                 else:
+                    # if no exceptions occured
                     if '-1' in raw_data and 'successful' in raw_data['-1']['text']:
+                        # if the required fields are available, inform the logger so
                         logging.info('Builds are passing')
+                        # set the build status to 'passing'
                         end_status = 'passing'
                     else:
+                        # if the required fields were not available
+                        # inform the loggerso
                         logging.info('Builds are failing')
+                        # set the build status to 'failing'
                         end_status = 'failing'
+                # cache the end build status
                 memcache.set('build_status_%s' % (platform), end_status, 60)
             else:
+                # if the build status was indeed cached
+                # inform the user so
                 logging.info('Cached status found')
+                # set the build status to the cached build status
                 end_status = cached_status
 
+        # create the filename of the build status image
         filename = os.path.join(os.getcwd(), 'results/%s.png' % (end_status))
+        # prepare to inform the browser of the mime type of the incoming content
         self.response.headers['Content-Type'] = 'image/png'
+        # try to ensure github and the browser do not cache the build status
+        self.response.headers['Cache-Control'] = 'no-Cache'
+        # open the build status image file
         with open(filename, 'rb') as fh:
+            # write the build status image to the buffer
             self.response.write(fh.read())
 
 

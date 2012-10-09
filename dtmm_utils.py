@@ -22,13 +22,13 @@ required by both main.py and humans.py
 from __future__ import division
 
 # generic imports
-import logging
-import base64
-import hashlib
-import json
-import urllib2
 import re
 import os
+import json
+import base64
+import hashlib
+import urllib2
+import logging
 
 # lua interpreter functions
 from slpp import slpp as lua
@@ -111,10 +111,10 @@ def get_tree(handler):
             str(len(str(result))))
     else:
         logging.info('Getting the result from the GitHub API')
-        # try:
-        url_data = urllib2.urlopen(url, timeout=TIMEOUT).read()
-        # except timeout:
-        #     handler.error(408)
+        try:
+            url_data = urllib2.urlopen(url, timeout=TIMEOUT).read()
+        except urllib2.URLError:
+            handler.error(408)
         result = json.loads(url_data)
         memcache.set(str('tree'), result, 86400)
     logging.info('Okay, done the main part of the get_tree function')
@@ -154,10 +154,10 @@ def get_url_content(handler, url):
         return result
     else:
         logging.info('Getting the result from the GitHub API')
-        # try:
-        url_data = urllib2.urlopen(url, timeout=TIMEOUT).read()
-        # except timeout:
-        #     handler.error(408)
+        try:
+            url_data = urllib2.urlopen(url, timeout=TIMEOUT).read()
+        except urllib2.URLError:
+            handler.error(408)
         result = json.loads(url_data)
         memcache.set(str(url_hash), result, 3600)
         return result
