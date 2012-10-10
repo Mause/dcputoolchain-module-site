@@ -1,38 +1,54 @@
-<div border=5 class="container">
+<div class="header"><h1>DCPUToolchain Modules</h1></div>
+<div class="container">
 	{% for breadcrumb in tree %}
 		{% ifequal breadcrumb.row 'yes' %}
 		</br></br>
-		<!-- row == true!-->
 		{% endifequal %}
-        <div style="width:
-        {% ifnotequal breadcrumb.width '' %}{{ breadcrumb.width }}{% else %}50{% endifnotequal %}px; display: block;
-        float: left; height: 50px; background-color: {{ breadcrumb.background }};">
-        	<a class="filename" href="/human/inspect?name={{ breadcrumb.filename }}">{{ breadcrumb.filename }}</a>
-	    </div>
+		<div class="square square{{breadcrumb.index}}">
+			<div class="filename">
+				<a href="/human/inspect?name={{ breadcrumb.filename }}">{{ breadcrumb.filename }}</a>
+			</div>
+		</div>
 	{% endfor %}
 </div>
 
 <style type="text/css">
+	a {text-decoration: none}
+	a:link { color: #000000; }      /* unvisited link */
+	a:visited { color:black; }  /* visited link */
+	a:hover {color:black;}  /* mouse over link */
+	a:active {color:black;}  /* selected link */
+	.header {
+		font-family: 'Segoe UI Light','Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;
+		margin-bottom: -29px;
+	}
 	.filename {
-		/*margin: 7px;*/
-		a:link { color: #000000; }      /* unvisited link */
-		a:visited { color:black; }  /* visited link */
-		a:hover {color:black;}  /* mouse over link */
-		a:active {color:black;}  /* selected link */
+		margin-top: 11px;
+		font-family: 'Segoe UI Light','Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;
+		font-weight: 500;
+		font-size: 20px;
+		line-height: 100%;
+		text-align: center;
 	}
 	.container {
 		border-collapse: collapse;
 		top: 50%;
 		left: 50%;
-		font-color: white;
-		font-family: 'Segoe UI Light','Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;
-		font-weight: 500;
-		line-height: 130%;
 		position: absolute;
-		text-align: center;
-		width: {{ calc.width }}px;
 		margin-left: -{{ calc.margin_width }}px;
+		width: {{ calc.width }}px;
 		height: {{ calc.height }}px;
 		margin-top: -{{ calc.margin_height }}px;
 	}
+	.square {
+		display: block;
+		float: left;
+		height: 50px;
+	}
+	{% for breadcrumb in tree %}
+	.square{{breadcrumb.index}} {
+		width: {{ breadcrumb.width }}px;
+		background-color: {{breadcrumb.background}};
+	}
+	{% endfor %}
 </style>

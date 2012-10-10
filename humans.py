@@ -20,7 +20,6 @@ to interact with the dtmm server
 in a variety of ways :)
 """
 
-
 # generic imports
 import math
 import random
@@ -66,8 +65,13 @@ class HomeHandler(webapp2.RequestHandler):
 class PrettyTreeHandler(webapp2.RequestHandler):
     "Basically the same as /tree, but pretty <3"
     def get(self):
-        "handles get requests"
-        module_data = pretty_data_tree(self, get_tree(self), pretty_colours(50))
+        data_tree = get_tree(self) + get_tree(self)
+        logging.info(type(data_tree))
+        logging.info('%s:%s' % (len(get_tree(self)), len(data_tree)))
+        module_data = pretty_data_tree(
+            self,
+            data_tree,
+            pretty_colours(len(data_tree)))
         tree = []
         fragment_num = 0
         break_on = 3
@@ -81,24 +85,27 @@ class PrettyTreeHandler(webapp2.RequestHandler):
             tree.append(module_data[fragment])
             fragment_num += 1
         calc = {}
-        if len(module_data) % break_on == 1:
-            calc['height'] = ((((len(module_data) - 2) / break_on) +
-                ((len(module_data) - 2) % break_on)) *
-                cell_height)
-            calc['margin_height'] = calc['height'] / 2
+        rows = len(filter(lambda x: x['row'] == 'yes', tree))
+        logging.info('This many rows; %s' % (rows))
+        # header_diff = 45 + 29
+        calc['height'] = (rows * cell_height)  # + header_diff
+        calc['margin_height'] = calc['height'] / 2
+        # if len(module_data) % break_on == 1:
+        #     calc['height'] = ((((len(module_data) - 2) / break_on) +
+        #         ((len(module_data) - 2) % break_on)) *
+        #         cell_height)
+        #     calc['margin_height'] = calc['height'] / 2
         calc['width'] = 900
         calc['margin_width'] = calc['width'] / 2
+        index = 0
         for fragment in tree:
             fragment['width'] = calc['width'] / break_on
+            fragment['index'] = index
+            index += 1
         if len(module_data) % break_on != 0:
-            logging.info(str(len(module_data)) + ' % ' +
-                str(break_on) + ' = ' + str(len(module_data) % break_on))
             if len(module_data) % break_on == 1:
-                logging.info(str(tree[-1]['filename']))
                 tree[-1]['width'] = calc['width']
             if len(module_data) % break_on == 2:
-                logging.info(str(tree[-1]['filename']))
-                logging.info(str(tree[-2]['filename']))
                 tree[-1]['width'] = calc['width'] / 2
                 tree[-2]['width'] = calc['width'] / 2
         tree[0]['row'] = 'no'
@@ -151,31 +158,71 @@ class ListingHandler(webapp2.RequestHandler):
                 str(fragment.requested_module) + '</br>')
         self.response.write(output)
 
+    def post(self):
+        map(lambda x: x.delete(), FourOhFourErrorLog.all())
+
 
 class HumanSearch(webapp2.RequestHandler):
     "Handler searching of the repo"
     def get(self):
-        "provides search interface"
-        dorender(self, 'human_search.html', {})
+        query = self.request.get('q')
+        requested_type = self.request.get('type')
+        if query or requested_type:
+            output = search(self, query, requested_type)
+            dorender(
+                self,
+                'human_search.html',
+                {'results': data_tree(self, output),
+                'selected_type': requested_type,
+                'types': gen_types(requested_type)})
+        else:
+            dorender(
+                self,
+                'human_search.html',
+                {'selected_type': requested_type,
+                'types': gen_types(requested_type)})
 
     def post(self):
-        "Handles get requests"
         query = self.request.get('q')
         requested_type = self.request.get('type')
         output = search(self, query, requested_type)
-        self.response.out.write(data_tree(self, output))
+        dorender(
+            self,
+            'human_search.html',
+            {'results': data_tree(self, output),
+            'selected_type': requested_type,
+            'types': gen_types(requested_type)})
+
+
+module_types = ['preprocessor', 'debugger', 'hardware', 'optimizer']
+
+
+def gen_types(selected=None):
+    logging.info(str(module_types))
+    final = []
+    for frag in module_types:
+        to_select = ''
+        if selected.lower() == frag.lower():
+            to_select = 'selected'
+        final.append(
+            {'name': frag,
+            'selected': to_select})
+    return final
 
 
 def search(handler, query, requested_type):
     "filters fragment accourding to input"
-    module_types = ['preprocessor', 'debugger', 'hardware']
     output = []
-    if requested_type.lower() not in module_types:
-        requested_type = None
-    else:
-        requested_type = requested_type.lower()
     data = get_tree(handler)
-    if requested_type != None:
+    requested_type = requested_type.lower()
+
+    if requested_type not in module_types:
+        logging.info('Type was not specified')
+        for fragment in data:
+            if fragment['path'].endswith('.lua'):
+                if query in fragment['path'].split('/')[-1]:
+                    output.append(fragment)
+    else:
         logging.info('Type was specified: ' + str(requested_type))
         for fragment in data:
             mod_data_frag = get_module_data(handler, fragment)
@@ -183,12 +230,6 @@ def search(handler, query, requested_type):
                 if query in fragment['path'].split('/')[-1]:
                     if requested_type == mod_data_frag['Type'].lower():
                         output.append(fragment)
-    else:
-        logging.info('Type was not specified')
-        for fragment in data:
-            if fragment['path'].endswith('.lua'):
-                if query in fragment['path'].split('/')[-1]:
-                    output.append(fragment)
     return output
 
 
@@ -204,21 +245,13 @@ def pretty_colours(how_many):
     returns in rgb form"""
     golden_ratio_conjugate = (1 + math.sqrt(5)) / 2
     hue = random.random()  # use random start value
-    colours = []
+    final_colours = []
     for tmp in range(how_many):
         hue += golden_ratio_conjugate * (tmp / (5 * random.random()))
         hue = hue % 1
-        colours.append(hsv_to_rgb(hue, 0.5, 0.95))
-
-    logging.info('one colour: ' + str(colours[0]))
-    final_colours = []
-    for colour in colours:
-        temp_c = (iround(colour[0] * 256),
-            iround(colour[1] * 256),
-            iround(colour[2] * 256))
-        final_colours.append('rgb(' + (str(temp_c[0]) + ', ' +
-            str(temp_c[1]) + ', ' +
-            str(temp_c[2]) + ')'))
+        converted = (hsv_to_rgb(hue, 0.5, 0.95))
+        temp_c = map(lambda x: iround(x * 256), converted)
+        final_colours.append('rgb(%s, %s, %s)' % tuple(temp_c))
     return final_colours
 
 
@@ -228,7 +261,7 @@ def pretty_data_tree(handler, data, colours=None):
     colour_num = 0
     for fragment in data:
         if fragment['path'].endswith('.lua'):
-            cur_path = str(fragment['path'].split('/')[-1])
+            cur_path = str(fragment['path']).split('/')[-1]
             module_data = get_module_data(handler, fragment)
             output[cur_path] = {}
             output[cur_path]['filename'] = cur_path
@@ -237,7 +270,6 @@ def pretty_data_tree(handler, data, colours=None):
             output[cur_path]['Version'] = module_data['Version']
             if colours != None:
                 output[cur_path]['background'] = colours[colour_num]
-                #random.choice(colours)
                 colour_num += 1
     return output
 
@@ -251,7 +283,7 @@ def data_tree(handler, data):
             module_data = get_module_data(handler, fragment)
             output += '<h4>MODULE</h4>\n'
             output += '<ul>\n'     # start the list
-            #output += str(fragment)
+
             output += ('''<li>Filename: <a href="/modules/download?name=%s">%s
                 </a></li>\n''' % (cur_path, cur_path))
             output += ('<li>Type: <a href="/human/search?type=%s">%s</a></li>\n'

@@ -46,6 +46,8 @@ from humans import HumanSearch
 from humans import RedirectToHumanHandler
 from humans import ListingHandler
 from humans import InspectHandler
+from humans import pretty_data_tree
+from humans import pretty_colours
 
 # the mailer.py file
 from mailer import sendmail
@@ -194,7 +196,7 @@ class BuildStatusHandler(webapp2.RequestHandler):
         # ensure the platform is valid
         if platform in ['mac', 'linux', 'windows']:
             # create the build status url
-            url = 'http://irc.lysdev.com:8080/json/builders/build_for_%s/builds?select=-1&select=-1&as_text=1' % (platform)
+            url = 'http://irc.lysdev.com:8080/json/builders/build_for_%s/builds?select=-1&as_text=1' % (platform)
             # check whether the build status is cached
             cached_status = memcache.get('build_status_%s' % (platform))
             # if it was not cached, or is no longer in the cache
@@ -244,19 +246,30 @@ class BuildStatusHandler(webapp2.RequestHandler):
             self.response.write(fh.read())
 
 
+class DebugHandler(webapp2.RequestHandler):
+    def get(self):
+        data_tree = get_tree(self) + get_tree(self)
+        module_data = pretty_data_tree(
+            self,
+            data_tree,
+            pretty_colours(len(data_tree)))
+        for key in module_data.keys():
+            self.response.write('%s: %s</br>' % (key, module_data[key]))
+
+
 app = webapp2.WSGIApplication([
-    (r'/human/tree/pretty', PrettyTreeHandler),
-    (r'/human/tree*', TreeHandler),
-    (r'/human/search*', HumanSearch),
-    (r'/human/listing', ListingHandler),
-    (r'/human/inspect', InspectHandler),
-    (r'/human/*', HomeHandler),
-    (r'/human*', HomeHandler),
-    (r'/modules/search*', SearchModulesHandler),
-    (r'/modules/download*', DownloadModulesHandler),
-    (r'/modules/list', ListModulesHandler),
+    (r'/human/tree/pretty.?', PrettyTreeHandler),
+    (r'/human/tree.?', TreeHandler),
+    (r'/human/search.?', HumanSearch),
+    (r'/human/listing.?', ListingHandler),
+    (r'/human/inspect.?', InspectHandler),
+    (r'/human.?', HomeHandler),
+    (r'/modules/search.?', SearchModulesHandler),
+    (r'/modules/download.?', DownloadModulesHandler),
+    (r'/modules/list.?', ListModulesHandler),
     (r'/status/(?P<platform>.*).png', BuildStatusHandler),
 #    (r'/flush', SmartFlushHandler),
     (r'/flush', FlushHandler),
+    (r'/debug', DebugHandler),
     (r'/', RedirectToHumanHandler)
     ], debug=True)

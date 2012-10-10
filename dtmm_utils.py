@@ -71,7 +71,6 @@ def get_hardware_data(handler, fragment):
         hardware_data = lua.decode(hardware_data)
     except AttributeError:
         logging.info('hardware_data: ' + str(hardware_data))
-    logging.info('hardware_data: ' + str(hardware_data))
     new_output = {}
     new_output['Version'] = '0' + str(hardware_data[1])
     new_output['ID'] = '0' + str(hardware_data[3])
@@ -100,15 +99,15 @@ def get_module_data(handler, fragment):
 
 
 def get_tree(handler):
+    def path_frag(x):
+        return str(x).split('/')[-1]
     """this is a hard coded version of the get_url_content function
     but with extra features"""
     url = 'https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master'
     result = None
-    result = memcache.get(str('tree'))
+    result = memcache.get('tree')
     if result != None:
-        logging.info(
-            'Memcache get successful; got the repo tree\nlength: ' +
-            str(len(str(result))))
+        logging.info('Memcache get successful; got the repo tree')
     else:
         logging.info('Getting the result from the GitHub API')
         try:
@@ -116,7 +115,7 @@ def get_tree(handler):
         except urllib2.URLError:
             handler.error(408)
         result = json.loads(url_data)
-        memcache.set(str('tree'), result, 86400)
+        memcache.set('tree', result, 86400)
     logging.info('Okay, done the main part of the get_tree function')
     # okay, the tree is special,
     # so we have to do some special stuff to it :P
@@ -128,16 +127,14 @@ def get_tree(handler):
             tree.append(data[item])
     tobesent = {}
     for item in items:
-        cur_item = memcache.get(str(item['path']).split('/')[-1])
-        #if cur_item == None:
-         #   for item in
+        cur_item = memcache.get(path_frag(item['path']))
         if cur_item == None or cur_item != item['url']:
             if type(cur_item) == list:
                 cur_item.append(item['url'])
-                memcache.set(str(item['path']).split('/')[-1],
+                memcache.set(path_frag(item['path']),
                              item['url'], 86400)
             else:
-                memcache.set(str(item['path']).split('/')[-1],
+                memcache.set(path_frag(item['path']),
                              item['url'], 86400)
             tobesent[str(item['path']).split('/')[-1]] = item['url']
     #if tobesent != {}: sendmail('Dict of values \n\n'+str(tobesent))

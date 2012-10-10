@@ -1,8 +1,15 @@
-DCPUToolchain Lua Site
+DCPUToolchain Module Site
 ======================
 
-This is a simple webapp2 based application for the Google App Engine PaaS; it uses the GitHub API v3 to request one of the numerous available files within the [DCPUModules](http://github.com/DCPUTeam/DCPUModules) repository.
+This is a simple webapp2 based application that runs on Google App Engine; it uses the [GitHub API](http://developer.github.com/) to request one of the numerous available files within the [DCPUModules](http://github.com/DCPUTeam/DCPUModules) repository.
 It decodes the json returned by the API and the thence linked to base64 encoded files and provides said files in their original formats, ready to be served to the DCPUToolchain executables that make use of them.
 
+An ancillary function also provided by the Module Site is demonstrated as follows;
+
+ *  Windows build status; ![Windows build status](http://dms.dcputoolcha.in/status/windows.png)
+ *  Linux build status; ![Linux build status](http://dms.dcputoolcha.in/status/linux.png)
+ *  Mac build status; ![Mac build status](http://dms.dcputoolcha.in/status/mac.png)
+
+This simply polls the buildbot for the status of the most recent build for each platform; you are welcome to inspect the [code behind it](https://github.com/Mause/dcputoolchain_lua_site/blob/master/main.py#L190);
 
 Also, if you make use of some of the code here, please let me know and/or attribute some credit to me :smile:
