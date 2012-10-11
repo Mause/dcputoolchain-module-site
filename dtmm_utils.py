@@ -42,18 +42,6 @@ from google.appengine.ext.webapp import template
 # timeout for urlopen functions
 TIMEOUT = 10
 
-#MODULE = {
-#    Type = "Hardware",
-#    Name = "HMD2043",
-#    Version = "1.1"
-#};
-
-#HARDWARE = {
-#    ID = 0x74fa4cae,
-#    Version = 0x07c2,
-#    Manufacturer = 0x21544948 -- HAROLD_IT
-#};
-
 
 def get_hardware_data(handler, fragment):
     """Given a get_tree fragment,

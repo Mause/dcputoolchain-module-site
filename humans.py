@@ -38,6 +38,8 @@ from dtmm_utils import FourOhFourErrorLog
 # google appengine imports
 import webapp2
 
+module_types = ['preprocessor', 'debugger', 'hardware', 'optimizer']
+
 
 class RedirectToHumanHandler(webapp2.RequestHandler):
     "redirects the user to /human"
@@ -65,9 +67,7 @@ class HomeHandler(webapp2.RequestHandler):
 class PrettyTreeHandler(webapp2.RequestHandler):
     "Basically the same as /tree, but pretty <3"
     def get(self):
-        data_tree = get_tree(self) + get_tree(self)
-        logging.info(type(data_tree))
-        logging.info('%s:%s' % (len(get_tree(self)), len(data_tree)))
+        data_tree = get_tree(self)
         module_data = pretty_data_tree(
             self,
             data_tree,
@@ -87,14 +87,10 @@ class PrettyTreeHandler(webapp2.RequestHandler):
         calc = {}
         rows = len(filter(lambda x: x['row'] == 'yes', tree))
         logging.info('This many rows; %s' % (rows))
-        # header_diff = 45 + 29
-        calc['height'] = (rows * cell_height)  # + header_diff
+        header_diff = 20
+        calc['height'] = (rows * cell_height) + header_diff
+        calc['outer_container_height'] = calc['height']
         calc['margin_height'] = calc['height'] / 2
-        # if len(module_data) % break_on == 1:
-        #     calc['height'] = ((((len(module_data) - 2) / break_on) +
-        #         ((len(module_data) - 2) % break_on)) *
-        #         cell_height)
-        #     calc['margin_height'] = calc['height'] / 2
         calc['width'] = 900
         calc['margin_width'] = calc['width'] / 2
         index = 0
@@ -192,9 +188,6 @@ class HumanSearch(webapp2.RequestHandler):
             {'results': data_tree(self, output),
             'selected_type': requested_type,
             'types': gen_types(requested_type)})
-
-
-module_types = ['preprocessor', 'debugger', 'hardware', 'optimizer']
 
 
 def gen_types(selected=None):

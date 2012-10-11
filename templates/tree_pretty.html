@@ -1,15 +1,17 @@
-<div class="header"><h1>DCPUToolchain Modules</h1></div>
-<div class="container">
-	{% for breadcrumb in tree %}
-		{% ifequal breadcrumb.row 'yes' %}
-		</br></br>
-		{% endifequal %}
-		<div class="square square{{breadcrumb.index}}">
-			<div class="filename">
-				<a href="/human/inspect?name={{ breadcrumb.filename }}">{{ breadcrumb.filename }}</a>
+<div class="outer_container">
+	<div class="header"><h1>DCPUToolchain Modules</h1></div>
+	<div class="inner_container">
+		{% for breadcrumb in tree %}
+			{% ifequal breadcrumb.row 'yes' %}
+			</br></br>
+			{% endifequal %}
+			<div class="square square{{breadcrumb.index}}">
+				<div class="filename">
+					<a href="/human/inspect?name={{ breadcrumb.filename }}">{{ breadcrumb.filename }}</a>
+				</div>
 			</div>
-		</div>
-	{% endfor %}
+		{% endfor %}
+	</div>
 </div>
 
 <style type="text/css">
@@ -20,7 +22,10 @@
 	a:active {color:black;}  /* selected link */
 	.header {
 		font-family: 'Segoe UI Light','Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;
-		margin-bottom: -29px;
+		margin-bottom: 23px;
+		float: bottom;
+		height: 20px;
+		font-size: 20px;
 	}
 	.filename {
 		margin-top: 11px;
@@ -30,17 +35,17 @@
 		line-height: 100%;
 		text-align: center;
 	}
-	.container {
-		border-collapse: collapse;
-		top: 50%;
+	.outer_container{
+		float: bottom;
+		top: 41%;
 		left: 50%;
+		height: {{calc.outer_container_height}}px;
+		width: {{ calc.width }}px;
 		position: absolute;
 		margin-left: -{{ calc.margin_width }}px;
-		width: {{ calc.width }}px;
-		height: {{ calc.height }}px;
 		margin-top: -{{ calc.margin_height }}px;
 	}
-	.square {
+  	.square {
 		display: block;
 		float: left;
 		height: 50px;

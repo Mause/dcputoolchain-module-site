@@ -34,7 +34,7 @@ try:
 except ImportError:
     import simplejson as json
 
-# gooogle appengine imports
+# google appengine imports
 import webapp2
 from google.appengine.api import memcache
 
