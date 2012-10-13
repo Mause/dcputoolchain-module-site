@@ -63,7 +63,6 @@ def get_hardware_data(handler, fragment):
     new_output['Version'] = '0' + str(hardware_data[1])
     new_output['ID'] = '0' + str(hardware_data[3])
     new_output['Manufacturer'] = '0' + str(hardware_data[5])
-    #return hardware_data
     return new_output
 
 
@@ -74,7 +73,7 @@ def get_module_data(handler, fragment):
         get_url_content(handler,
             fragment['url'])['content'])
     module_data = (
-        re.search('MODULE\s*=\s*\{([^}]*)\}',
+        re.search('MODULE\s*=\s*(\{([^}]*)\})',
                   file_data))
     try:
         module_data = module_data.group(0)
@@ -143,9 +142,11 @@ def get_url_content(handler, url):
             url_data = urllib2.urlopen(url, timeout=TIMEOUT).read()
         except urllib2.URLError:
             handler.error(408)
-        result = json.loads(url_data)
-        memcache.set(str(url_hash), result, 3600)
-        return result
+            return
+        else:
+            result = json.loads(url_data)
+            memcache.set(str(url_hash), result, 3600)
+            return result
 
 
 def dorender(handler, tname='base.html', values=None):

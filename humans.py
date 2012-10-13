@@ -75,7 +75,7 @@ class PrettyTreeHandler(webapp2.RequestHandler):
         tree = []
         fragment_num = 0
         break_on = 3
-        cell_height = 50  # in pixels :D
+        cell_height = 80  # in pixels :D
         for fragment in module_data:
             if fragment_num % break_on == 0:
                 module_data[fragment]['row'] = 'yes'
@@ -88,6 +88,7 @@ class PrettyTreeHandler(webapp2.RequestHandler):
         rows = len(filter(lambda x: x['row'] == 'yes', tree))
         logging.info('This many rows; %s' % (rows))
         header_diff = 20
+        calc['cell_height'] = cell_height
         calc['height'] = (rows * cell_height) + header_diff
         calc['outer_container_height'] = calc['height']
         calc['margin_height'] = calc['height'] / 2
@@ -248,22 +249,17 @@ def pretty_colours(how_many):
     return final_colours
 
 
-def pretty_data_tree(handler, data, colours=None):
+def pretty_data_tree(handler, data, colours):
     "given a data tree, will return a dict version"
     output = {}
     colour_num = 0
     for fragment in data:
         if fragment['path'].endswith('.lua'):
             cur_path = str(fragment['path']).split('/')[-1]
-            module_data = get_module_data(handler, fragment)
-            output[cur_path] = {}
+            output[cur_path] = get_module_data(handler, fragment)
             output[cur_path]['filename'] = cur_path
-            output[cur_path]['type'] = module_data['Type']
-            output[cur_path]['name'] = module_data['Name']
-            output[cur_path]['Version'] = module_data['Version']
-            if colours != None:
-                output[cur_path]['background'] = colours[colour_num]
-                colour_num += 1
+            output[cur_path]['background'] = colours[colour_num]
+            colour_num += 1
     return output
 
 

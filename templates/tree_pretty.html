@@ -9,31 +9,49 @@
 				<div class="filename">
 					<a href="/human/inspect?name={{ breadcrumb.filename }}">{{ breadcrumb.filename }}</a>
 				</div>
+				<div class="description">
+					{{ breadcrumb.SDescription }}
+				</div>
+				<div class="docs_link">
+					<a href="{%if breadcrumb.URL%}{{ breadcrumb.URL }}{%else%}#{%endif%}">Docs</a>
+				</div>
 			</div>
+			{{ breadcrumb.url }}
 		{% endfor %}
 	</div>
 </div>
 
 <style type="text/css">
-	a {text-decoration: none}
-	a:link { color: #000000; }      /* unvisited link */
-	a:visited { color:black; }  /* visited link */
-	a:hover {color:black;}  /* mouse over link */
-	a:active {color:black;}  /* selected link */
-	.header {
+	/*a {text-decoration: none}*/
+	a:link {color: black;}      /* unvisited link */
+	a:visited {color:black;}  	/* visited link */
+	a:hover {color:black;}  	/* mouse over link */
+	a:active {color:black;}  	/* selected link */
+	body {
 		font-family: 'Segoe UI Light','Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;
+	}
+	.header {
 		margin-bottom: 23px;
 		float: bottom;
 		height: 20px;
 		font-size: 20px;
 	}
 	.filename {
-		margin-top: 11px;
-		font-family: 'Segoe UI Light','Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;
+		margin-top: 4px;
 		font-weight: 500;
 		font-size: 20px;
 		line-height: 100%;
 		text-align: center;
+		text-decoration: none;
+	}
+	.description {
+		margin: 5px;
+		text-align: center;
+		font-size: 13px;
+	}
+	.docs_link {
+		text-align: center;
+		font-size: 13px;
 	}
 	.outer_container{
 		float: bottom;
@@ -48,7 +66,7 @@
   	.square {
 		display: block;
 		float: left;
-		height: 50px;
+		height: {{ calc.cell_height }}px;
 	}
 	{% for breadcrumb in tree %}
 	.square{{breadcrumb.index}} {
