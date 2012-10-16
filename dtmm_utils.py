@@ -28,7 +28,17 @@ import json
 import base64
 import hashlib
 import urllib2
+import requests
 import logging
+
+# override some stuff to get ssl to play nice
+# TODO: find better solution
+import ssl
+ssl.CERT_NONE = None
+ssl.CERT_OPTIONAL = None
+ssl.CERT_REQUIRED = None
+
+from pprint import pprint
 
 # lua interpreter functions
 from slpp import slpp as lua
@@ -97,15 +107,25 @@ def get_tree(handler):
         logging.info('Memcache get successful; got the repo tree')
     else:
         logging.info('Getting the result from the GitHub API')
+
         try:
-            url_data = urllib2.urlopen(url, timeout=TIMEOUT).read()
+            # req = urllib2.Request(url)
+            header = {'Authorization': 'token %s' % (get_oauth_token())}
+            r = requests.get(url, headers=header)
+            if 'x-ratelimit-remaining' in r.headers.keys():
+                logging.info('%s requests remaining for this hour.' % (r.headers['x-ratelimit-remaining']))
+            else:
+                logging.info('Could not determine how many requests are remaining for this hour')
+            url_data = r.content
+            # url_data = urllib2.urlopen(url, timeout=TIMEOUT).read()
         except urllib2.URLError:
             handler.error(408)
         result = json.loads(url_data)
-        memcache.set('tree', result, 86400)
+        memcache.set('tree', result)
     logging.info('Okay, done the main part of the get_tree function')
     # okay, the tree is special,
     # so we have to do some special stuff to it :P
+    print result
     data = result['tree']
     items = []
     tree = []
@@ -119,10 +139,10 @@ def get_tree(handler):
             if type(cur_item) == list:
                 cur_item.append(item['url'])
                 memcache.set(path_frag(item['path']),
-                             item['url'], 86400)
+                             item['url'])
             else:
                 memcache.set(path_frag(item['path']),
-                             item['url'], 86400)
+                             item['url'])
             tobesent[str(item['path']).split('/')[-1]] = item['url']
     #if tobesent != {}: sendmail('Dict of values \n\n'+str(tobesent))
     return result['tree']
@@ -145,7 +165,7 @@ def get_url_content(handler, url):
             return
         else:
             result = json.loads(url_data)
-            memcache.set(str(url_hash), result, 3600)
+            memcache.set(str(url_hash), result)
             return result
 
 
@@ -161,6 +181,35 @@ def dorender(handler, tname='base.html', values=None):
     else:
         handler.response.out.write(template.render(path, {}))
     return True
+
+
+def get_oauth_token(all_data=False):
+    token = memcache.get('oauth_token')
+    if token:
+        return token
+    else:
+        with open('auth_frag.txt', 'r') as fh:
+            auth_frag = fh.read()
+        # use the next line to configure to a new github account
+        # auth_frag = base64.urlsafe_b64encode("%s:%s" % ('user', 'pass'))
+
+        header = {
+            'content-type': 'application/json',
+            "Authorization": "Basic " + auth_frag
+        }
+        pprint(header)
+
+        r = requests.post(
+            'https://api.github.com/authorizations',
+            data=json.dumps({
+                'scopes': ["repo"],
+                'note': 'DCPUToolchain'
+            }),
+            headers=header)
+        if 200 <= r.status_code < 300:
+            token = json.loads(r.content)['token']
+            memcache.set('oauth_token', token)
+            return token
 
 
 class FourOhFourErrorLog(db.Model):

@@ -26,7 +26,7 @@ the DCPUToolchain executables that make use of them.
 import os
 import json
 import base64
-import urllib2
+import urllib2  # used for build status only
 import hashlib
 import logging
 try:
@@ -214,7 +214,7 @@ class BuildStatusHandler(webapp2.RequestHandler):
                     end_status = 'unknown'
                 else:
                     # if no exceptions occured
-                    if '-1' in raw_data and 'successful' in raw_data['-1']['text']:
+                    if '-1' in raw_data and 'text' in raw_data['-1'] and 'successful' in raw_data['-1']['text']:
                         # if the required fields are available, inform the logger so
                         logging.info('Builds are passing')
                         # set the build status to 'passing'
