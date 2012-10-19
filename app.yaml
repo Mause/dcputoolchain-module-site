@@ -1,8 +1,11 @@
 application: dcputoolchain-module-site
-version: 1-0040
+version: 1-0043
 runtime: python27
 api_version: 1
 threadsafe: no
+
+builtins:
+- appstats: on
 
 handlers:
 - url: /static

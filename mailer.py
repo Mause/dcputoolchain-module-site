@@ -16,19 +16,11 @@
 #
 from google.appengine.api import mail
 
-# reference code;
-# www.lysdev.com/mailer?dest=jack.thatch@gmail.com&message=This person has RVSPed: Dominic May&dest_name=Dominic&addr=/events?hash=d31d9e54997706f8caec751a788aa053&subject=RSVP
-
 
 def sendmail(message):
-    dest_name = 'Dominic'
-    dest = 'jack.thatch@gmail.com'
-    subject = 'DTMM Debug Message'
-    mail.send_mail(sender="Admin Jones <admin@lysdev.com>",
-          to=dest,
-          subject=subject,
-          body=('''\nDear ''' + dest_name + '''\n''' + message + '''\n
-Please let us know if you have any questions.
-
-The Lysdev.com Team
-'''))
+    body = '\nDear Dominic\n%(message)s\n\nPlease let us know if you have any questions.\n\nThe Lysdev.com Team\n' % (locals())
+    return mail.send_mail(
+        sender="Admin Jones <admin@lysdev.com>",
+        to='jack.thatch@gmail.com',
+        subject='DTMM Debug Message',
+        body=body)

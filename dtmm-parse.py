@@ -1,15 +1,9 @@
-from slpp import slpp as lua
-
-import sys
+#!/usr/bin/env python
 import os
 import re
-
-
-class loggr:
-    def info(self, something):
-        print something
-
-logging = loggr()
+import sys
+import logging
+from slpp import slpp as lua
 
 
 def get_hardware_data(data):
@@ -29,7 +23,6 @@ def get_hardware_data(data):
     new_output['Version'] = '0' + str(hardware_data[1])
     new_output['ID'] = '0' + str(hardware_data[3])
     new_output['Manufacturer'] = '0' + str(hardware_data[5])
-    #return hardware_data
     return new_output
 
 

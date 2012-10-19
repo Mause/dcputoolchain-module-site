@@ -28,17 +28,8 @@ import json
 import base64
 import hashlib
 import urllib2
-import requests
+# import requests
 import logging
-
-# override some stuff to get ssl to play nice
-# TODO: find better solution
-import ssl
-ssl.CERT_NONE = None
-ssl.CERT_OPTIONAL = None
-ssl.CERT_REQUIRED = None
-
-from pprint import pprint
 
 # lua interpreter functions
 from slpp import slpp as lua
@@ -46,6 +37,7 @@ from slpp import slpp as lua
 # google appengine imports
 from google.appengine.ext import db
 from google.appengine.api import memcache
+from google.appengine.api import urlfetch
 from google.appengine.ext.webapp import template
 
 
@@ -95,7 +87,7 @@ def get_module_data(handler, fragment):
     return module_data
 
 
-def get_tree(handler):
+def get_tree(handler=None):
     def path_frag(x):
         return str(x).split('/')[-1]
     """this is a hard coded version of the get_url_content function
@@ -109,9 +101,7 @@ def get_tree(handler):
         logging.info('Getting the result from the GitHub API')
 
         try:
-            # req = urllib2.Request(url)
-            header = {'Authorization': 'token %s' % (get_oauth_token())}
-            r = requests.get(url, headers=header)
+            r = urlfetch.fetch(url=url, headers={'Authorization': 'token %s' % (get_oauth_token())})
             if 'x-ratelimit-remaining' in r.headers.keys():
                 logging.info('%s requests remaining for this hour.' % (r.headers['x-ratelimit-remaining']))
             else:
@@ -120,19 +110,14 @@ def get_tree(handler):
             # url_data = urllib2.urlopen(url, timeout=TIMEOUT).read()
         except urllib2.URLError:
             handler.error(408)
+            return
         result = json.loads(url_data)
         memcache.set('tree', result)
     logging.info('Okay, done the main part of the get_tree function')
     # okay, the tree is special,
     # so we have to do some special stuff to it :P
-    print result
-    data = result['tree']
+    # like, caching individual blobs :D
     items = []
-    tree = []
-    for item in range(len(data)):
-        if data[item]['type'] == 'blob':
-            tree.append(data[item])
-    tobesent = {}
     for item in items:
         cur_item = memcache.get(path_frag(item['path']))
         if cur_item == None or cur_item != item['url']:
@@ -143,8 +128,6 @@ def get_tree(handler):
             else:
                 memcache.set(path_frag(item['path']),
                              item['url'])
-            tobesent[str(item['path']).split('/')[-1]] = item['url']
-    #if tobesent != {}: sendmail('Dict of values \n\n'+str(tobesent))
     return result['tree']
 
 
@@ -197,15 +180,22 @@ def get_oauth_token(all_data=False):
             'content-type': 'application/json',
             "Authorization": "Basic " + auth_frag
         }
-        pprint(header)
 
-        r = requests.post(
-            'https://api.github.com/authorizations',
-            data=json.dumps({
+        r = urlfetch.fetch(
+            url='https://api.github.com/authorizations',
+            payload=json.dumps({
                 'scopes': ["repo"],
-                'note': 'DCPUToolchain'
-            }),
+                'note': 'DCPUToolchain'}),
+            method=urlfetch.POST,
             headers=header)
+
+        # r = requests.post(
+        #     'https://api.github.com/authorizations',
+        #     data=json.dumps({
+        #         'scopes': ["repo"],
+        #         'note': 'DCPUToolchain'
+        #     }),
+        #     headers=header)
         if 200 <= r.status_code < 300:
             token = json.loads(r.content)['token']
             memcache.set('oauth_token', token)
