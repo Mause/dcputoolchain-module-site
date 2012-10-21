@@ -26,7 +26,6 @@ the DCPUToolchain executables that make use of them.
 import os
 import json
 import base64
-import urllib2  # used for build status only
 import hashlib
 import logging
 try:
@@ -37,6 +36,7 @@ except ImportError:
 # google appengine imports
 import webapp2
 from google.appengine.api import memcache
+from google.appengine.api import urlfetch
 
 # the humans.py file
 from humans import HomeHandler
@@ -205,8 +205,8 @@ class BuildStatusHandler(webapp2.RequestHandler):
                 logging.info('Okay, no cached status, hitting the buildbot')
                 try:
                     # try to pull build status from the buildbot
-                    raw_data = json.load(urllib2.urlopen(url))
-                except urllib2.URLError:
+                    raw_data = json.loads(urlfetch.fetch(url).content)
+                except urlfetch.DownloadError:
                     # inform the logger that we could not get the build status
                     logging.info('Could not get the info from the build server')
                     # if it errors out, set the build status to unknown
