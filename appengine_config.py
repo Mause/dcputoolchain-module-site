@@ -1,3 +1,6 @@
+appstats_CALC_RPC_COSTS = True
+
+
 def webapp_add_wsgi_middleware(app):
     "Add the appstats middleware"
     from google.appengine.ext.appstats import recording

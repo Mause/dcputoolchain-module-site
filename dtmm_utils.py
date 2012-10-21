@@ -27,8 +27,6 @@ import os
 import json
 import base64
 import hashlib
-import urllib2
-# import requests
 import logging
 
 # lua interpreter functions
@@ -107,8 +105,7 @@ def get_tree(handler=None):
             else:
                 logging.info('Could not determine how many requests are remaining for this hour')
             url_data = r.content
-            # url_data = urllib2.urlopen(url, timeout=TIMEOUT).read()
-        except urllib2.URLError:
+        except urlfetch.URLError:
             handler.error(408)
             return
         result = json.loads(url_data)
@@ -142,8 +139,8 @@ def get_url_content(handler, url):
     else:
         logging.info('Getting the result from the GitHub API')
         try:
-            url_data = urllib2.urlopen(url, timeout=TIMEOUT).read()
-        except urllib2.URLError:
+            url_data = authed_fetch(url).content
+        except urlfetch.URLError:
             handler.error(408)
             return
         else:
@@ -176,30 +173,30 @@ def get_oauth_token(all_data=False):
         # use the next line to configure to a new github account
         # auth_frag = base64.urlsafe_b64encode("%s:%s" % ('user', 'pass'))
 
-        header = {
-            'content-type': 'application/json',
-            "Authorization": "Basic " + auth_frag
-        }
-
         r = urlfetch.fetch(
             url='https://api.github.com/authorizations',
             payload=json.dumps({
                 'scopes': ["repo"],
                 'note': 'DCPUToolchain'}),
             method=urlfetch.POST,
-            headers=header)
+            headers={
+                'Content-Type': 'application/json',
+                "Authorization": "Basic " + auth_frag}
+            )
 
-        # r = requests.post(
-        #     'https://api.github.com/authorizations',
-        #     data=json.dumps({
-        #         'scopes': ["repo"],
-        #         'note': 'DCPUToolchain'
-        #     }),
-        #     headers=header)
         if 200 <= r.status_code < 300:
             token = json.loads(r.content)['token']
             memcache.set('oauth_token', token)
             return token
+
+
+def authed_fetch(url):
+    r = urlfetch.fetch(url=url, headers={'Authorization': 'token %s' % (get_oauth_token())})
+    if 'x-ratelimit-remaining' in r.headers.keys():
+        logging.info('%s requests remaining for this hour.' % (r.headers['x-ratelimit-remaining']))
+    else:
+        logging.info('Could not determine how many requests are remaining for this hour')
+    return r
 
 
 class FourOhFourErrorLog(db.Model):

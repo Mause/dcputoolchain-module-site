@@ -148,7 +148,7 @@ class ListingHandler(webapp2.RequestHandler):
         output = ''
         output += '<strong>These modules were requested by users,'
         output += ' but they do not exist in the repository</strong></br>'
-        output += 'You may <a href=#>delete</a> these entries if you wish<br>'
+        output += '<form method="POST" target="/human/listing">You may <a href="#" onclick="document.getElementById("delete_em").submit()">delete</a> these entries if you wish</form><br>'
         for fragment in requests:
             output += (str(fragment.datetimer) + ' - ' +
                 str(fragment.address) + ' - ' +
