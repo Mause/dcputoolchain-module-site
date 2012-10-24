@@ -46,9 +46,17 @@ class DumpHandler(webapp2.RequestHandler):
         self.response.write(pickle.dumps(new_data))
 
 
+class SpecSpecHandler(webapp2.RequestHandler):
+    def get(self):
+        new_data = ui.SummaryHandler()._get_summary_data(
+            recording.load_summary_protos())
+        self.response.write(new_data)
+
+
 app = webapp2.WSGIApplication(
     [
     ('/spec/dump', DumpHandler),
-    ('.*', MainHandler),
+    ('/spec/spec', SpecSpecHandler),
+    ('.?', MainHandler),
     ],
     debug=True)

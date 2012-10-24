@@ -115,16 +115,16 @@ def get_tree(handler=None):
     # so we have to do some special stuff to it :P
     # like, caching individual blobs :D
     items = []
+    to_add_to_memcache = {}
     for item in items:
         cur_item = memcache.get(path_frag(item['path']))
         if cur_item == None or cur_item != item['url']:
             if type(cur_item) == list:
                 cur_item.append(item['url'])
-                memcache.set(path_frag(item['path']),
-                             item['url'])
-            else:
-                memcache.set(path_frag(item['path']),
-                             item['url'])
+            # memcache.set(path_frag(item['path']),
+            #              item['url'])
+            to_add_to_memcache[path_frag(item['path'])] = item['url']
+    memcache.set_multi(to_add_to_memcache)
     return result['tree']
 
 
@@ -149,18 +149,15 @@ def get_url_content(handler, url):
             return result
 
 
-def dorender(handler, tname='base.html', values=None):
+def dorender(handler, tname='base.html', values=None, write=True):
     """automates some stuff so we dont have to type
     it in everytime we want to use a template"""
     handler.response.headers['content-type'] = 'text/html'
     path = os.path.join(os.path.dirname(__file__), 'templates/' + tname)
-    if not os.path.isfile(path):
-        return False
-    if values != None:
-        handler.response.out.write(template.render(path, values))
+    if write:
+        handler.response.out.write(template.render(path, values or {}))
     else:
-        handler.response.out.write(template.render(path, {}))
-    return True
+        return template.render(path, values or {})
 
 
 def get_oauth_token(all_data=False):

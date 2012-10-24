@@ -1,5 +1,5 @@
 application: dcputoolchain-module-site
-version: 1-0044
+version: 1-0045
 runtime: python27
 api_version: 1
 threadsafe: no
@@ -23,6 +23,9 @@ handlers:
 - url: /spec.*
   script: spec.app
 
+- url: /_ereporter.*
+  script: $PYTHON_LIB/google/appengine/ext/ereporter/report_generator.py
+  login: admin
 
 - url: .*
   script: main.app

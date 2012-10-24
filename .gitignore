@@ -7,3 +7,7 @@
 *.DS_Store
 *.swp
 *.out
+
+
+# application specific
+auth_frag.txt

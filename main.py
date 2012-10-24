@@ -24,10 +24,12 @@ the DCPUToolchain executables that make use of them.
 """
 # generic imports
 import os
+import sys
 import json
 import base64
 import hashlib
 import logging
+import traceback
 try:
     import json
 except ImportError:
@@ -37,6 +39,9 @@ except ImportError:
 import webapp2
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
+from google.appengine.api import mail
+from google.appengine.api import users
+from google.appengine.ext import ereporter
 
 # the humans.py file
 from humans import HomeHandler
@@ -53,12 +58,30 @@ from humans import pretty_colours
 from mailer import sendmail
 
 # the dtmm_utils file
+from dtmm_utils import dorender
 from dtmm_utils import get_url_content
 from dtmm_utils import get_tree
 from dtmm_utils import FourOhFourErrorLog
 
+ereporter.register_logger()
 
-class SearchModulesHandler(webapp2.RequestHandler):
+
+class BaseRequestHandler(webapp2.RequestHandler):
+    def handle_exception(self, exception, debug_mode):
+        lines = ''.join(traceback.format_exception(*sys.exc_info()))
+        logging.error(lines)
+        mail.send_mail(
+            sender='debugging@dcputoolchain-module-site.appspotmail.com',
+            to="jack.thatch@gmail.com",
+            subject='Caught Exception',
+            body=lines)
+        template_values = {}
+        if users.is_current_user_admin():
+            template_values['traceback'] = lines
+        self.response.out.write(dorender(self, 'error.html', template_values, write=False))
+
+
+class SearchModulesHandler(BaseRequestHandler):
     "Handle searching of the repo"
     def get(self):
         "Handles get requests"
@@ -73,7 +96,7 @@ class SearchModulesHandler(webapp2.RequestHandler):
                             str(fragment['path'].split('/')[-1]) + '\n')
 
 
-class DownloadModulesHandler(webapp2.RequestHandler):
+class DownloadModulesHandler(BaseRequestHandler):
     "Handles download requests"
     def get(self):
         "Handlers get requests"
@@ -95,7 +118,7 @@ class DownloadModulesHandler(webapp2.RequestHandler):
             self.error(404)
 
 
-class ListModulesHandler(webapp2.RequestHandler):
+class ListModulesHandler(BaseRequestHandler):
     "returns a list of accessable modules"
     def get(self):
         "Handlers get requests"
@@ -114,7 +137,7 @@ def flusher(handler):
     handler.response.write('Memcache flushed')
 
 
-class FlushHandler(webapp2.RequestHandler):
+class FlushHandler(BaseRequestHandler):
     "Flushes the memcache, like an idiot"
     def get(self):
         flusher(self)
@@ -123,7 +146,7 @@ class FlushHandler(webapp2.RequestHandler):
         flusher(self)
 
 
-class SmartFlushHandler(webapp2.RequestHandler):
+class SmartFlushHandler(BaseRequestHandler):
     "Tries to efficiently flush the memcache"
     def get(self):
         self.response.out.write(
@@ -189,7 +212,7 @@ class SmartFlushHandler(webapp2.RequestHandler):
             sendmail('Odd. No files were changed in this commit')
 
 
-class BuildStatusHandler(webapp2.RequestHandler):
+class BuildStatusHandler(BaseRequestHandler):
     def get(self, platform):
         # we assume that the build status is unknown
         end_status = 'unknown'
@@ -219,12 +242,15 @@ class BuildStatusHandler(webapp2.RequestHandler):
                         logging.info('Builds are passing')
                         # set the build status to 'passing'
                         end_status = 'passing'
-                    else:
-                        # if the required fields were not available
-                        # inform the loggerso
+                    elif '-1' in raw_data and 'text' in raw_data['-1'] and 'failed' in raw_data['-1']['text']:
                         logging.info('Builds are failing')
                         # set the build status to 'failing'
                         end_status = 'failing'
+                    else:
+                        # if the required fields were not available
+                        # inform the logger so
+                        logging.info('Build status is unknown')
+                        end_status = 'unknown'
                 # cache the end build status
                 memcache.set('build_status_%s' % (platform), end_status, 60)
             else:
@@ -246,7 +272,7 @@ class BuildStatusHandler(webapp2.RequestHandler):
             self.response.write(fh.read())
 
 
-class DebugHandler(webapp2.RequestHandler):
+class DebugHandler(BaseRequestHandler):
     def get(self):
         data_tree = get_tree(self) + get_tree(self)
         module_data = pretty_data_tree(
@@ -255,6 +281,11 @@ class DebugHandler(webapp2.RequestHandler):
             pretty_colours(len(data_tree)))
         for key in module_data.keys():
             self.response.write('%s: %s</br>' % (key, module_data[key]))
+
+
+class ExceptionTestHandler(BaseRequestHandler):
+    def get(self):
+        raise Exception
 
 
 app = webapp2.WSGIApplication([
@@ -269,6 +300,7 @@ app = webapp2.WSGIApplication([
     (r'/modules/list.?', ListModulesHandler),
     (r'/status/(?P<platform>.*).png', BuildStatusHandler),
 #    (r'/flush', SmartFlushHandler),
+    (r'/exception', ExceptionTestHandler),
     (r'/flush', FlushHandler),
     (r'/debug', DebugHandler),
     (r'/', RedirectToHumanHandler)

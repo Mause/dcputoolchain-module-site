@@ -18,7 +18,7 @@ from google.appengine.api import mail
 
 
 def sendmail(message):
-    body = '\nDear Dominic\n%(message)s\n\nPlease let us know if you have any questions.\n\nThe Lysdev.com Team\n' % (locals())
+    body = '\nDear Dominic,\n%s\n\nPlease let us know if you have any questions.\n\nThe Lysdev.com Team\n' % (message)
     return mail.send_mail(
         sender="Admin Jones <admin@lysdev.com>",
         to='jack.thatch@gmail.com',
