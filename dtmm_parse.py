@@ -42,11 +42,11 @@ def get_module_data(data):
     return module_data
 
 
-if __name__ == '__main__':
+def main():
     if len(sys.argv) == 2:
         if os.path.exists(sys.argv[1]):
-            fh = open(sys.argv[1], 'r')
-            data = fh.read()
+            with open(sys.argv[1], 'r') as fh:
+                data = fh.read()
             module_data = get_module_data(data)
             print 'Name:', module_data['Name']
             print 'Type:', module_data['Type']
@@ -61,3 +61,6 @@ if __name__ == '__main__':
             print 'File could not be found'
     else:
         print "This program requires at least one argument"
+
+if __name__ == '__main__':
+    main()

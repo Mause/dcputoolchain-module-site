@@ -12,4 +12,6 @@ An ancillary function also provided by the Module Site is demonstrated as follow
 
 This simply polls the buildbot for the status of the most recent build for each platform; you are welcome to inspect the [code behind it](https://github.com/Mause/dcputoolchain_lua_site/blob/master/main.py#L190);
 
-Also, if you make use of some of the code here, please let me know and/or attribute some credit to me :smile:
+Finally, this project makes use of SirAnthony's simple lua-python data structures parser (slpp) to pull module and hardware information from the module files.
+
+P.S: if you make use of some of the code here, please let me know and/or attribute some credit to me :smile:
