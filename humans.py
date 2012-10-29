@@ -285,14 +285,17 @@ def data_tree(handler, data):
                 % (module_data['Type'], module_data['Type']))
             output += '<li>Name: %s</li>\n' % module_data['Name']
             output += '<li>Version: %s</li>\n' % module_data['Version']
+            if 'SDescription' in module_data:
+                output += '<li>Short description: %s</li>\n' % module_data['SDescription']
+            if 'URL' in module_data:
+                output += '<li>URL: <a href="{url}">{url}</a></li>\n'.format(url=module_data['URL'])
             if module_data['Type'].lower() == 'hardware':
                 hardware_data = get_hardware_data(handler, fragment)
                 logging.info(hardware_data)
-                output += "</br>"
-                output += "<li>Hardware ID: %s</li>" % str(hardware_data['ID'])
+                output += "<li>Hardware ID: %s</li>" % hex(hardware_data['ID'])
                 output += ("<li>Hardware version: %s</li>" %
-                    str(hardware_data['Version']))
+                    hex(hardware_data['Version']))
                 output += ("<li>Hardware Manufacturer: %s</li>" %
-                    str(hardware_data['Manufacturer']))
+                    hex(hardware_data['Manufacturer']))
             output += '</ul>\n'    # end the list
     return output

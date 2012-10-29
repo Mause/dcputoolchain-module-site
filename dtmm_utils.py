@@ -39,10 +39,6 @@ from google.appengine.api import urlfetch
 from google.appengine.ext.webapp import template
 
 
-# timeout for urlopen functions
-TIMEOUT = 10
-
-
 def get_hardware_data(handler, fragment):
     """Given a get_tree fragment,
     returns hardware data in a python dict"""
