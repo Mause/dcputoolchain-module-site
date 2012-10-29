@@ -50,103 +50,68 @@ def get_hardware_data(handler, fragment):
         get_url_content(handler,
             fragment['url'])['content'])
     hardware_data = (
-        re.search('HARDWARE\s*=\s*\{([^}]*)\}',
+        re.search('HARDWARE\s*=\s*(?P<data>\{[^}]*\})',
                   file_data))
-    try:
-        hardware_data = hardware_data.group(0)
-        hardware_data = hardware_data.strip('HARDWARE=')
-        hardware_data = hardware_data.strip('HARDWARE =')
-        hardware_data = lua.decode(hardware_data)
-    except AttributeError:
-        logging.info('hardware_data: ' + str(hardware_data))
-    new_output = {}
-    new_output['Version'] = '0' + str(hardware_data[1])
-    new_output['ID'] = '0' + str(hardware_data[3])
-    new_output['Manufacturer'] = '0' + str(hardware_data[5])
-    return new_output
+    if hardware_data:
+        hardware_data = lua.decode(hardware_data.groupdict()['data'])
+        return hardware_data
+    else:
+        return {}
 
 
 def get_module_data(handler, fragment):
     """Given a get_tree fragment,
     returns module data in a python dict"""
     file_data = base64.b64decode(
-        get_url_content(handler,
-            fragment['url'])['content'])
+        get_url_content(handler, fragment['url'])['content'])
     module_data = (
-        re.search('MODULE\s*=\s*(\{([^}]*)\})',
+        re.search('MODULE\s*=\s*(?P<data>\{[^}]*\})',
                   file_data))
-    try:
-        module_data = module_data.group(0)
-        module_data = module_data.strip('MODULE=')
-        module_data = module_data.strip('MODULE =')
-        module_data = lua.decode(module_data)
-    except AttributeError:
-        logging.info('module_data: ' + str(module_data))
-    return module_data
+    if module_data:
+        module_data = lua.decode(module_data.groupdict()['data'])
+        return module_data
+    else:
+        return {}
 
 
 def get_tree(handler=None):
-    def path_frag(x):
-        return str(x).split('/')[-1]
     """this is a hard coded version of the get_url_content function
     but with extra features"""
-    url = 'https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master'
-    result = None
     result = memcache.get('tree')
     if result != None:
         logging.info('Memcache get successful; got the repo tree')
     else:
         logging.info('Getting the result from the GitHub API')
-
         try:
-            r = urlfetch.fetch(url=url, headers={'Authorization': 'token %s' % (get_oauth_token())})
-            if 'x-ratelimit-remaining' in r.headers.keys():
-                logging.info('%s requests remaining for this hour.' % (r.headers['x-ratelimit-remaining']))
-            else:
-                logging.info('Could not determine how many requests are remaining for this hour')
-            url_data = r.content
-        except urlfetch.URLError:
+            url_data = authed_fetch(url='https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master').content
+        except urlfetch.DownloadError:
+            logging.info('Fetching the github api tree failed')
             handler.error(408)
             return
-        result = json.loads(url_data)
-        memcache.set('tree', result)
-    logging.info('Okay, done the main part of the get_tree function')
-    # okay, the tree is special,
-    # so we have to do some special stuff to it :P
-    # like, caching individual blobs :D
-    items = []
-    to_add_to_memcache = {}
-    for item in items:
-        cur_item = memcache.get(path_frag(item['path']))
-        if cur_item == None or cur_item != item['url']:
-            if type(cur_item) == list:
-                cur_item.append(item['url'])
-            # memcache.set(path_frag(item['path']),
-            #              item['url'])
-            to_add_to_memcache[path_frag(item['path'])] = item['url']
-    memcache.set_multi(to_add_to_memcache)
+        else:
+            result = json.loads(url_data)
+            memcache.set('tree', result)
     return result['tree']
 
 
 def get_url_content(handler, url):
     "this is a caching function, to help keep wait time short"
-    result = None
     url_hash = hashlib.md5(str(url)).hexdigest()
     result = memcache.get(str(url_hash))
     if result != None:
         logging.debug('Memcache get successful')
-        return result
     else:
         logging.info('Getting the result from the GitHub API')
         try:
             url_data = authed_fetch(url).content
-        except urlfetch.URLError:
+        except urlfetch.DownloadError:
+            logging.info('Fetching "%s" failed with a download error' % str(url))
             handler.error(408)
             return
         else:
             result = json.loads(url_data)
             memcache.set(str(url_hash), result)
-            return result
+    return result
 
 
 def dorender(handler, tname='base.html', values=None, write=True):
@@ -158,6 +123,15 @@ def dorender(handler, tname='base.html', values=None, write=True):
         handler.response.out.write(template.render(path, values or {}))
     else:
         return template.render(path, values or {})
+
+
+def authed_fetch(url):
+    r = urlfetch.fetch(url=url, headers={'Authorization': 'token %s' % (get_oauth_token())})
+    if 'x-ratelimit-remaining' in r.headers.keys():
+        logging.info('%s requests remaining for this hour.' % (r.headers['x-ratelimit-remaining']))
+    else:
+        logging.info('Could not determine how many requests are remaining for this hour')
+    return r
 
 
 def get_oauth_token(all_data=False):
@@ -185,15 +159,6 @@ def get_oauth_token(all_data=False):
             token = json.loads(r.content)['token']
             memcache.set('oauth_token', token)
             return token
-
-
-def authed_fetch(url):
-    r = urlfetch.fetch(url=url, headers={'Authorization': 'token %s' % (get_oauth_token())})
-    if 'x-ratelimit-remaining' in r.headers.keys():
-        logging.info('%s requests remaining for this hour.' % (r.headers['x-ratelimit-remaining']))
-    else:
-        logging.info('Could not determine how many requests are remaining for this hour')
-    return r
 
 
 class FourOhFourErrorLog(db.Model):

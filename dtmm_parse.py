@@ -20,9 +20,9 @@ def get_hardware_data(data):
     except AttributeError:
         logging.info('hardware_data: ' + str(hardware_data))
     new_output = {}
-    new_output['Version'] = '0' + str(hardware_data[1])
-    new_output['ID'] = '0' + str(hardware_data[3])
-    new_output['Manufacturer'] = '0' + str(hardware_data[5])
+    new_output['Version'] = hardware_data[1]
+    new_output['ID'] = hardware_data[3]
+    new_output['Manufacturer'] = hardware_data[5]
     return new_output
 
 

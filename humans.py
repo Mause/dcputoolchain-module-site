@@ -117,6 +117,9 @@ class TreeHandler(webapp2.RequestHandler):
         output = ''
         output = ('<h2>Basic overview</h2>')
         data = get_tree(self)
+        if not data:
+            self.error(408)
+            return
         output += data_tree(self, data)
         self.response.write(output)
 
@@ -266,10 +269,13 @@ def pretty_data_tree(handler, data, colours):
 def data_tree(handler, data):
     "given a data tree, will return a html-based representation"
     output = ''
+    if not data:
+        return
     for fragment in data:
         if fragment['path'].endswith('.lua'):
             cur_path = str(fragment['path'].split('/')[-1])
             module_data = get_module_data(handler, fragment)
+            logging.info('module data; %s' % module_data)
             output += '<h4>MODULE</h4>\n'
             output += '<ul>\n'     # start the list
 
@@ -281,6 +287,7 @@ def data_tree(handler, data):
             output += '<li>Version: %s</li>\n' % module_data['Version']
             if module_data['Type'].lower() == 'hardware':
                 hardware_data = get_hardware_data(handler, fragment)
+                logging.info(hardware_data)
                 output += "</br>"
                 output += "<li>Hardware ID: %s</li>" % str(hardware_data['ID'])
                 output += ("<li>Hardware version: %s</li>" %

@@ -37,11 +37,10 @@ except ImportError:
 
 # google appengine imports
 import webapp2
-from google.appengine.api import memcache
-from google.appengine.api import urlfetch
 from google.appengine.api import mail
 from google.appengine.api import users
-from google.appengine.ext import ereporter
+from google.appengine.api import urlfetch
+from google.appengine.api import memcache
 
 # the humans.py file
 from humans import HomeHandler
@@ -62,8 +61,6 @@ from dtmm_utils import dorender
 from dtmm_utils import get_url_content
 from dtmm_utils import get_tree
 from dtmm_utils import FourOhFourErrorLog
-
-ereporter.register_logger()
 
 
 class BaseRequestHandler(webapp2.RequestHandler):
@@ -90,10 +87,9 @@ class SearchModulesHandler(BaseRequestHandler):
         query = self.request.get('q')
         data = get_tree(self)
         for fragment in data:
-            if (fragment['path'].endswith('.lua') and
-                query in fragment['path'].split('/')[-1]):
-                        self.response.out.write(
-                            str(fragment['path'].split('/')[-1]) + '\n')
+            if (fragment['path'].endswith('.lua') and query in fragment['path'].split('/')[-1]):
+                self.response.out.write(
+                    str(fragment['path'].split('/')[-1]) + '\n')
 
 
 class DownloadModulesHandler(BaseRequestHandler):
