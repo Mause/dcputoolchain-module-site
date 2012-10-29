@@ -10,36 +10,26 @@ def get_hardware_data(data):
     """Given a get_tree fragment,
     returns hardware data in a python dict"""
     hardware_data = (
-        re.search('HARDWARE\s*=\s*\{([^}]*)\}',
+        re.search('HARDWARE\s*=\s*(?P<data>\{[^}]*\})',
                   data))
-    try:
-        hardware_data = hardware_data.group(0)
-        hardware_data = hardware_data.strip('HARDWARE=')
-        hardware_data = hardware_data.strip('HARDWARE =')
-        hardware_data = lua.decode(hardware_data)
-    except AttributeError:
-        logging.info('hardware_data: ' + str(hardware_data))
-    new_output = {}
-    new_output['Version'] = hardware_data[1]
-    new_output['ID'] = hardware_data[3]
-    new_output['Manufacturer'] = hardware_data[5]
-    return new_output
+    if hardware_data:
+        hardware_data = lua.decode(hardware_data.groupdict()['data'])
+        return hardware_data
+    else:
+        return {}
 
 
 def get_module_data(data):
     """Given a get_tree fragment,
     returns module data in a python dict"""
     module_data = (
-        re.search('MODULE\s*=\s*\{([^}]*)\}',
+        re.search('MODULE\s*=\s*(?P<data>\{[^}]*\})',
                   data))
-    try:
-        module_data = module_data.group(0)
-        module_data = module_data.strip('MODULE=')
-        module_data = module_data.strip('MODULE =')
-        module_data = lua.decode(module_data)
-    except AttributeError:
-        logging.info('module_data: ' + str(module_data))
-    return module_data
+    if module_data:
+        module_data = lua.decode(module_data.groupdict()['data'])
+        return module_data
+    else:
+        return {}
 
 
 def main():
