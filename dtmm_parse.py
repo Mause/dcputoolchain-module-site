@@ -2,7 +2,6 @@
 import os
 import re
 import sys
-import logging
 from slpp import slpp as lua
 
 

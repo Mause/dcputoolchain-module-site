@@ -215,7 +215,7 @@ class BuildStatusHandler(BaseRequestHandler):
         # ensure the platform is valid
         if platform in ['mac', 'linux', 'windows']:
             # create the build status url
-            url = 'http://irc.lysdev.com:8080/json/builders/build_for_%s/builds?select=-1&as_text=1' % (platform)
+            url = 'http://bb.dcputoolcha.in:8080/json/builders/build_for_%s/builds?select=-1&as_text=1' % (platform)
             # check whether the build status is cached
             cached_status = memcache.get('build_status_%s' % (platform))
             # if it was not cached, or is no longer in the cache
@@ -224,12 +224,18 @@ class BuildStatusHandler(BaseRequestHandler):
                 logging.info('Okay, no cached status, hitting the buildbot')
                 try:
                     # try to pull build status from the buildbot
-                    raw_data = json.loads(urlfetch.fetch(url).content)
+                    content = urlfetch.fetch(url).content
+                    raw_data = json.loads(content)
                 except urlfetch.DownloadError:
                     # inform the logger that we could not get the build status
                     logging.info('Could not get the info from the build server')
                     # if it errors out, set the build status to unknown
                     # this is done to ensure unambiguity
+                    end_status = 'unknown'
+                except ValueError:
+                    logging.error(
+                        'No JSON object could be decoded, from the buildbot output\n'
+                        'Output was as follows; %s' % (content))
                     end_status = 'unknown'
                 else:
                     # if no exceptions occured
