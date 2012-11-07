@@ -215,7 +215,8 @@ class BuildStatusHandler(BaseRequestHandler):
         # ensure the platform is valid
         if platform in ['mac', 'linux', 'windows']:
             # create the build status url
-            url = 'http://bb.dcputoolcha.in:8080/json/builders/build_for_%s/builds?select=-1&as_text=1' % (platform)
+            url = 'http://bb.dcputoolcha.in:8080/json/builders/build_%s/builds?select=-1&as_text=1' % (platform)
+            logging.info(url)
             # check whether the build status is cached
             cached_status = memcache.get('build_status_%s' % (platform))
             # if it was not cached, or is no longer in the cache
@@ -239,15 +240,16 @@ class BuildStatusHandler(BaseRequestHandler):
                     end_status = 'unknown'
                 else:
                     # if no exceptions occured
-                    if '-1' in raw_data and 'text' in raw_data['-1'] and 'successful' in raw_data['-1']['text']:
-                        # if the required fields are available, inform the logger so
-                        logging.info('Builds are passing')
-                        # set the build status to 'passing'
-                        end_status = 'passing'
-                    elif '-1' in raw_data and 'text' in raw_data['-1'] and 'failed' in raw_data['-1']['text']:
-                        logging.info('Builds are failing')
-                        # set the build status to 'failing'
-                        end_status = 'failing'
+                    if '-1' in raw_data and 'text' in raw_data['-1']:
+                        if 'successful' in raw_data['-1']['text']:
+                            # if the required fields are available, inform the logger so
+                            logging.info('Builds are passing')
+                            # set the build status to 'passing'
+                            end_status = 'passing'
+                        elif 'failed' in raw_data['-1']['text'] or 'exception' in raw_data['-1']['text']:
+                            logging.info('Builds are failing')
+                            # set the build status to 'failing'
+                            end_status = 'failing'
                     else:
                         # if the required fields were not available
                         # inform the logger so
