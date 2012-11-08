@@ -25,7 +25,6 @@ the DCPUToolchain executables that make use of them.
 # generic imports
 import os
 import sys
-import json
 import base64
 import hashlib
 import logging
@@ -42,7 +41,7 @@ from google.appengine.api import users
 from google.appengine.api import urlfetch
 from google.appengine.api import memcache
 
-# the humans.py file
+#  humans.py file
 from humans import HomeHandler
 from humans import PrettyTreeHandler
 from humans import TreeHandler
@@ -292,6 +291,11 @@ class ExceptionTestHandler(BaseRequestHandler):
         raise Exception
 
 
+class RootModulesHandler(BaseRequestHandler):
+    def get(self):
+        self.redirect('/human/')
+
+
 app = webapp2.WSGIApplication([
     (r'/human/tree/pretty.?', PrettyTreeHandler),
     (r'/human/tree.?', TreeHandler),
@@ -299,12 +303,13 @@ app = webapp2.WSGIApplication([
     (r'/human/listing.?', ListingHandler),
     (r'/human/inspect.?', InspectHandler),
     (r'/human.?', HomeHandler),
+    (r'/modules.?', RootModulesHandler)
     (r'/modules/search.?', SearchModulesHandler),
     (r'/modules/download.?', DownloadModulesHandler),
     (r'/modules/list.?', ListModulesHandler),
     (r'/status/(?P<platform>.*).png', BuildStatusHandler),
 #    (r'/flush', SmartFlushHandler),
-    (r'/exception', ExceptionTestHandler),
+    # (r'/exception', ExceptionTestHandler),
     (r'/flush', FlushHandler),
     (r'/debug', DebugHandler),
     (r'/', RedirectToHumanHandler)
