@@ -278,13 +278,14 @@ class BuildStatusHandler(BaseRequestHandler):
 
 class DebugHandler(BaseRequestHandler):
     def get(self):
-        data_tree = get_tree(self) + get_tree(self)
-        module_data = pretty_data_tree(
-            self,
-            data_tree,
-            pretty_colours(len(data_tree)))
-        for key in module_data.keys():
-            self.response.write('%s: %s</br>' % (key, module_data[key]))
+        self.response.write(get_tree(self))
+        # data_tree = get_tree(self) + get_tree(self)
+        # module_data = pretty_data_tree(
+        #     self,
+        #     data_tree,
+        #     pretty_colours(len(data_tree)))
+        # for key in module_data.keys():
+        #     self.response.write('%s: %s</br>' % (key, module_data[key]))
 
 
 class ExceptionTestHandler(BaseRequestHandler):

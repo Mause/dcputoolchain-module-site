@@ -223,21 +223,52 @@ class TestFunctions(unittest2.TestCase):
             {'selected': 'selected', 'name': 'optimizer'}])
 
     def test_search(self):
+        # patch some functions
         def get_tree(handler=None):
             return [{
-                u'sha': u'ac178f6489f2d3f601df6a9a5e641b62a0388eae',
+                u'url': u'https://api.github.com/repos/DCPUTeam/DCPUModules/git/blobs/9795df44fa1e3e063f46db61c08de23de1042425',
+                u'sha': u'9795df44fa1e3e063f46db61c08de23de1042425',
                 u'mode': u'100644',
-                u'path': u'assert.lua',
-                u'type': u'blob'}]
+                u'path': u'unitsdbg.lua',
+                u'type': u'blob',
+                u'size': 4812}]
 
         patcher = patch(
             'humans.get_tree', get_tree)
         self.addCleanup(patcher.stop)
         patcher.start()
 
+        def get_url_content(handler=None, url=None):
+            return {
+                'content': base64.b64encode('''
+                    MODULE = {
+                        Type = "Hardware",
+                        Name = "HMD2043",
+                        Version = "1.1",
+                        SDescription = "Deprecated HMD2043 hardware device",
+                        URL = "False URL"
+                    };''')}
+        patcher = patch(
+            'dtmm_utils.get_url_content', get_url_content)
+        self.addCleanup(patcher.stop)
+        patcher.start()
+
+        # run the actual tests
         import humans
         # tests with and without success. firstly, without a type specified
         end_data = humans.search(None, 'query', '')
+        self.assertEqual(end_data, [])
+
+        end_data = humans.search(None, 'assert', '')
+        self.assertEqual(
+            end_data,
+            [{
+                u'sha': u'ac178f6489f2d3f601df6a9a5e641b62a0388eae',
+                u'mode': u'100644',
+                u'path': u'assert.lua',
+                u'type': u'blob'}])
+
+        end_data = humans.search(None, 'query', 'optimizer')
         self.assertEqual(end_data, [])
 
         end_data = humans.search(None, 'assert', '')
