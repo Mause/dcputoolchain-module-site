@@ -12,12 +12,13 @@ from mock import patch
 # from httpretty import HTTPretty, httprettified
 import json
 import base64
-
 from google.appengine.ext import testbed
-# from  import urlfetch
+
+# import other test files
+from test_humans import Test_Humans
 
 
-class TestFunctions(unittest2.TestCase):
+class Test_DTMM_Utils(unittest2.TestCase):
     def setUp(self):
         self.testbed = testbed.Testbed()
         self.testbed.activate()
@@ -199,86 +200,6 @@ class TestFunctions(unittest2.TestCase):
         self.assertEqual(
             end_data,
             {'Version': 1986, 'ID': 1962560686, 'Manufacturer': 559171912})
-
-    #### humans.py file tests ####
-
-    def test_gen_types(self):
-        import humans
-        end_data = humans.gen_types()
-
-        self.assertEqual(
-            end_data,
-            [{'selected': '', 'name': 'preprocessor'},
-            {'selected': '', 'name': 'debugger'},
-            {'selected': '', 'name': 'hardware'},
-            {'selected': '', 'name': 'optimizer'}])
-
-        end_data = humans.gen_types(selected='optimizer')
-
-        self.assertEqual(
-            end_data,
-            [{'selected': '', 'name': 'preprocessor'},
-            {'selected': '', 'name': 'debugger'},
-            {'selected': '', 'name': 'hardware'},
-            {'selected': 'selected', 'name': 'optimizer'}])
-
-    def test_search(self):
-        # patch some functions
-        def get_tree(handler=None):
-            return [{
-                u'url': u'https://api.github.com/repos/DCPUTeam/DCPUModules/git/blobs/9795df44fa1e3e063f46db61c08de23de1042425',
-                u'sha': u'9795df44fa1e3e063f46db61c08de23de1042425',
-                u'mode': u'100644',
-                u'path': u'unitsdbg.lua',
-                u'type': u'blob',
-                u'size': 4812}]
-
-        patcher = patch(
-            'humans.get_tree', get_tree)
-        self.addCleanup(patcher.stop)
-        patcher.start()
-
-        def get_url_content(handler=None, url=None):
-            return {
-                'content': base64.b64encode('''
-                    MODULE = {
-                        Type = "Hardware",
-                        Name = "HMD2043",
-                        Version = "1.1",
-                        SDescription = "Deprecated HMD2043 hardware device",
-                        URL = "False URL"
-                    };''')}
-        patcher = patch(
-            'dtmm_utils.get_url_content', get_url_content)
-        self.addCleanup(patcher.stop)
-        patcher.start()
-
-        # run the actual tests
-        import humans
-        # tests with and without success. firstly, without a type specified
-        end_data = humans.search(None, 'query', '')
-        self.assertEqual(end_data, [])
-
-        end_data = humans.search(None, 'assert', '')
-        self.assertEqual(
-            end_data,
-            [{
-                u'sha': u'ac178f6489f2d3f601df6a9a5e641b62a0388eae',
-                u'mode': u'100644',
-                u'path': u'assert.lua',
-                u'type': u'blob'}])
-
-        end_data = humans.search(None, 'query', 'optimizer')
-        self.assertEqual(end_data, [])
-
-        end_data = humans.search(None, 'assert', '')
-        self.assertEqual(
-            end_data,
-            [{
-                u'sha': u'ac178f6489f2d3f601df6a9a5e641b62a0388eae',
-                u'mode': u'100644',
-                u'path': u'assert.lua',
-                u'type': u'blob'}])
 
 
 def main():

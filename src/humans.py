@@ -213,9 +213,10 @@ def gen_types(selected=None):
     return final
 
 
-def search(handler, query, requested_type):
+def search(handler, query, requested_type=''):
     "filters fragment accourding to input"
     output = []
+    query = query.lower()
     data = get_tree(handler)
     requested_type = requested_type.lower()
 
@@ -230,8 +231,8 @@ def search(handler, query, requested_type):
         for fragment in data:
             mod_data_frag = get_module_data(handler, fragment)
             if fragment['path'].endswith('.lua'):
-                if query in fragment['path'].split('/')[-1]:
-                    if requested_type == mod_data_frag['Type'].lower():
+                if query in fragment['path'].split('/')[-1].lower():
+                    if requested_type.lower() == mod_data_frag['Type'].lower():
                         output.append(fragment)
     return output
 

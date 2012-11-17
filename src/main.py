@@ -52,6 +52,8 @@ from humans import InspectHandler
 from humans import pretty_data_tree
 from humans import pretty_colours
 
+from humans import search
+
 # the mailer.py file
 from mailer import sendmail
 
@@ -278,7 +280,8 @@ class BuildStatusHandler(BaseRequestHandler):
 
 class DebugHandler(BaseRequestHandler):
     def get(self):
-        self.response.write(get_tree(self))
+        # self.response.write(get_tree(self))
+        self.response.write(search(None, 'hmd', ''))
         # data_tree = get_tree(self) + get_tree(self)
         # module_data = pretty_data_tree(
         #     self,
