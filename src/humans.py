@@ -36,7 +36,14 @@ from dtmm_utils import dorender
 from dtmm_utils import FourOhFourErrorLog
 
 # google appengine imports
-import webapp2
+try:
+    import webapp2
+except ImportError:
+    # FIXME: ugly hack time!
+    # this is for unit testing
+    class webapp2:
+        class RequestHandler:
+            pass
 
 module_types = ['preprocessor', 'debugger', 'hardware', 'optimizer']
 
@@ -195,11 +202,10 @@ class HumanSearch(webapp2.RequestHandler):
 
 
 def gen_types(selected=None):
-    logging.info(str(module_types))
     final = []
     for frag in module_types:
         to_select = ''
-        if selected.lower() == frag.lower():
+        if str(selected).lower() == str(frag).lower():
             to_select = 'selected'
         final.append(
             {'name': frag,
