@@ -9,7 +9,7 @@ import unittest2
 # import requests
 # from sure import expect
 # from httpretty import HTTPretty, httprettified
-# import json
+import json
 import base64
 
 from google.appengine.ext import testbed
@@ -31,6 +31,36 @@ class TestFunctions(unittest2.TestCase):
 
     #     response = requests.get('http://github.com')
     #     expect(response.status_code).to.equal(201)
+
+    def test_get_tree(self):
+        class authed_fetch:
+            content = json.dumps({"tree": [
+                {"type": "blob",
+                "path": "README.md",
+                "mode": "100644",
+                "url": "https://api.github.com/repos/DCPUTeam/DCPUModules/git/blobs/ac178f6489f2d3f601df6a9a5e641b62a0388eae",
+                "sha": "ac178f6489f2d3f601df6a9a5e641b62a0388eae",
+                "size": 314}]})
+
+            def __init__(self, url):
+                pass
+
+            def __call__(self):
+                return self
+        import dtmm_utils
+        dtmm_utils.real_authed_fetch = dtmm_utils.authed_fetch
+        dtmm_utils.authed_fetch = authed_fetch
+        end_data = dtmm_utils.get_tree()
+        self.assertEqual(
+            end_data,
+            [{u'url': u'https://api.github.com/repos/DCPUTeam/DCPUModules/git/blobs/ac178f6489f2d3f601df6a9a5e641b62a0388eae',
+            u'sha': u'ac178f6489f2d3f601df6a9a5e641b62a0388eae',
+            u'mode': u'100644',
+            u'path': u'README.md',
+            u'type': u'blob',
+            u'size': 314}]
+            )
+        dtmm_utils.authed_fetch = dtmm_utils.real_authed_fetch
 
     def test_get_module_data(self):
         def get_url_content(handler=None, url=None):
