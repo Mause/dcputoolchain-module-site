@@ -32,6 +32,63 @@ class TestFunctions(unittest2.TestCase):
     #     response = requests.get('http://github.com')
     #     expect(response.status_code).to.equal(201)
 
+    def test_authed_fetch(self):
+        def get_oauth_token():
+            return 'oauth_token'
+
+        class fetch:
+            headers = {'x-ratelimit-remaining': 'lots'}
+            content = (
+                'Lorem ipsum dolor sit amet, consectetur adipisicing elit.')
+
+            def __init__(self, url, headers):
+                pass
+
+            def __call__(self):
+                return self
+        import dtmm_utils
+        dtmm_utils.urlfetch.real_fetch = dtmm_utils.urlfetch.fetch
+        dtmm_utils.urlfetch.fetch = fetch
+        dtmm_utils.real_get_oauth_token = dtmm_utils.get_oauth_token
+        dtmm_utils.get_oauth_token = get_oauth_token
+        end_data = dtmm_utils.authed_fetch('http://mock.com')
+        self.assertEqual(fetch(None, None).content, end_data.content)
+        self.assertIsInstance(end_data, fetch)
+        dtmm_utils.urlfetch.fetch = dtmm_utils.urlfetch.real_fetch
+        dtmm_utils.get_oauth_token = dtmm_utils.real_get_oauth_token
+
+    def test_get_url_content(self):
+        class authed_fetch:
+            content = json.dumps({"tree": [
+                {"type": "blob",
+                "path": "README.md",
+                "mode": "100644",
+                "url": "https://api.github.com/repos/DCPUTeam/DCPUModules/git/blobs/ac178f6489f2d3f601df6a9a5e641b62a0388eae",
+                "sha": "ac178f6489f2d3f601df6a9a5e641b62a0388eae",
+                "size": 314}]})
+
+            def __init__(self, url):
+                pass
+
+            def __call__(self):
+                return self
+        import dtmm_utils
+        dtmm_utils.real_authed_fetch = dtmm_utils.authed_fetch
+        dtmm_utils.authed_fetch = authed_fetch
+        end_data = dtmm_utils.get_url_content(None, 'http://mock.com')
+        self.assertEqual(
+            end_data,
+            {u'tree':
+                [{u'url': u'https://api.github.com/repos/DCPUTeam/DCPUModules/git/blobs/ac178f6489f2d3f601df6a9a5e641b62a0388eae',
+                u'sha': u'ac178f6489f2d3f601df6a9a5e641b62a0388eae',
+                u'mode': u'100644',
+                u'path': u'README.md',
+                u'type': u'blob',
+                u'size': 314}]}
+            )
+        dtmm_utils.authed_fetch = dtmm_utils.real_authed_fetch
+
+
     def test_get_tree(self):
         class authed_fetch:
             content = json.dumps({"tree": [
