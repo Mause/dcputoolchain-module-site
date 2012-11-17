@@ -150,7 +150,6 @@ def get_oauth_token(all_data=False):
                 'Content-Type': 'application/json',
                 "Authorization": "Basic " + auth_frag}
             )
-
         if 200 <= r.status_code < 300:
             token = json.loads(r.content)['token']
             memcache.set('oauth_token', token)

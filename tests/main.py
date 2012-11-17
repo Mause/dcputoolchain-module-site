@@ -22,15 +22,42 @@ class TestFunctions(unittest2.TestCase):
         self.testbed.setup_env(app_id='dcputoolchain-module-site')
         self.testbed.init_datastore_v3_stub()
         self.testbed.init_memcache_stub()
+        self.testbed.init_urlfetch_stub()
 
     # @httprettified
     # def test_github_access(self):
-    #     HTTPretty.register_uri(HTTPretty.GET, "http://github.com/",
-    #                            body="here is the mocked body",
-    #                            status=201)
-
+        # HTTPretty.register_uri(HTTPretty.GET,
+        #     "https://api.github.com/authorizations",
+        #     body=json.dumps(
+        #         {"token": "df11c284bf0a74752c65efc5595d407f1316837c"}),
+        #     status=200)
     #     response = requests.get('http://github.com')
     #     expect(response.status_code).to.equal(201)
+
+    def test_oauth_token(self):
+        class fetch:
+            headers = {'x-ratelimit-remaining': 'lots'}
+            content = json.dumps(
+                {"scopes": ["repo"],
+                "token": "df11c284bf0a74752c65efc5595d407f1316837c"})
+            status_code = 200
+
+            def __init__(self, **kwargs):
+                pass
+
+            def __call__(self):
+                return self
+        import dtmm_utils
+        dtmm_utils.urlfetch.real_fetch = dtmm_utils.urlfetch.fetch
+        dtmm_utils.urlfetch.fetch = fetch
+
+        with open('auth_frag.txt', 'w') as fh:
+            fh.write('False_Data')
+        data = dtmm_utils.get_oauth_token()
+        os.remove('auth_frag.txt')
+        self.assertEqual(data, 'df11c284bf0a74752c65efc5595d407f1316837c')
+
+        dtmm_utils.urlfetch.fetch = dtmm_utils.urlfetch.real_fetch
 
     def test_authed_fetch(self):
         def get_oauth_token():
@@ -87,7 +114,6 @@ class TestFunctions(unittest2.TestCase):
                 u'size': 314}]}
             )
         dtmm_utils.authed_fetch = dtmm_utils.real_authed_fetch
-
 
     def test_get_tree(self):
         class authed_fetch:

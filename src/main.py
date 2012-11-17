@@ -60,6 +60,7 @@ from dtmm_utils import dorender
 from dtmm_utils import get_url_content
 from dtmm_utils import get_tree
 from dtmm_utils import FourOhFourErrorLog
+# from dtmm_utils import get_oauth_token
 
 
 class BaseRequestHandler(webapp2.RequestHandler):
@@ -303,7 +304,7 @@ app = webapp2.WSGIApplication([
     (r'/human/listing.?', ListingHandler),
     (r'/human/inspect.?', InspectHandler),
     (r'/human.?', HomeHandler),
-    (r'/modules.?', RootModulesHandler)
+    (r'/modules.?', RootModulesHandler),
     (r'/modules/search.?', SearchModulesHandler),
     (r'/modules/download.?', DownloadModulesHandler),
     (r'/modules/list.?', ListModulesHandler),
