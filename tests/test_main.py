@@ -2,8 +2,6 @@
 import sys
 import os
 
-import dev_appserver
-dev_appserver.fix_sys_path()
 
 # locate app-engine SDK
 AE_PATH = "."
@@ -29,6 +27,9 @@ print 'Current directory;', os.getcwd()
 sys.path.insert(0, 'src')
 sys.path.insert(0, '..%ssrc' % os.sep)
 sys.path.insert(0, 'C:\\Program Files (x86)\\Google\\google_appengine\\')
+
+import dev_appserver
+dev_appserver.fix_sys_path()
 
 # unit testing specific imports
 import unittest2
