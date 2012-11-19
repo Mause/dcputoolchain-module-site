@@ -1,7 +1,29 @@
 # setup the test environment
 import sys
 import os
+
+# locate app-engine SDK
+AE_PATH = "."
+
+# path to app code
+APP_PATH = os.path.abspath(".")
+
+# load the AE paths (as stolen from dev_appserver.py)
+EXTRA_PATHS = [
+    APP_PATH,
+    AE_PATH,
+    os.path.join(AE_PATH, 'lib', 'antlr3'),
+    os.path.join(AE_PATH, 'lib', 'django'),
+    os.path.join(AE_PATH, 'lib', 'ipaddr'),
+    os.path.join(AE_PATH, 'lib', 'webob'),
+    os.path.join(AE_PATH, 'lib', 'yaml', 'lib'),
+    os.path.join(AE_PATH, 'lib', 'fancy_urllib'),  # issue[1]
+]
+sys.path = EXTRA_PATHS + sys.path
+
 print 'Current directory;', os.getcwd()
+
+sys.path.insert(0, 'src')
 sys.path.insert(0, '..%ssrc' % os.sep)
 sys.path.insert(0, 'C:\\Program Files (x86)\\Google\\google_appengine\\')
 
