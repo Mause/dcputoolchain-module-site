@@ -4,6 +4,6 @@ python:
   - "2.7"
 # command to install dependencies
 install: "pip install -r requirements.txt --use-mirrors"
-before_script: "svn checkout http://googleappengine.googlecode.com/svn/trunk/python ."
+before_script: "svn --quiet checkout http://googleappengine.googlecode.com/svn/trunk/python ."
 # command to run tests
 script: nosetests
