@@ -3,3 +3,5 @@ sure
 mock
 unittest2
 pyyaml
+webob
+neo_cs
