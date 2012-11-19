@@ -1,15 +1,13 @@
 # setup the test environment
 import sys
 import os
+print 'Current directory;', os.getcwd()
 sys.path.insert(0, '..%ssrc' % os.sep)
 sys.path.insert(0, 'C:\\Program Files (x86)\\Google\\google_appengine\\')
 
 # unit testing specific imports
 import unittest2
 from mock import patch
-# import requests
-# from sure import expect
-# from httpretty import HTTPretty, httprettified
 import json
 import base64
 from google.appengine.ext import testbed
