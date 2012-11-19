@@ -1,5 +1,4 @@
 webapp2
-git+https://github.com/gabrielfalcao/HTTPretty.git#egg=HTTPPretty
 sure
 mock
 unittest2
