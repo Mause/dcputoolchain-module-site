@@ -22,8 +22,6 @@ EXTRA_PATHS = [
 ]
 sys.path = EXTRA_PATHS + sys.path
 
-print 'Current directory;', os.getcwd()
-
 sys.path.insert(0, 'src')
 sys.path.insert(0, '..%ssrc' % os.sep)
 sys.path.insert(0, 'C:\\Program Files (x86)\\Google\\google_appengine\\')
