@@ -8,4 +8,4 @@ before_script:
   - sudo apt-get install python-clearsilver
   - "svn --quiet checkout http://googleappengine.googlecode.com/svn/trunk/python ."
 # command to run tests
-script: nosetests
+script: python tests\test_main.py
