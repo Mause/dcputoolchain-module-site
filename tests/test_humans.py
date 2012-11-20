@@ -6,11 +6,11 @@ sys.path.insert(0, '..%ssrc' % os.sep)
 sys.path.insert(0, 'C:\\Program Files (x86)\\Google\\google_appengine\\')
 
 # unit testing specific imports
+import base64
 import unittest2
 from mock import patch
 # from sure import expect
 # from httpretty import HTTPretty, httprettified
-import base64
 
 from google.appengine.ext import testbed
 
@@ -119,6 +119,24 @@ class Test_Humans(unittest2.TestCase):
                 u'path': u'hmd2043.lua',
                 u'type': u'blob',
                 u'size': 3979}])
+
+    def test_pretty_colours(self):
+        class webapp2_replacement:
+            class RequestHandler:
+                pass
+        patcher = patch(
+            'humans.webapp2', webapp2_replacement)
+        self.addCleanup(patcher.stop)
+        patcher.start()
+        import humans
+        import re
+        import random
+
+        output = humans.pretty_colours(random.randint(200, 500))
+
+        for colour in output:
+            self.assertNotEqual(re.match(
+                r'rgb\(\d+?, \d+?, \d+?\)'), None)
 
 
 def main():
