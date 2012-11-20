@@ -25,6 +25,13 @@ class Test_Humans(unittest2.TestCase):
         self.testbed.init_urlfetch_stub()
 
     def test_gen_types(self):
+        class webapp2_replacement:
+            class RequestHandler:
+                pass
+        patcher = patch(
+            'humans.webapp2', webapp2_replacement)
+        self.addCleanup(patcher.stop)
+        patcher.start()
         import humans
         end_data = humans.gen_types()
 
@@ -45,6 +52,14 @@ class Test_Humans(unittest2.TestCase):
             {'selected': 'selected', 'name': 'optimizer'}])
 
     def test_search(self):
+        class webapp2_replacement:
+            class RequestHandler:
+                pass
+        patcher = patch(
+            'humans.webapp2', webapp2_replacement)
+        self.addCleanup(patcher.stop)
+        patcher.start()
+
         # patch some functions
         def get_tree(handler=None):
             return [{

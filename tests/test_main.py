@@ -1,42 +1,9 @@
-# setup the test environment
-import sys
 import os
-
-# locate app-engine SDK
-AE_PATH = "."
-
-# path to app code
-APP_PATH = os.path.abspath(".")
-
-# load the AE paths (as stolen from dev_appserver.py)
-EXTRA_PATHS = [
-    APP_PATH,
-    AE_PATH,
-    os.path.join(AE_PATH, 'lib', 'antlr3'),
-    os.path.join(AE_PATH, 'lib', 'django'),
-    os.path.join(AE_PATH, 'lib', 'ipaddr'),
-    os.path.join(AE_PATH, 'lib', 'webob'),
-    os.path.join(AE_PATH, 'lib', 'yaml', 'lib'),
-    os.path.join(AE_PATH, 'lib', 'fancy_urllib'),  # issue[1]
-]
-sys.path = EXTRA_PATHS + sys.path
-
-sys.path.insert(0, 'src')
-sys.path.insert(0, '..%ssrc' % os.sep)
-sys.path.insert(0, 'C:\\Program Files (x86)\\Google\\google_appengine\\')
-
-import dev_appserver
-dev_appserver.fix_sys_path()
-
-# unit testing specific imports
-import unittest2
-from mock import patch
 import json
 import base64
+import unittest2
+from mock import patch
 from google.appengine.ext import testbed
-
-# import other test files
-from test_humans import Test_Humans
 
 
 class Test_DTMM_Utils(unittest2.TestCase):
@@ -221,12 +188,3 @@ class Test_DTMM_Utils(unittest2.TestCase):
         self.assertEqual(
             end_data,
             {'Version': 1986, 'ID': 1962560686, 'Manufacturer': 559171912})
-
-
-def main():
-    # import dev_appserver
-    # dev_appserver.fix_sys_path()
-    unittest2.main()
-
-if __name__ == '__main__':
-    main()

@@ -35,16 +35,8 @@ from dtmm_utils import get_tree
 from dtmm_utils import dorender
 from dtmm_utils import FourOhFourErrorLog
 
-# google appengine imports
-try:
-    import webapp2
-except ImportError:
-    # FIXME: ugly hack time!
-    # this is for unit testing
-    class Webapp2:
-        class RequestHandler:
-            pass
-    webapp2 = Webapp2()
+import webapp2
+
 
 module_types = ['preprocessor', 'debugger', 'hardware', 'optimizer']
 
