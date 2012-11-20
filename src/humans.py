@@ -41,9 +41,10 @@ try:
 except ImportError:
     # FIXME: ugly hack time!
     # this is for unit testing
-    class webapp2:
+    class Webapp2:
         class RequestHandler:
             pass
+    webapp2 = Webapp2()
 
 module_types = ['preprocessor', 'debugger', 'hardware', 'optimizer']
 
@@ -75,10 +76,16 @@ class PrettyTreeHandler(webapp2.RequestHandler):
     "Basically the same as /tree, but pretty <3"
     def get(self):
         data_tree = get_tree(self)
-        module_data = pretty_data_tree(
-            self,
-            data_tree,
-            pretty_colours(len(data_tree)))
+
+        colours = pretty_colours(len(data_tree))
+        module_data = {}
+        for fragment in range(len(data_tree)):
+            if data_tree[fragment]['path'].endswith('.lua'):
+                cur_path = str(data_tree[fragment]['path']).split('/')[-1]
+                module_data[cur_path] = get_module_data(self, data_tree[fragment])
+                module_data[cur_path]['filename'] = cur_path
+                module_data[cur_path]['background'] = colours[fragment]
+
         tree = []
         fragment_num = 0
         break_on = 3
@@ -101,11 +108,11 @@ class PrettyTreeHandler(webapp2.RequestHandler):
         calc['margin_height'] = calc['height'] / 2
         calc['width'] = 900
         calc['margin_width'] = calc['width'] / 2
-        index = 0
-        for fragment in tree:
-            fragment['width'] = calc['width'] / break_on
-            fragment['index'] = index
-            index += 1
+
+        for index in range(len(tree)):
+            tree[index]['width'] = calc['width'] / break_on
+            tree[index]['index'] = index
+
         if len(module_data) % break_on != 0:
             if len(module_data) % break_on == 1:
                 tree[-1]['width'] = calc['width']
@@ -257,20 +264,6 @@ def pretty_colours(how_many):
         temp_c = map(lambda x: iround(x * 256), converted)
         final_colours.append('rgb(%s, %s, %s)' % tuple(temp_c))
     return final_colours
-
-
-def pretty_data_tree(handler, data, colours):
-    "given a data tree, will return a dict version"
-    output = {}
-    colour_num = 0
-    for fragment in data:
-        if fragment['path'].endswith('.lua'):
-            cur_path = str(fragment['path']).split('/')[-1]
-            output[cur_path] = get_module_data(handler, fragment)
-            output[cur_path]['filename'] = cur_path
-            output[cur_path]['background'] = colours[colour_num]
-            colour_num += 1
-    return output
 
 
 def data_tree(handler, data):

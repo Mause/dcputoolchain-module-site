@@ -2,7 +2,6 @@
 import sys
 import os
 
-
 # locate app-engine SDK
 AE_PATH = "."
 
