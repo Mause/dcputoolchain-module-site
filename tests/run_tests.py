@@ -41,7 +41,8 @@ def main():
     suite = loader.loadTestsFromModule(test_main)
     # suite = loader.loadTestsFromModule(test_humans)
     suite.addTests(loader.loadTestsFromModule(test_humans))
-    unittest2.TextTestRunner(verbosity=2).run(suite())
+    runner = unittest2.TextTestRunner(verbosity=2)
+    runner.run(suite)
     # unittest2.main()
 
 if __name__ == '__main__':
