@@ -136,7 +136,7 @@ class Test_Humans(unittest2.TestCase):
 
         for colour in output:
             self.assertNotEqual(re.match(
-                r'rgb\(\d+?, \d+?, \d+?\)'), None)
+                r'rgb\(\d+?, \d+?, \d+?\)', colour), None)
 
 
 def main():
