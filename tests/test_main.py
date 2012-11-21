@@ -31,17 +31,14 @@ class Test_Main(unittest2.TestCase):
         with open('auth_frag.txt', 'w') as fh:
             fh.write('False_Data')
         self.addCleanup(lambda: os.remove('auth_frag.txt'))
+
         response = self.testapp.get('/human/search')
         print [x for x in dir(response) if not x.startswith('_')]
-        # request = webapp2.Request.blank('/modules/search')
-        # request.method = 'GET'
-        # response = request.get_response(main.app)
-        # print response
         self.assertEqual(response.status_int, 200)
+
         from tidylib import tidy_document
-        # print html_output
         document, errors = tidy_document(response.body)
-        print errors
+        print errors, type(errors)
         self.assertEqual(len(errors), 0)
 
 

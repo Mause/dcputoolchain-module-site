@@ -3,6 +3,18 @@
     <head>
         <title>Human Search</title>
     </head>
+        <style>
+        .results {
+            background-color: #999;
+            margin-right: 10px;
+            margin-left: 10px;
+            width: 98%;
+            border: 2px solid grey;
+        }
+        .inner {
+            margin: 10px;
+        }
+        </style>
     <body>
         <h3>Search the available modules</h3>
         <form method="POST" action="/human/search">
@@ -16,18 +28,6 @@
         <input type="submit" value="Search"/>
         </form>
 
-        <style>
-        .results {
-            background-color: #999;
-            margin-right: 10px;
-            margin-left: 10px;
-            width: 98%;
-            border: 2px solid grey;
-        }
-        .inner {
-            margin: 10px;
-        }
-        </style>
 
         {% if results %}
         <div class="results">
