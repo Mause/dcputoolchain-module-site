@@ -30,7 +30,7 @@ class Test_Main(unittest2.TestCase):
     def test_SearchModuleHandler(self):
         with open('auth_frag.txt', 'w') as fh:
             fh.write('False_Data')
-        response = self.testapp.get('/humans/search')
+        response = self.testapp.get('/human/search')
         print [x for x in dir(response) if not x.startswith('_')]
         # request = webapp2.Request.blank('/modules/search')
         # request.method = 'GET'
