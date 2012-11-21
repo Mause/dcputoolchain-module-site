@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Human Index</title>
+    </head>
+    <body>
+        <ul>
+            {% for page in pages %}
+            <li><a href="/human/{{page}}">{{page}}</a></li>
+            {%endfor%}
+        </ul>
+    </body>
+</html>
