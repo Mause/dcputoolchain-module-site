@@ -36,6 +36,9 @@ except ImportError:
 import webapp2
 from google.appengine.api import urlfetch
 from google.appengine.api import memcache
+from google.appengine.dist import use_library
+os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
+use_library('django', '1.1')
 
 #  humans.py file
 from humans import HomeHandler
@@ -57,11 +60,8 @@ from dtmm_utils import get_tree
 from dtmm_utils import FourOhFourErrorLog
 from dtmm_utils import BaseRequestHandler
 
-# from dtmm_utils import dorender
-# from google.appengine.api import mail
-# from google.appengine.api import users
-# import traceback
-# import sys
+
+
 
 
 class SearchModulesHandler(BaseRequestHandler):
@@ -76,19 +76,6 @@ class SearchModulesHandler(BaseRequestHandler):
             if (fragment['path'].endswith('.lua') and query in fragment['path'].split('/')[-1]):
                 self.response.out.write(
                     str(fragment['path'].split('/')[-1]) + '\n')
-
-    # def handle_exception(self, exception, debug_mode):
-    #     lines = ''.join(traceback.format_exception(*sys.exc_info()))
-    #     logging.error(lines)
-    #     mail.send_mail(
-    #         sender='debugging@dcputoolchain-module-site.appspotmail.com',
-    #         to="jack.thatch@gmail.com",
-    #         subject='Caught Exception',
-    #         body=lines)
-    #     template_values = {}
-    #     if users.is_current_user_admin():
-    #         template_values['traceback'] = lines
-    #     self.response.out.write(dorender(self, 'error.html', template_values, write=False))
 
 
 class DownloadModulesHandler(BaseRequestHandler):

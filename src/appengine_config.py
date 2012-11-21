@@ -1,4 +1,5 @@
 appstats_CALC_RPC_COSTS = True
+webapp_django_version = '1.1'
 
 
 def webapp_add_wsgi_middleware(app):
