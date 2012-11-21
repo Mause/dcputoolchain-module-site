@@ -39,8 +39,8 @@ class Test_Main(unittest2.TestCase):
         self.assertEqual(response.status_int, 200)
         from tidylib import tidy_document
         # print html_output
-        document, errors = tidy_document(html_output)
-        # self.assertEqual()
+        document, errors = tidy_document(response.body)
+        self.assertEqual(len(errors), 0)
         os.remove('auth_frag.txt')
 
 
