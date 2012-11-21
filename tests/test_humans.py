@@ -24,6 +24,9 @@ class Test_Humans(unittest2.TestCase):
         self.testbed.init_memcache_stub()
         self.testbed.init_urlfetch_stub()
 
+    def tearDown(self):
+        self.testbed.deactivate()
+
     def test_gen_types(self):
         class webapp2_replacement:
             class RequestHandler:

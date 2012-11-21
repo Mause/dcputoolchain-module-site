@@ -292,6 +292,45 @@ class RootModulesHandler(BaseRequestHandler):
         self.redirect('/human/')
 
 
+class AsynchronousRequestsTest(BaseRequestHandler):
+    def get(self):
+        rpc = urlfetch.create_rpc()
+        urlfetch.make_fetch_call(rpc, "http://www.google.com/")
+
+        # ... do other things ...
+
+        try:
+            result = rpc.get_result()
+            if result.status_code == 200:
+                text = result.content
+                # ...
+        except urlfetch.DownloadError:
+            pass
+            # Request timed out or failed.
+            # ...
+
+        def handle_result(rpc):
+            result = rpc.get_result()
+            # ... Do something with result...
+
+        # Use a helper function to define the scope of the callback.
+        def create_callback(rpc):
+            return lambda: handle_result(rpc)
+
+        rpcs = []
+        for url in urls:
+            rpc = urlfetch.create_rpc()
+            rpc.callback = create_callback(rpc)
+            urlfetch.make_fetch_call(rpc, url)
+            rpcs.append(rpc)
+
+        # ...
+
+        # Finish all RPCs, and let callbacks process the results.
+        for rpc in rpcs:
+            rpc.wait()
+
+
 app = webapp2.WSGIApplication([
     (r'/human/tree/pretty.?', PrettyTreeHandler),
     (r'/human/tree.?', TreeHandler),

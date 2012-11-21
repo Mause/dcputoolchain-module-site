@@ -15,6 +15,9 @@ class Test_DTMM_Utils(unittest2.TestCase):
         self.testbed.init_memcache_stub()
         self.testbed.init_urlfetch_stub()
 
+    def tearDown(self):
+        self.testbed.deactivate()
+
     # @httprettified
     # def test_github_access(self):
         # HTTPretty.register_uri(HTTPretty.GET,

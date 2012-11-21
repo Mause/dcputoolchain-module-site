@@ -70,16 +70,17 @@ class PrettyTreeHandler(webapp2.RequestHandler):
         data_tree = get_tree(self)
         data_tree = filter(lambda x: x['path'].endswith('.lua'), data_tree)
         colours = pretty_colours(len(data_tree))
-        tree = []
-        fragment_num = 0
-        break_on = 3
 
+        tree = []
         calc = {}
-        calc['width'] = 900
+        break_on = 3
         cell_height = 80  # in pixels :D
         header_diff = 20
+        fragment_num = 0
+        calc['width'] = 900
         calc['cell_height'] = cell_height
         calc['margin_width'] = calc['width'] / 2
+
         for fragment in range(len(data_tree)):
             cur_module = get_module_data(self, data_tree[fragment])
             cur_module['filename'] = str(data_tree[fragment]['path']).split('/')[-1]

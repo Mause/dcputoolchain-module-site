@@ -19,6 +19,9 @@ class Test_Main(unittest2.TestCase):
         self.testbed.init_memcache_stub()
         self.testbed.init_urlfetch_stub()
 
+    def tearDown(self):
+        self.testbed.deactivate()
+
     def test_SearchModuleHandler(self):
         class Response(webob.Response):
             def write(self, text):
