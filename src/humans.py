@@ -111,15 +111,11 @@ class PrettyTreeHandler(webapp2.RequestHandler):
 class TreeHandler(webapp2.RequestHandler):
     """A simple debugging interface"""
     def get(self):
-        "Handles get requests"
-        output = ''
-        output = ('<h2>Basic overview</h2>')
         data = get_tree(self)
         if not data:
             self.error(408)
             return
-        output += data_tree(self, data)
-        self.response.write(output)
+        dorender(self, 'tree.html', {'tree': data_tree(self, data)})
 
     def post(self):
         "Handlers POST requests"
