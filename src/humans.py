@@ -65,7 +65,7 @@ class HomeHandler(webapp2.RequestHandler):
 
 
 class PrettyTreeHandler(webapp2.RequestHandler):
-    "Basically the same as /tree, but pretty <3"
+    "Basically the same as /humans/tree, but pretty <3"
     def get(self):
         data_tree = get_tree(self)
         data_tree = filter(lambda x: x['path'].endswith('.lua'), data_tree)

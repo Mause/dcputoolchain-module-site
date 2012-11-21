@@ -5,7 +5,7 @@ python:
 # command to install dependencies
 install: "pip install -r requirements.txt --use-mirrors"
 before_script: 
-  # - sudo apt-get install python-clearsilver
+  - "sudo apt-get install libtidy-dev"
   - "svn --quiet checkout http://googleappengine.googlecode.com/svn/trunk/python ."
 # command to run tests
 script: python tests/run_tests.py

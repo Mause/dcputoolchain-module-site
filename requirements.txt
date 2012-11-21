@@ -6,3 +6,4 @@ pyyaml
 webob
 simplejson
 django
+pytidylib

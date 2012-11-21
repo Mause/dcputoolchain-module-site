@@ -3,43 +3,48 @@
 import sys
 import os
 
-# locate app-engine SDK
-AE_PATH = "."
 
-# path to app code
-APP_PATH = os.path.abspath(".")
+def setup_environ():
+    # locate app-engine SDK
+    AE_PATH = "."
 
-# load the AE paths (as stolen from dev_appserver.py)
-EXTRA_PATHS = [
-    APP_PATH,
-    AE_PATH,
-    os.path.join(AE_PATH, 'lib', 'antlr3'),
-    os.path.join(AE_PATH, 'lib', 'django'),
-    os.path.join(AE_PATH, 'lib', 'ipaddr'),
-    os.path.join(AE_PATH, 'lib', 'webob'),
-    os.path.join(AE_PATH, 'lib', 'yaml', 'lib'),
-    os.path.join(AE_PATH, 'lib', 'fancy_urllib'),  # issue[1]
-]
-sys.path = EXTRA_PATHS + sys.path
+    # path to app code
+    APP_PATH = os.path.abspath(".")
 
-sys.path.insert(0, 'src')
-sys.path.insert(0, '..%ssrc' % os.sep)
-sys.path.insert(0, 'C:\\Program Files (x86)\\Google\\google_appengine\\')
+    # load the AE paths (as stolen from dev_appserver.py)
+    EXTRA_PATHS = [
+        APP_PATH,
+        AE_PATH,
+        os.path.join(AE_PATH, 'lib', 'antlr3'),
+        os.path.join(AE_PATH, 'lib', 'django'),
+        os.path.join(AE_PATH, 'lib', 'ipaddr'),
+        os.path.join(AE_PATH, 'lib', 'webob'),
+        os.path.join(AE_PATH, 'lib', 'yaml', 'lib'),
+        os.path.join(AE_PATH, 'lib', 'fancy_urllib'),  # issue[1]
+    ]
+    sys.path = EXTRA_PATHS + sys.path
 
-import dev_appserver
-dev_appserver.fix_sys_path()
+    sys.path.insert(0, 'src')
+    sys.path.insert(0, '..%ssrc' % os.sep)
+    sys.path.insert(0, 'C:\\Program Files (x86)\\Google\\google_appengine\\')
+
+    import dev_appserver
+    dev_appserver.fix_sys_path()
+
+setup_environ()
 
 # unit testing specific imports
 import unittest2
 
 import test_humans
+import dtmm_utils
 import test_main
 
 
 def main():
     loader = unittest2.TestLoader()
     suite = loader.loadTestsFromModule(test_main)
-    # suite = loader.loadTestsFromModule(test_humans)
+    suite.addTests(loader.loadTestsFromModule(dtmm_utils))
     suite.addTests(loader.loadTestsFromModule(test_humans))
     print suite
     runner = unittest2.TextTestRunner(verbosity=2)
