@@ -1,3 +1,7 @@
+if __name__ == '__main__':
+    from run_tests import setup_environ
+    setup_environ()
+
 import os
 import json
 import base64

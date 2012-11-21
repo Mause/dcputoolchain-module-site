@@ -8,6 +8,8 @@
 *.swp
 *.out
 
+# pip specific
+build/
 
 # application specific
 auth_frag.txt
