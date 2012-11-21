@@ -68,42 +68,41 @@ class PrettyTreeHandler(webapp2.RequestHandler):
     "Basically the same as /tree, but pretty <3"
     def get(self):
         data_tree = get_tree(self)
-
+        data_tree = filter(lambda x: x['path'].endswith('.lua'), data_tree)
         colours = pretty_colours(len(data_tree))
         module_data = {}
         for fragment in range(len(data_tree)):
-            if data_tree[fragment]['path'].endswith('.lua'):
-                cur_path = str(data_tree[fragment]['path']).split('/')[-1]
-                module_data[cur_path] = get_module_data(self, data_tree[fragment])
-                module_data[cur_path]['filename'] = cur_path
-                module_data[cur_path]['background'] = colours[fragment]
+            cur_path = str(data_tree[fragment]['path']).split('/')[-1]
+            module_data[cur_path] = get_module_data(self, data_tree[fragment])
+            module_data[cur_path]['filename'] = cur_path
+            module_data[cur_path]['background'] = colours[fragment]
 
         tree = []
         fragment_num = 0
         break_on = 3
         cell_height = 80  # in pixels :D
+        calc = {}
+        header_diff = 20
+        calc['cell_height'] = cell_height
+        calc['width'] = 900
+        calc['margin_width'] = calc['width'] / 2
         for fragment in module_data:
+            logging.info(fragment)
             if fragment_num % break_on == 0:
                 module_data[fragment]['row'] = 'yes'
             else:
                 module_data[fragment]['row'] = 'no'
-            module_data[fragment]['width'] = ''
+            module_data[fragment]['width'] = calc['width'] / break_on
+            module_data[fragment]['index'] = fragment_num
+
             tree.append(module_data[fragment])
             fragment_num += 1
-        calc = {}
-        rows = len(filter(lambda x: x['row'] == 'yes', tree))
-        logging.info('This many rows; %s' % (rows))
-        header_diff = 20
-        calc['cell_height'] = cell_height
-        calc['height'] = (rows * cell_height) + header_diff
-        calc['outer_container_height'] = calc['height']
-        calc['margin_height'] = calc['height'] / 2
-        calc['width'] = 900
-        calc['margin_width'] = calc['width'] / 2
 
-        for index in range(len(tree)):
-            tree[index]['width'] = calc['width'] / break_on
-            tree[index]['index'] = index
+        rows = len(filter(lambda x: x['row'] == 'yes', tree))
+        calc['height'] = (rows * cell_height) + header_diff
+        calc['margin_height'] = calc['height'] / 2
+        calc['outer_container_height'] = calc['height']
+        logging.info('This many rows; %s' % (rows))
 
         if len(module_data) % break_on != 0:
             if len(module_data) % break_on == 1:
@@ -242,7 +241,7 @@ def iround(num):
 
 
 # the theory for this colour generator was taken from;
-# martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
+# http://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
 def pretty_colours(how_many):
     """uses golden ratio to create pleasant/pretty colours
     returns in rgb form"""
