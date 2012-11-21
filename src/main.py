@@ -36,9 +36,6 @@ except ImportError:
 import webapp2
 from google.appengine.api import urlfetch
 from google.appengine.api import memcache
-from google.appengine.dist import use_library
-os.environ['DJANGO_SETTINGS_MODULE'] = 'settings'
-use_library('django', '1.1')
 
 #  humans.py file
 from humans import HomeHandler
