@@ -2,31 +2,6 @@
 <html>
     <head>
         <title>DCPUToolchain Modules</title>
-    </head>
-    <body>
-		<div class="outer_container">
-			<div class="header"><h1>DCPUToolchain Modules</h1></div>
-			<div class="inner_container">
-				{% for breadcrumb in tree %}
-					{% ifequal breadcrumb.row 'yes' %}
-					</br></br>
-					{% endifequal %}
-					<div class="square square{{breadcrumb.index}}">
-						<div class="filename">
-							<a href="/human/inspect?name={{ breadcrumb.filename }}">{{ breadcrumb.filename }}</a>
-						</div>
-						<div class="description">
-							{{ breadcrumb.SDescription }}
-						</div>
-						<div class="docs_link">
-							<a href="{%if breadcrumb.URL%}{{ breadcrumb.URL }}{%else%}#{%endif%}">Docs</a>
-						</div>
-					</div>
-					{{ breadcrumb.url }}
-				{% endfor %}
-			</div>
-		</div>
-
 		<style type="text/css">
 			a:link {color: black;}      /* unvisited link */
 			a:visited {color:black;}  	/* visited link */
@@ -80,5 +55,30 @@
 			}
 			{% endfor %}
 		</style>
+    </head>
+    <body>
+		<div class="outer_container">
+			<div class="header"><h1>DCPUToolchain Modules</h1></div>
+			<div class="inner_container">
+				{% for breadcrumb in tree %}
+					{% ifequal breadcrumb.row 'yes' %}
+					<br /><br />
+					{% endifequal %}
+					<div class="square square{{breadcrumb.index}}">
+						<div class="filename">
+							<a href="/human/inspect?name={{ breadcrumb.filename }}">{{ breadcrumb.filename }}</a>
+						</div>
+						<div class="description">
+							{{ breadcrumb.SDescription }}
+						</div>
+						<div class="docs_link">
+							<a href="{%if breadcrumb.URL%}{{ breadcrumb.URL }}{%else%}#{%endif%}">Docs</a>
+						</div>
+					</div>
+					{{ breadcrumb.url }}
+				{% endfor %}
+			</div>
+		</div>
+
     </body>
 </html>
