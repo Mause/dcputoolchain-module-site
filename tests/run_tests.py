@@ -38,14 +38,14 @@ import unittest2
 
 import test_humans
 import test_dtmm_utils
-# import test_main
+import test_main
 
 
 def main():
     loader = unittest2.TestLoader()
     suite = loader.loadTestsFromModule(test_humans)
     suite.addTests(loader.loadTestsFromModule(test_dtmm_utils))
-    # suite.addTests(loader.loadTestsFromModule(test_main))
+    suite.addTests(loader.loadTestsFromModule(test_main))
     # print suite.__dict__
     runner = unittest2.TextTestRunner(verbosity=2)
     runner.run(suite)
