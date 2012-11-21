@@ -34,6 +34,7 @@ class Test_Main(unittest2.TestCase):
         # from tidylib import tidy_document
 
         import main
+        print dir(main)
 
         html_output = main.SearchModuleHandler().get(MockRequestHandler())
         print html_output
