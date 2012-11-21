@@ -33,10 +33,17 @@ import logging
 from slpp import slpp as lua
 
 # google appengine imports
+import webapp2
 from google.appengine.ext import db
+from google.appengine.api import mail
+from google.appengine.api import users
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.ext.webapp import template
+
+# for debugging exceptions
+import traceback
+import sys
 
 
 def get_hardware_data(handler, fragment):
@@ -160,3 +167,18 @@ class FourOhFourErrorLog(db.Model):
     address = db.StringProperty(required=True)
     requested_module = db.StringProperty(required=True)
     datetimer = db.DateTimeProperty(auto_now=True)
+
+
+class BaseRequestHandler(webapp2.RequestHandler):
+    def handle_exception(self, exception, debug_mode):
+        lines = ''.join(traceback.format_exception(*sys.exc_info()))
+        logging.error(lines)
+        mail.send_mail(
+            sender='debugging@dcputoolchain-module-site.appspotmail.com',
+            to="jack.thatch@gmail.com",
+            subject='Caught Exception',
+            body=lines)
+        template_values = {}
+        if users.is_current_user_admin():
+            template_values['traceback'] = lines
+        self.response.out.write(dorender(self, 'error.html', template_values, write=False))

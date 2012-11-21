@@ -24,11 +24,9 @@ the DCPUToolchain executables that make use of them.
 """
 # generic imports
 import os
-import sys
 import base64
 import hashlib
 import logging
-import traceback
 try:
     import json
 except ImportError:
@@ -36,8 +34,6 @@ except ImportError:
 
 # google appengine imports
 import webapp2
-from google.appengine.api import mail
-from google.appengine.api import users
 from google.appengine.api import urlfetch
 from google.appengine.api import memcache
 
@@ -56,33 +52,22 @@ from humans import search
 from mailer import sendmail
 
 # the dtmm_utils file
-from dtmm_utils import dorender
 from dtmm_utils import get_url_content
 from dtmm_utils import get_tree
 from dtmm_utils import FourOhFourErrorLog
-# from dtmm_utils import get_oauth_token
+from dtmm_utils import BaseRequestHandler
 
-
-class BaseRequestHandler(webapp2.RequestHandler):
-    def handle_exception(self, exception, debug_mode):
-        lines = ''.join(traceback.format_exception(*sys.exc_info()))
-        logging.error(lines)
-        mail.send_mail(
-            sender='debugging@dcputoolchain-module-site.appspotmail.com',
-            to="jack.thatch@gmail.com",
-            subject='Caught Exception',
-            body=lines)
-        template_values = {}
-        if users.is_current_user_admin():
-            template_values['traceback'] = lines
-        self.response.out.write(dorender(self, 'error.html', template_values, write=False))
+# from dtmm_utils import dorender
+# from google.appengine.api import mail
+# from google.appengine.api import users
+# import traceback
+# import sys
 
 
 class SearchModulesHandler(BaseRequestHandler):
     "Handle searching of the repo"
     def get(self):
         "Handles get requests"
-        print 'meh;', self.response
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'
         query = self.request.get('q')
@@ -91,6 +76,19 @@ class SearchModulesHandler(BaseRequestHandler):
             if (fragment['path'].endswith('.lua') and query in fragment['path'].split('/')[-1]):
                 self.response.out.write(
                     str(fragment['path'].split('/')[-1]) + '\n')
+
+    # def handle_exception(self, exception, debug_mode):
+    #     lines = ''.join(traceback.format_exception(*sys.exc_info()))
+    #     logging.error(lines)
+    #     mail.send_mail(
+    #         sender='debugging@dcputoolchain-module-site.appspotmail.com',
+    #         to="jack.thatch@gmail.com",
+    #         subject='Caught Exception',
+    #         body=lines)
+    #     template_values = {}
+    #     if users.is_current_user_admin():
+    #         template_values['traceback'] = lines
+    #     self.response.out.write(dorender(self, 'error.html', template_values, write=False))
 
 
 class DownloadModulesHandler(BaseRequestHandler):
@@ -292,43 +290,43 @@ class RootModulesHandler(BaseRequestHandler):
         self.redirect('/human/')
 
 
-class AsynchronousRequestsTest(BaseRequestHandler):
-    def get(self):
-        rpc = urlfetch.create_rpc()
-        urlfetch.make_fetch_call(rpc, "http://www.google.com/")
+# class AsynchronousRequestsTest(BaseRequestHandler):
+#     def get(self):
+#         rpc = urlfetch.create_rpc()
+#         urlfetch.make_fetch_call(rpc, "http://www.google.com/")
 
-        # ... do other things ...
+#         # ... do other things ...
 
-        try:
-            result = rpc.get_result()
-            if result.status_code == 200:
-                text = result.content
-                # ...
-        except urlfetch.DownloadError:
-            pass
-            # Request timed out or failed.
-            # ...
+#         try:
+#             result = rpc.get_result()
+#             if result.status_code == 200:
+#                 text = result.content
+#                 # ...
+#         except urlfetch.DownloadError:
+#             pass
+#             # Request timed out or failed.
+#             # ...
 
-        def handle_result(rpc):
-            result = rpc.get_result()
-            # ... Do something with result...
+#         def handle_result(rpc):
+#             result = rpc.get_result()
+#             # ... Do something with result...
 
-        # Use a helper function to define the scope of the callback.
-        def create_callback(rpc):
-            return lambda: handle_result(rpc)
+#         # Use a helper function to define the scope of the callback.
+#         def create_callback(rpc):
+#             return lambda: handle_result(rpc)
 
-        rpcs = []
-        for url in urls:
-            rpc = urlfetch.create_rpc()
-            rpc.callback = create_callback(rpc)
-            urlfetch.make_fetch_call(rpc, url)
-            rpcs.append(rpc)
+#         rpcs = []
+#         for url in urls:
+#             rpc = urlfetch.create_rpc()
+#             rpc.callback = create_callback(rpc)
+#             urlfetch.make_fetch_call(rpc, url)
+#             rpcs.append(rpc)
 
-        # ...
+#         # ...
 
-        # Finish all RPCs, and let callbacks process the results.
-        for rpc in rpcs:
-            rpc.wait()
+#         # Finish all RPCs, and let callbacks process the results.
+#         for rpc in rpcs:
+#             rpc.wait()
 
 
 app = webapp2.WSGIApplication([
