@@ -30,6 +30,7 @@ class Test_Main(unittest2.TestCase):
     def test_SearchModuleHandler(self):
         with open('auth_frag.txt', 'w') as fh:
             fh.write('False_Data')
+        self.addCleanup(lambda: os.remove('auth_frag.txt'))
         response = self.testapp.get('/human/search')
         print [x for x in dir(response) if not x.startswith('_')]
         # request = webapp2.Request.blank('/modules/search')
@@ -40,9 +41,8 @@ class Test_Main(unittest2.TestCase):
         from tidylib import tidy_document
         # print html_output
         document, errors = tidy_document(response.body)
-        self.assertEqual(len(errors), 0)
         print errors
-        os.remove('auth_frag.txt')
+        self.assertEqual(len(errors), 0)
 
 
 def main():
