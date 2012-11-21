@@ -82,6 +82,7 @@ class SearchModulesHandler(BaseRequestHandler):
     "Handle searching of the repo"
     def get(self):
         "Handles get requests"
+        print 'meh;', self.response
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'
         query = self.request.get('q')

@@ -1,6 +1,7 @@
 # import os
 # import json
 # import base64
+import webob
 import unittest2
 from mock import patch
 if __name__ == '__main__':
@@ -19,18 +20,38 @@ class Test_Main(unittest2.TestCase):
         self.testbed.init_urlfetch_stub()
 
     def test_SearchModuleHandler(self):
-        class MockRequestHandler:
-            html_output = ''
+        class Response(webob.Response):
+            def write(self, text):
+                if not isinstance(text, basestring):
+                    text = unicode(text)
 
-            class response:
-                headers = {}
+                if isinstance(text, unicode) and not self.charset:
+                    self.charset = self.default_charset
 
-            class request:
-                def write(string):
-                    self.html_output += str(string)
+                super(Response, self).write(text)
+
+            def _get_headers(self):
+                """The headers as a dictionary-like object."""
+                if self._headers is None:
+                    self._headers = []
+
+                return self._headers
+
+            def _set_headers(self, value):
+                if hasattr(value, 'items'):
+                    value = value.items()
+                elif not isinstance(value, list):
+                    raise TypeError(
+                        'Response headers must be a list or dictionary.')
+
+                self.headerlist = value
+                self._headers = None
+
+            headers = property(
+                _get_headers, _set_headers, doc=_get_headers.__doc__)
 
         patcher = patch(
-            'main.webapp2.RequestHandler', MockRequestHandler)
+            'main.BaseRequestHandler.response', Response)
         self.addCleanup(patcher.stop)
         patcher.start()
 

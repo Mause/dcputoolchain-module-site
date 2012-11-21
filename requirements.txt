@@ -7,3 +7,4 @@ webob
 simplejson
 django
 pytidylib
+webob
