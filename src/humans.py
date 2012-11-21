@@ -70,46 +70,43 @@ class PrettyTreeHandler(webapp2.RequestHandler):
         data_tree = get_tree(self)
         data_tree = filter(lambda x: x['path'].endswith('.lua'), data_tree)
         colours = pretty_colours(len(data_tree))
-        module_data = {}
-        for fragment in range(len(data_tree)):
-            cur_path = str(data_tree[fragment]['path']).split('/')[-1]
-            module_data[cur_path] = get_module_data(self, data_tree[fragment])
-            module_data[cur_path]['filename'] = cur_path
-            module_data[cur_path]['background'] = colours[fragment]
-
         tree = []
         fragment_num = 0
         break_on = 3
-        cell_height = 80  # in pixels :D
+
         calc = {}
+        calc['width'] = 900
+        cell_height = 80  # in pixels :D
         header_diff = 20
         calc['cell_height'] = cell_height
-        calc['width'] = 900
         calc['margin_width'] = calc['width'] / 2
-        for fragment in module_data:
-            logging.info(fragment)
+        for fragment in range(len(data_tree)):
+            cur_module = get_module_data(self, data_tree[fragment])
+            cur_module['filename'] = str(data_tree[fragment]['path']).split('/')[-1]
+            cur_module['background'] = colours[fragment]
             if fragment_num % break_on == 0:
-                module_data[fragment]['row'] = 'yes'
+                cur_module['row'] = 'yes'
             else:
-                module_data[fragment]['row'] = 'no'
-            module_data[fragment]['width'] = calc['width'] / break_on
-            module_data[fragment]['index'] = fragment_num
+                cur_module['row'] = 'no'
+            cur_module['width'] = calc['width'] / break_on
+            cur_module['index'] = fragment_num
 
-            tree.append(module_data[fragment])
+            tree.append(cur_module)
             fragment_num += 1
 
         rows = len(filter(lambda x: x['row'] == 'yes', tree))
         calc['height'] = (rows * cell_height) + header_diff
+        logging.info('This many rows; %s' % (rows))
         calc['margin_height'] = calc['height'] / 2
         calc['outer_container_height'] = calc['height']
-        logging.info('This many rows; %s' % (rows))
 
-        if len(module_data) % break_on != 0:
-            if len(module_data) % break_on == 1:
+        if len(tree) % break_on != 0:
+            if len(tree) % break_on == 1:
                 tree[-1]['width'] = calc['width']
-            if len(module_data) % break_on == 2:
+            if len(tree) % break_on == 2:
                 tree[-1]['width'] = calc['width'] / 2
                 tree[-2]['width'] = calc['width'] / 2
+
         tree[0]['row'] = 'no'
         dorender(self, 'tree_pretty.html', {'tree': tree,
                                             'calc': calc})
@@ -168,7 +165,7 @@ class ListingHandler(webapp2.RequestHandler):
 
 
 class HumanSearch(webapp2.RequestHandler):
-    "Handler searching of the repo"
+    "Handle searching of the repo"
     def get(self):
         query = self.request.get('q')
         requested_type = self.request.get('type')
