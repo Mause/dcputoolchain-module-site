@@ -1,6 +1,6 @@
 import os
 import webtest
-import webapp2
+# import webapp2
 import unittest2
 if __name__ == '__main__':
     from run_tests import setup_environ
@@ -30,8 +30,8 @@ class Test_Main(unittest2.TestCase):
     def test_SearchModuleHandler(self):
         with open('auth_frag.txt', 'w') as fh:
             fh.write('False_Data')
-        response = self.testapp.get('/modules/search')
-        print dir(response)
+        response = self.testapp.get('/humans/search')
+        print [x for x in dir(response) if not x.startswith('_')]
         # request = webapp2.Request.blank('/modules/search')
         # request.method = 'GET'
         # response = request.get_response(main.app)
@@ -41,6 +41,7 @@ class Test_Main(unittest2.TestCase):
         # print html_output
         document, errors = tidy_document(response.body)
         self.assertEqual(len(errors), 0)
+        print errors
         os.remove('auth_frag.txt')
 
 

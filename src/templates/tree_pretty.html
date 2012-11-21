@@ -1,77 +1,84 @@
-<div class="outer_container">
-	<div class="header"><h1>DCPUToolchain Modules</h1></div>
-	<div class="inner_container">
-		{% for breadcrumb in tree %}
-			{% ifequal breadcrumb.row 'yes' %}
-			</br></br>
-			{% endifequal %}
-			<div class="square square{{breadcrumb.index}}">
-				<div class="filename">
-					<a href="/human/inspect?name={{ breadcrumb.filename }}">{{ breadcrumb.filename }}</a>
-				</div>
-				<div class="description">
-					{{ breadcrumb.SDescription }}
-				</div>
-				<div class="docs_link">
-					<a href="{%if breadcrumb.URL%}{{ breadcrumb.URL }}{%else%}#{%endif%}">Docs</a>
-				</div>
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>DCPUToolchain Modules</title>
+    </head>
+    <body>
+		<div class="outer_container">
+			<div class="header"><h1>DCPUToolchain Modules</h1></div>
+			<div class="inner_container">
+				{% for breadcrumb in tree %}
+					{% ifequal breadcrumb.row 'yes' %}
+					</br></br>
+					{% endifequal %}
+					<div class="square square{{breadcrumb.index}}">
+						<div class="filename">
+							<a href="/human/inspect?name={{ breadcrumb.filename }}">{{ breadcrumb.filename }}</a>
+						</div>
+						<div class="description">
+							{{ breadcrumb.SDescription }}
+						</div>
+						<div class="docs_link">
+							<a href="{%if breadcrumb.URL%}{{ breadcrumb.URL }}{%else%}#{%endif%}">Docs</a>
+						</div>
+					</div>
+					{{ breadcrumb.url }}
+				{% endfor %}
 			</div>
-			{{ breadcrumb.url }}
-		{% endfor %}
-	</div>
-</div>
+		</div>
 
-<style type="text/css">
-	/*a {text-decoration: none}*/
-	a:link {color: black;}      /* unvisited link */
-	a:visited {color:black;}  	/* visited link */
-	a:hover {color:black;}  	/* mouse over link */
-	a:active {color:black;}  	/* selected link */
-	body {
-		font-family: 'Segoe UI Light','Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;
-	}
-	.header {
-		margin-bottom: 23px;
-		float: bottom;
-		height: 20px;
-		font-size: 20px;
-	}
-	.filename {
-		margin-top: 4px;
-		font-weight: 500;
-		font-size: 20px;
-		line-height: 100%;
-		text-align: center;
-		text-decoration: none;
-	}
-	.description {
-		margin: 5px;
-		text-align: center;
-		font-size: 13px;
-	}
-	.docs_link {
-		text-align: center;
-		font-size: 13px;
-	}
-	.outer_container{
-		float: bottom;
-		top: 41%;
-		left: 50%;
-		height: {{calc.outer_container_height}}px;
-		width: {{ calc.width }}px;
-		position: absolute;
-		margin-left: -{{ calc.margin_width }}px;
-		margin-top: -{{ calc.margin_height }}px;
-	}
-  	.square {
-		display: block;
-		float: left;
-		height: {{ calc.cell_height }}px;
-	}
-	{% for breadcrumb in tree %}
-	.square{{breadcrumb.index}} {
-		width: {{ breadcrumb.width }}px;
-		background-color: {{breadcrumb.background}};
-	}
-	{% endfor %}
-</style>
+		<style type="text/css">
+			a:link {color: black;}      /* unvisited link */
+			a:visited {color:black;}  	/* visited link */
+			a:hover {color:black;}  	/* mouse over link */
+			a:active {color:black;}  	/* selected link */
+			body {
+				font-family: 'Segoe UI Light','Segoe UI','Lucida Grande',Verdana,Arial,Helvetica,sans-serif;
+			}
+			.header {
+				margin-bottom: 23px;
+				float: bottom;
+				height: 20px;
+				font-size: 20px;
+			}
+			.filename {
+				margin-top: 4px;
+				font-weight: 500;
+				font-size: 20px;
+				line-height: 100%;
+				text-align: center;
+				text-decoration: none;
+			}
+			.description {
+				margin: 5px;
+				text-align: center;
+				font-size: 13px;
+			}
+			.docs_link {
+				text-align: center;
+				font-size: 13px;
+			}
+			.outer_container{
+				float: bottom;
+				top: 41%;
+				left: 50%;
+				height: {{calc.outer_container_height}}px;
+				width: {{ calc.width }}px;
+				position: absolute;
+				margin-left: -{{ calc.margin_width }}px;
+				margin-top: -{{ calc.margin_height }}px;
+			}
+		  	.square {
+				display: block;
+				float: left;
+				height: {{ calc.cell_height }}px;
+			}
+			{% for breadcrumb in tree %}
+			.square{{breadcrumb.index}} {
+				width: {{ breadcrumb.width }}px;
+				background-color: {{breadcrumb.background}};
+			}
+			{% endfor %}
+		</style>
+    </body>
+</html>

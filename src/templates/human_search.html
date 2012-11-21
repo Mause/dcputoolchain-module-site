@@ -1,32 +1,40 @@
-<h3>Search the available modules</h3>
-<form method="POST" action="/human/search">
-<input name="q"/>
-<select name="type">
-    <option value="">All results</option>
-    {% for item in types %}
-    <option {{item.selected}} value="{{item.name}}">{{item.name.title}}</option>
-    {% endfor %}
-</select>
-<input type="submit" value="Search"/>
-</form>
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Human Search</title>
+    </head>
+    <body>
+        <h3>Search the available modules</h3>
+        <form method="POST" action="/human/search">
+        <input name="q"/>
+        <select name="type">
+            <option value="">All results</option>
+            {% for item in types %}
+            <option {{item.selected}} value="{{item.name}}">{{item.name.title}}</option>
+            {% endfor %}
+        </select>
+        <input type="submit" value="Search"/>
+        </form>
 
-<style>
-.results {
-    background-color: #999;
-    margin-right: 10px;
-    margin-left: 10px;
-    width: 98%;
-    border: 2px solid grey;
-}
-.inner {
-    margin: 10px;
-}
-</style>
+        <style>
+        .results {
+            background-color: #999;
+            margin-right: 10px;
+            margin-left: 10px;
+            width: 98%;
+            border: 2px solid grey;
+        }
+        .inner {
+            margin: 10px;
+        }
+        </style>
 
-{% if results %}
-<div class="results">
-    <div class="inner">
-        {{ results|safe }}
-    </div>
-</div>
-{% endif %}
+        {% if results %}
+        <div class="results">
+            <div class="inner">
+                {{ results|safe }}
+            </div>
+        </div>
+        {% endif %}
+    </body>
+</html>

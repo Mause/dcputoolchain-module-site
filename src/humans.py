@@ -55,13 +55,8 @@ class RedirectToHumanHandler(webapp2.RequestHandler):
 class HomeHandler(webapp2.RequestHandler):
     "Returns a list of the human pages"
     def get(self):
-        "handles get requests"
-        output = ''
-        output += '<ul>'
         pages = ['search', 'tree', 'tree/pretty', 'listing']
-        for page in pages:
-            output += '<li><a href="/human/%s">%s</a></li>' % (page, page)
-        self.response.write(output)
+        dorender(self, 'human_index.html', {'pages': pages})
 
 
 class PrettyTreeHandler(webapp2.RequestHandler):
