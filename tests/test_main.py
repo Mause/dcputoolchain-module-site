@@ -36,7 +36,7 @@ class Test_Main(unittest2.TestCase):
         import main
         print dir(main)
 
-        html_output = main.SearchModuleHandler().get(MockRequestHandler())
+        html_output = main.SearchModulesHandler().get(MockRequestHandler())
         print html_output
         # document, errors = tidy_document(html_output)
         # self.assertEqual()
