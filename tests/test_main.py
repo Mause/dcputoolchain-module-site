@@ -33,13 +33,14 @@ class Test_Main(unittest2.TestCase):
         self.addCleanup(lambda: os.remove('auth_frag.txt'))
 
         response = self.testapp.get('/human/search')
-        print [x for x in dir(response) if not x.startswith('_')]
         self.assertEqual(response.status_int, 200)
 
         from tidylib import tidy_document
         document, errors = tidy_document(response.body)
-        print errors, type(errors), len(errors.split('\n')) - 1
-        self.assertEqual(len(errors.split('\n')) - 1, 0)
+        print errors
+        errors = errors.splitlines()[:-1]
+        print errors, len(errors)
+        self.assertEqual(len(errors.split('\n')), 0)
 
 
 def main():
