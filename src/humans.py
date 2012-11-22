@@ -36,7 +36,7 @@ from dtmm_utils import dorender
 from dtmm_utils import FourOhFourErrorLog
 
 import webapp2
-
+from google.appengine.api import memcache
 
 module_types = ['preprocessor', 'debugger', 'hardware', 'optimizer']
 
@@ -62,46 +62,50 @@ class HomeHandler(webapp2.RequestHandler):
 class PrettyTreeHandler(webapp2.RequestHandler):
     "Basically the same as /humans/tree, but pretty <3"
     def get(self):
-        data_tree = get_tree(self)
-        data_tree = filter(lambda x: x['path'].endswith('.lua'), data_tree)
-        colours = pretty_colours(len(data_tree))
+        tree = memcache.get('pretty_tree_tree')
+        if not tree:
+            data_tree = get_tree(self)
+            data_tree = filter(lambda x: x['path'].endswith('.lua'), data_tree)
+            colours = pretty_colours(len(data_tree))
 
-        tree = []
-        calc = {}
-        break_on = 3
-        cell_height = 80  # in pixels :D
-        header_diff = 20
-        fragment_num = 0
-        calc['width'] = 900
-        calc['cell_height'] = cell_height
-        calc['margin_width'] = calc['width'] / 2
+            tree = []
+            calc = {}
+            break_on = 3
+            cell_height = 80  # in pixels :D
+            header_diff = 20
+            fragment_num = 0
+            calc['width'] = 900
+            calc['cell_height'] = cell_height
+            calc['margin_width'] = calc['width'] / 2
 
-        for fragment in range(len(data_tree)):
-            cur_module = get_module_data(self, data_tree[fragment])
-            cur_module['filename'] = str(data_tree[fragment]['path']).split('/')[-1]
-            cur_module['background'] = colours[fragment]
-            if fragment_num % break_on == 0:
-                cur_module['row'] = 'yes'
-            else:
-                cur_module['row'] = 'no'
-            cur_module['width'] = calc['width'] / break_on
-            cur_module['index'] = fragment_num
+            for fragment in range(len(data_tree)):
+                cur_module = get_module_data(self, data_tree[fragment])
+                cur_module['filename'] = str(data_tree[fragment]['path']).split('/')[-1]
+                cur_module['background'] = colours[fragment]
+                if fragment_num % break_on == 0:
+                    cur_module['row'] = 'yes'
+                else:
+                    cur_module['row'] = 'no'
+                cur_module['width'] = calc['width'] / break_on
+                cur_module['index'] = fragment_num
 
-            tree.append(cur_module)
-            fragment_num += 1
+                tree.append(cur_module)
+                fragment_num += 1
 
-        rows = len(filter(lambda x: x['row'] == 'yes', tree))
-        calc['height'] = (rows * cell_height) + header_diff
-        logging.info('This many rows; %s' % (rows))
-        calc['margin_height'] = calc['height'] / 2
-        calc['outer_container_height'] = calc['height']
+            rows = len(filter(lambda x: x['row'] == 'yes', tree))
+            calc['height'] = (rows * cell_height) + header_diff
+            logging.info('This many rows; %s' % (rows))
+            calc['margin_height'] = calc['height'] / 2
+            calc['outer_container_height'] = calc['height']
 
-        if len(tree) % break_on != 0:
-            if len(tree) % break_on == 1:
-                tree[-1]['width'] = calc['width']
-            if len(tree) % break_on == 2:
-                tree[-1]['width'] = calc['width'] / 2
-                tree[-2]['width'] = calc['width'] / 2
+            if len(tree) % break_on != 0:
+                if len(tree) % break_on == 1:
+                    tree[-1]['width'] = calc['width']
+                if len(tree) % break_on == 2:
+                    tree[-1]['width'] = calc['width'] / 2
+                    tree[-2]['width'] = calc['width'] / 2
+            memcache.set('pretty_tree_tree', tree)
+            memcache.set('pretty_tree_calc', calc)
 
         tree[0]['row'] = 'no'
         dorender(self, 'tree_pretty.html', {'tree': tree,

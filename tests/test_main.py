@@ -38,8 +38,8 @@ class Test_Main(unittest2.TestCase):
 
         from tidylib import tidy_document
         document, errors = tidy_document(response.body)
-        print errors, type(errors), len(errors.split('\n'))
-        self.assertEqual(len(errors.split('\n')), 0)
+        print errors, type(errors), len(errors.split('\n')) - 1
+        self.assertEqual(len(errors.split('\n')) - 1, 0)
 
 
 def main():

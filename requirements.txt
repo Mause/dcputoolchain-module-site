@@ -5,6 +5,5 @@ unittest2
 pyyaml
 webob
 simplejson
-django
 pytidylib
 webtest

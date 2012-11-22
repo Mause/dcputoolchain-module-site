@@ -40,6 +40,7 @@ from google.appengine.api import users
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.ext.webapp import template
+from google.appengine.runtime import apiproxy_errors
 
 # for debugging exceptions
 import traceback
@@ -146,21 +147,31 @@ def get_oauth_token(all_data=False):
             auth_frag = fh.read()
         # use the next line to configure to a new github account
         # auth_frag = base64.urlsafe_b64encode("%s:%s" % ('user', 'pass'))
-
-        r = urlfetch.fetch(
-            url='https://api.github.com/authorizations',
-            payload=json.dumps({
-                'scopes': ["repo"],
-                'note': 'DCPUToolchain'}),
-            method=urlfetch.POST,
-            headers={
-                'Content-Type': 'application/json',
-                "Authorization": "Basic " + auth_frag}
-            )
-        if 200 <= r.status_code < 300:
-            token = json.loads(r.content)['token']
-            memcache.set('oauth_token', token)
-            return token
+        r = None
+        count = 0
+        while not r and count != 15:
+            try:
+                r = urlfetch.fetch(
+                    url='https://api.github.com/authorizations',
+                    payload=json.dumps({
+                        'scopes': ["repo"],
+                        'note': 'DCPUToolchain'}),
+                    method=urlfetch.POST,
+                    headers={
+                        'Content-Type': 'application/json',
+                        "Authorization": "Basic " + auth_frag}
+                    )
+            except apiproxy_errors.ApplicationError:
+                count += 1
+                logging.info('Try try again for the oauth token. %s tries' % count)
+        if count > 14:
+            logging.info('More than fifteen tries. Aborting')
+            return
+        else:
+            if 200 <= r.status_code < 300:
+                token = json.loads(r.content)['token']
+                memcache.set('oauth_token', token)
+                return token
 
 
 class FourOhFourErrorLog(db.Model):
