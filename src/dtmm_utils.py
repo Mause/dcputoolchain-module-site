@@ -89,7 +89,8 @@ def get_tree(handler=None):
         try:
             url_data = authed_fetch(url='https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master').content
         except urlfetch.DownloadError:
-            logging.info('Fetching the github api tree failed')
+            print '########################################'
+            logging.info('Fetching the github api tree failed. Try try again')
             handler.error(408)
             return
         else:
