@@ -58,9 +58,6 @@ from dtmm_utils import FourOhFourErrorLog
 from dtmm_utils import BaseRequestHandler
 
 
-
-
-
 class SearchModulesHandler(BaseRequestHandler):
     "Handle searching of the repo"
     def get(self):

@@ -63,7 +63,8 @@ class PrettyTreeHandler(webapp2.RequestHandler):
     "Basically the same as /humans/tree, but pretty <3"
     def get(self):
         tree = memcache.get('pretty_tree_tree')
-        if not tree:
+        calc = memcache.get('pretty_tree_calc')
+        if not tree or not calc:
             data_tree = get_tree(self)
             data_tree = filter(lambda x: x['path'].endswith('.lua'), data_tree)
             colours = pretty_colours(len(data_tree))
@@ -104,10 +105,10 @@ class PrettyTreeHandler(webapp2.RequestHandler):
                 if len(tree) % break_on == 2:
                     tree[-1]['width'] = calc['width'] / 2
                     tree[-2]['width'] = calc['width'] / 2
+            # tree[0]['row'] = 'no'
             memcache.set('pretty_tree_tree', tree)
             memcache.set('pretty_tree_calc', calc)
 
-        tree[0]['row'] = 'no'
         dorender(self, 'tree_pretty.html', {'tree': tree,
                                             'calc': calc})
 

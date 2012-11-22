@@ -1,6 +1,5 @@
 import os
 import webtest
-# import webapp2
 import unittest2
 if __name__ == '__main__':
     from run_tests import setup_environ
@@ -33,6 +32,32 @@ class Test_Main(unittest2.TestCase):
         self.addCleanup(lambda: os.remove('auth_frag.txt'))
 
         response = self.testapp.get('/human/search')
+        self.assertEqual(response.status_int, 200)
+
+        from tidylib import tidy_document
+        _, errors = tidy_document(response.body)
+        errors = errors.splitlines()[:-1]
+        self.assertEqual(len(errors), 0)
+
+    def test_PrettyTreeHandler(self):
+        with open('auth_frag.txt', 'w') as fh:
+            fh.write('False_Data')
+        self.addCleanup(lambda: os.remove('auth_frag.txt'))
+
+        response = self.testapp.get('/human/tree/pretty')
+        self.assertEqual(response.status_int, 200)
+
+        from tidylib import tidy_document
+        _, errors = tidy_document(response.body)
+        errors = errors.splitlines()[:-1]
+        self.assertEqual(len(errors), 0)
+
+    def test_TreeHandler(self):
+        with open('auth_frag.txt', 'w') as fh:
+            fh.write('False_Data')
+        self.addCleanup(lambda: os.remove('auth_frag.txt'))
+
+        response = self.testapp.get('/human/tree')
         self.assertEqual(response.status_int, 200)
 
         from tidylib import tidy_document
