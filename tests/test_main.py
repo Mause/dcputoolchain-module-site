@@ -36,11 +36,9 @@ class Test_Main(unittest2.TestCase):
         self.assertEqual(response.status_int, 200)
 
         from tidylib import tidy_document
-        document, errors = tidy_document(response.body)
-        print errors
+        _, errors = tidy_document(response.body)
         errors = errors.splitlines()[:-1]
-        print errors, len(errors)
-        self.assertEqual(len(errors.split('\n')), 0)
+        self.assertEqual(len(errors), 0)
 
 
 def main():
