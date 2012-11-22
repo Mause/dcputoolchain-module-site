@@ -105,7 +105,7 @@ class PrettyTreeHandler(webapp2.RequestHandler):
                 if len(tree) % break_on == 2:
                     tree[-1]['width'] = calc['width'] / 2
                     tree[-2]['width'] = calc['width'] / 2
-            # tree[0]['row'] = 'no'
+            tree[0]['row'] = 'no'
             memcache.set('pretty_tree_tree', tree)
             memcache.set('pretty_tree_calc', calc)
 
