@@ -49,7 +49,9 @@ def main():
     runner = unittest2.TextTestRunner(verbosity=2)
     # wait a second or for things to start
     time.sleep(2)
-    runner.run(suite)
+    end = runner.run(suite)
+    if end.errors != 0:
+        exit(1)
 
 if __name__ == '__main__':
     main()
