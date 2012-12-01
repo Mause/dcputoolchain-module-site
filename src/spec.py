@@ -1,8 +1,9 @@
 import webapp2
-from google.appengine.ext.appstats import recording
 from google.appengine.ext.appstats import ui
-import collections
+from google.appengine.ext.appstats import recording
+
 import pickle
+import collections
 
 
 class MainHandler(webapp2.RequestHandler):

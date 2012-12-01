@@ -13,3 +13,4 @@ build/
 
 # application specific
 auth_frag.txt
+.ropeproject
