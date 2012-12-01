@@ -27,10 +27,7 @@ import os
 import base64
 import hashlib
 import logging
-try:
-    import json
-except ImportError:
-    import simplejson as json
+import json
 
 # google appengine imports
 import webapp2

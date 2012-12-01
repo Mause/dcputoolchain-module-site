@@ -25,7 +25,7 @@ import math
 import random
 import logging
 
-# the colorsys module is required for color convertion
+# the colorsys module is required for color conversion
 from colorsys import hsv_to_rgb
 
 # the dtmm_utils file
@@ -147,15 +147,8 @@ class ListingHandler(webapp2.RequestHandler):
     def get(self):
         "handlers get requests"
         requests = FourOhFourErrorLog.all()
-        output = ''
-        output += '<strong>These modules were requested by users,'
-        output += ' but they do not exist in the repository</strong></br>'
-        output += '<form method="POST" target="/human/listing">You may <a href="#" onclick="document.getElementById("delete_em").submit()">delete</a> these entries if you wish</form><br>'
-        for fragment in requests:
-            output += (str(fragment.datetimer) + ' - ' +
-                str(fragment.address) + ' - ' +
-                str(fragment.requested_module) + '</br>')
-        self.response.write(output)
+        output = ['%s - %s - %s</br>' % (fragment.datetimer, fragment.address, fragment.requested_module) for fragment in requests]
+        dorender(self, 'module_not_found.html', {'requested': output})
 
     def post(self):
         map(lambda x: x.delete(), FourOhFourErrorLog.all())
