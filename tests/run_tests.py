@@ -48,8 +48,8 @@ def main():
     # wait a second or for things to start
     time.sleep(2)
     end = runner.run(suite)
-    if end.errors > 1:
-        print '%s errors appear to have occured.' % end.errors
+    if len(end.errors) > 1:
+        print '%s errors appear to have occured.' % len(end.errors)
         print 'Informing the test ennvironment as such'
         exit(1)
 
