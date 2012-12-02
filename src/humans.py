@@ -199,7 +199,7 @@ def gen_types(selected=None):
 
 
 def search(handler, query, requested_type=''):
-    "filters fragment accourding to input"
+    "filters modules according to input"
     output = []
     query = query.lower()
     data = get_tree(handler)

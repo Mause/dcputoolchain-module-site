@@ -104,7 +104,7 @@ def get_url_content(handler, url):
     url_hash = hashlib.md5(str(url)).hexdigest()
     result = memcache.get(str(url_hash))
     if result != None:
-        logging.debug('Memcache get successful')
+        logging.info('Memcache get successful')
     else:
         logging.info('Getting the result from the GitHub API')
         try:
