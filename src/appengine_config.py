@@ -1,5 +1,3 @@
-webapp_django_version = '1.3'
-
 appstats_CALC_RPC_COSTS = True
 
 

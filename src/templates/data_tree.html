@@ -1,0 +1,22 @@
+{% for module in modules %}
+
+    <h4>MODULE</h4>
+    <ul>
+
+    <li>Filename: <a href="/modules/download?name={{ module.cur_path }}">{{ module.cur_path }}</a></li>
+    <li>Type: <a href="/human/search?type={{ module.module_data.Type }}">{{ module.module_data.Type }}</a></li>
+    <li>Name: {{ module.module_data.Name }}</li>
+    <li>Version: {{ module.module_data.Version }}</li>
+    {% if "SDescription" in module.module_data %}
+        <li>Short description: {{ module.module_data.SDescription }}</li>
+    {% endif %}
+    {% if "URL" in module_data %}
+        <li>URL: <a href="{{ module.module_data.URL }}">{{ module.module_data.URL }}</a></li>
+    {% endif %}
+    {% ifequal module.module_data.Type.lower "hardware" %}
+        <li>Hardware ID: {{ module.hardware_data.ID }}</li>
+        <li>Hardware version: {{ module.hardware_data.Version }}</li>
+        <li>Hardware Manufacturer: {{ module.hardware_data.Manufacturer }}</li>
+    {% endifequal %}
+    </ul>
+{% endfor %}

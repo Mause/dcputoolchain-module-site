@@ -34,14 +34,14 @@ from dtmm_utils import get_hardware_data
 from dtmm_utils import get_tree
 from dtmm_utils import dorender
 from dtmm_utils import FourOhFourErrorLog
+from dtmm_utils import BaseRequestHandler
 
-import webapp2
 from google.appengine.api import memcache
 
 module_types = ['preprocessor', 'debugger', 'hardware', 'optimizer']
 
 
-class RedirectToHumanHandler(webapp2.RequestHandler):
+class RedirectToHumanHandler(BaseRequestHandler):
     "redirects the user to /human"
     def get(self):
         "handles get requests"
@@ -52,14 +52,14 @@ class RedirectToHumanHandler(webapp2.RequestHandler):
         self.redirect('/human')
 
 
-class HomeHandler(webapp2.RequestHandler):
+class HomeHandler(BaseRequestHandler):
     "Returns a list of the human pages"
     def get(self):
         pages = ['search', 'tree', 'tree/pretty', 'listing']
         dorender(self, 'human_index.html', {'pages': pages})
 
 
-class PrettyTreeHandler(webapp2.RequestHandler):
+class PrettyTreeHandler(BaseRequestHandler):
     "Basically the same as /humans/tree, but pretty <3"
     def get(self):
         tree = memcache.get('pretty_tree_tree')
@@ -113,7 +113,7 @@ class PrettyTreeHandler(webapp2.RequestHandler):
                                             'calc': calc})
 
 
-class TreeHandler(webapp2.RequestHandler):
+class TreeHandler(BaseRequestHandler):
     """A simple debugging interface"""
     def get(self):
         data = get_tree(self)
@@ -127,7 +127,7 @@ class TreeHandler(webapp2.RequestHandler):
         self.response.write('POST not handled at this URI')
 
 
-class InspectHandler(webapp2.RequestHandler):
+class InspectHandler(BaseRequestHandler):
     """Returns a data tree specific to a module"""
     def get(self):
         "handlers get requests"
@@ -142,7 +142,7 @@ class InspectHandler(webapp2.RequestHandler):
         self.response.write(data_tree(self, to_give))
 
 
-class ListingHandler(webapp2.RequestHandler):
+class ListingHandler(BaseRequestHandler):
     """Lists failed module requests"""
     def get(self):
         "handlers get requests"
@@ -154,7 +154,7 @@ class ListingHandler(webapp2.RequestHandler):
         map(lambda x: x.delete(), FourOhFourErrorLog.all())
 
 
-class HumanSearch(webapp2.RequestHandler):
+class HumanSearch(BaseRequestHandler):
     "Handle searching of the repo"
     def get(self):
         query = self.request.get('q')
@@ -246,34 +246,20 @@ def pretty_colours(how_many):
 
 def data_tree(handler, data):
     "given a data tree, will return a html-based representation"
-    output = ''
     if not data:
-        return
+        return None
+    modules = []
     for fragment in data:
         if fragment['path'].endswith('.lua'):
-            cur_path = str(fragment['path'].split('/')[-1])
-            module_data = get_module_data(handler, fragment)
-            logging.info('module data; %s' % module_data)
-            output += '<h4>MODULE</h4>\n'
-            output += '<ul>\n'     # start the list
+            cur_module = {}
+            cur_module['cur_path'] = str(fragment['path'].split('/')[-1])
+            cur_module['module_data'] = get_module_data(handler, fragment)
 
-            output += ('''<li>Filename: <a href="/modules/download?name=%s">%s
-                </a></li>\n''' % (cur_path, cur_path))
-            output += ('<li>Type: <a href="/human/search?type=%s">%s</a></li>\n'
-                % (module_data['Type'], module_data['Type']))
-            output += '<li>Name: %s</li>\n' % module_data['Name']
-            output += '<li>Version: %s</li>\n' % module_data['Version']
-            if 'SDescription' in module_data:
-                output += '<li>Short description: %s</li>\n' % module_data['SDescription']
-            if 'URL' in module_data:
-                output += '<li>URL: <a href="{url}">{url}</a></li>\n'.format(url=module_data['URL'])
-            if module_data['Type'].lower() == 'hardware':
-                hardware_data = get_hardware_data(handler, fragment)
-                logging.info(hardware_data)
-                output += "<li>Hardware ID: %s</li>" % hex(hardware_data['ID'])
-                output += ("<li>Hardware version: %s</li>" %
-                    hex(hardware_data['Version']))
-                output += ("<li>Hardware Manufacturer: %s</li>" %
-                    hex(hardware_data['Manufacturer']))
-            output += '</ul>\n'    # end the list
-    return output
+            if cur_module['module_data']['Type'].lower() == 'hardware':
+                cur_module['hardware_data'] = get_hardware_data(handler, fragment)
+
+                cur_module['hardware_data']['ID'] = hex(cur_module['hardware_data']['ID'])
+                cur_module['hardware_data']['Version'] = hex(cur_module['hardware_data']['Version'])
+                cur_module['hardware_data']['Manufacturer'] = hex(cur_module['hardware_data']['Manufacturer'])
+            modules.append(cur_module)
+    return dorender(handler, 'data_tree.html', {'modules': modules}, write=False)
