@@ -9,9 +9,6 @@ sys.path.insert(0, 'C:\\Program Files (x86)\\Google\\google_appengine\\')
 import base64
 import unittest2
 from mock import patch
-# from sure import expect
-# from httpretty import HTTPretty, httprettified
-
 from google.appengine.ext import testbed
 
 
@@ -28,11 +25,10 @@ class Test_Humans(unittest2.TestCase):
         self.testbed.deactivate()
 
     def test_gen_types(self):
-        class webapp2_replacement:
-            class RequestHandler:
-                pass
+        class BaseRequestHandler_replacement:
+            pass
         patcher = patch(
-            'humans.webapp2', webapp2_replacement)
+            'humans.BaseRequestHandler', BaseRequestHandler_replacement)
         self.addCleanup(patcher.stop)
         patcher.start()
         import humans
@@ -55,11 +51,10 @@ class Test_Humans(unittest2.TestCase):
             {'selected': 'selected', 'name': 'optimizer'}])
 
     def test_search(self):
-        class webapp2_replacement:
-            class RequestHandler:
-                pass
+        class BaseRequestHandler_replacement:
+            pass
         patcher = patch(
-            'humans.webapp2', webapp2_replacement)
+            'humans.BaseRequestHandler', BaseRequestHandler_replacement)
         self.addCleanup(patcher.stop)
         patcher.start()
 
@@ -124,11 +119,10 @@ class Test_Humans(unittest2.TestCase):
                 u'size': 3979}])
 
     def test_pretty_colours(self):
-        class webapp2_replacement:
-            class RequestHandler:
-                pass
+        class BaseRequestHandler_replacement:
+            pass
         patcher = patch(
-            'humans.webapp2', webapp2_replacement)
+            'humans.BaseRequestHandler', BaseRequestHandler_replacement)
         self.addCleanup(patcher.stop)
         patcher.start()
         import humans

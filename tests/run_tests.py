@@ -50,7 +50,7 @@ def main():
     end = runner.run(suite)
     if len(end.errors) > 1:
         print '%s errors appear to have occured.' % len(end.errors)
-        print 'Informing the test ennvironment as such'
+        print 'Informing the test environment of such'
         exit(1)
 
 if __name__ == '__main__':
