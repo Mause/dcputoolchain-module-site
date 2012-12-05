@@ -132,8 +132,8 @@ class Test_Humans(unittest2.TestCase):
         output = humans.pretty_colours(random.randint(200, 500))
 
         for colour in output:
-            self.assertNotEqual(re.match(
-                r'rgb\(\d+?, \d+?, \d+?\)', colour), None)
+            self.assertTrue(re.match(
+                r'rgb\(\d+?, \d+?, \d+?\)', colour))
 
 
 def main():
