@@ -13,7 +13,7 @@ libraries:
   version: "latest"
 
 - name: webapp2
-  version: "2.5.1"
+  version: "latest"
 
 handlers:
 - url: /static

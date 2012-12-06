@@ -96,6 +96,7 @@ def get_tree(handler=None):
         else:
             result = json.loads(url_data)
             memcache.set('tree', result)
+    assert 'tree' in result
     return result['tree']
 
 
@@ -114,6 +115,7 @@ def get_url_content(handler, url):
             handler.error(408)
             return
         else:
+            print url_data
             result = json.loads(url_data)
             memcache.set(str(url_hash), result)
     return result
