@@ -2,12 +2,12 @@ if __name__ == '__main__':
     from run_tests import setup_environ
     setup_environ()
 
-import os
 import json
 import base64
 import unittest2
 from mock import patch
 from google.appengine.ext import testbed
+from google.appengine.api import memcache
 
 
 class Test_DTMM_Utils(unittest2.TestCase):
@@ -18,6 +18,8 @@ class Test_DTMM_Utils(unittest2.TestCase):
         self.testbed.init_datastore_v3_stub()
         self.testbed.init_memcache_stub()
         self.testbed.init_urlfetch_stub()
+        memcache.set('client_auth_data',
+            {u'client_auth_data': {u'client_secret': u'false_data', u'client_id': u'false_data'}})
 
     def tearDown(self):
         self.testbed.deactivate()
