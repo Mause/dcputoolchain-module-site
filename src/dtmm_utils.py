@@ -51,7 +51,8 @@ import sys
 client_auth_data = memcache.get('client_auth_data')
 if not client_auth_data:
     with open('auth_data.json', 'r') as fh:
-        client_auth_data = json.load(fh)["client_auth_data"]
+        auth_data = json.loads(fh.read())
+        client_auth_data = auth_data["client_auth_data"]
 
 
 def get_hardware_data(handler, fragment):
@@ -102,6 +103,7 @@ def get_tree(handler=None):
         else:
             result = json.loads(url_data)
             memcache.set('tree', result)
+    # print result
     assert 'tree' in result
     return result['tree']
 
@@ -115,7 +117,9 @@ def get_url_content(handler, url):
     else:
         logging.info('Getting the result from the GitHub API')
         try:
-            url_data = authed_fetch(url).content
+            r = authed_fetch(url)
+            url_data = r.content
+            # print r.status_code
         except urlfetch.DownloadError:
             logging.info('Fetching "%s" failed with a download error' % url)
             handler.error(408)

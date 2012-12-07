@@ -1,5 +1,5 @@
 application: dcputoolchain-module-site
-version: 1-0056
+version: 1-0057
 runtime: python27
 api_version: 1
 threadsafe: yes
@@ -13,6 +13,9 @@ libraries:
   version: "latest"
 
 - name: webapp2
+  version: "latest"
+
+- name: webob
   version: "latest"
 
 handlers:

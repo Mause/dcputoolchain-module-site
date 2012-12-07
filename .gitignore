@@ -12,5 +12,5 @@
 build/
 
 # application specific
-auth_data.py
+auth_data.json
 .ropeproject

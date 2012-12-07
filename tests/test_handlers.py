@@ -6,14 +6,19 @@ sys.path.insert(0, '..%ssrc' % os.sep)
 sys.path.insert(0, 'C:\\Program Files (x86)\\Google\\google_appengine\\')
 
 # unit testing specific imports
-import unittest2
-# from mock import patch
+import copy
+import urllib
 import webtest
+import unittest2
+import itertools
 from mock import patch
+
+# this needs to be done before anything to do with gae gets imported
 if __name__ == '__main__':
     from run_tests import setup_environ
     setup_environ()
-# from httpretty import HTTPretty, httprettified
+
+# these next two lines might be broken in the future. not sure what ill do after that :(
 from google.appengine.dist import use_library
 use_library('django', '1.2')
 
@@ -23,12 +28,12 @@ from google.appengine.api import memcache
 
 class Test_Humans(unittest2.TestCase):
     def setUp(self):
-        my_testbed = testbed.Testbed()
-        my_testbed.activate()
-        my_testbed.setup_env(app_id='dev~dcputoolchain-module-site')
-        my_testbed.init_memcache_stub()
-        my_testbed.init_urlfetch_stub()
-        my_testbed.init_mail_stub()
+        self.testbed = testbed.Testbed()
+        self.testbed.activate()
+        self.testbed.setup_env(app_id='dev~dcputoolchain-module-site')
+        self.testbed.init_memcache_stub()
+        self.testbed.init_urlfetch_stub()
+        self.testbed.init_mail_stub()
         memcache.set('client_auth_data',
             {u'client_auth_data': {u'client_secret': u'false_data', u'client_id': u'false_data'}})
 
@@ -50,67 +55,26 @@ class Test_Humans(unittest2.TestCase):
     def tearDown(self):
         self.testbed.deactivate()
 
+    def test_human_tree_pretty(self):
+        self.testapp.get('/human/tree/pretty')
+
     def test_human_tree(self):
         self.testapp.get('/human/tree')
 
+    def test_human_search(self):
+        self.testapp.get('/human/search')
 
-# @httprettified
-# def main():
-    # try:
-        # test_data = {
-        #     u'tree': [{
-        #         u'url': u'https://api.github.com/repos/DCPUTeam/DCPUModules/git/blobs/443f114dceaca63eda1771fbf61d55cf85685225',
-        #         u'sha': u'443f114dceaca63eda1771fbf61d55cf85685225',
-        #         u'mode': u'100644',
-        #         u'path': u'assert.lua',
-        #         u'type': u'blob',
-        #         u'size': 823
-        #     }]
-        # }
+        queries = ['', 'random', 'words']
+        import humans
+        custom_module_types = copy.copy(humans.module_types)
+        custom_module_types.append('')
+        subtests = itertools.product(queries, custom_module_types)
 
-        # HTTPretty.register_uri(HTTPretty.GET,
-        #     "https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master",
-        #     body=json.dumps(test_data),
-        #     status=200)
-
-        # class authed_fetch:
-        #     content = json.dumps({"tree": [
-        #         {"type": "blob",
-        #         "path": "Primary.lua",
-        #         "mode": "100644",
-        #         "sha": "ac178f6489f2d3f601df6a9a5e641b62a0388eae",
-        #         'url': '',
-        #         # 'content': base64.b64encode(json.dumps({})),
-        #         'content': base64.b64encode('MODULE = {}'),
-        #         "size": 314}]})
-
-        #     def __init__(self, url):
-        #         print '#' * 500
-        #         pass
-
-        #     def __call__(self):
-        #         print '#' * 500
-        #         return self
-
-        # del dtmm_utils
-
-        # def mock_get_module_data(*args, **kwargs):
-        #     print args
-
-        # get_module_data_patcher = patch(
-        #     'dtmm_utils.get_module_data', mock_get_module_data)
-        # get_module_data_patcher.start()
-        # import dtmm_utils
-
-        # print dtmm_utils.get_url_content(None, '')
-
-        # print dtmm_utils.get_module_data(None, {'url': ''})
-
-    # finally:
-        # get_tree_patcher.stop()
-        # get_module_data_patcher.stop()
-        # my_testbed.deactivate()
-        # pass
+        for sub in subtests:
+            cur_url = '/human/search?' + urllib.urlencode(
+                {'q': sub[0],
+                'type': sub[1]})
+            self.testapp.get(cur_url)
 
 
 def main():
