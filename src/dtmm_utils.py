@@ -48,7 +48,8 @@ import traceback
 import sys
 
 # authentication data
-from auth_data import client_auth_data
+with open('auth_data.json', 'r') as fh:
+    client_auth_data = json.load(fh)["client_auth_data"]
 
 
 def get_hardware_data(handler, fragment):
