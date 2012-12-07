@@ -103,7 +103,11 @@ def get_tree(handler=None):
         else:
             result = json.loads(url_data)
             memcache.set('tree', result)
-    assert 'tree' in result
+    try:
+        assert 'tree' in result
+    except AssertionError:
+        print result
+        raise AssertionError
     return result['tree']
 
 
