@@ -25,6 +25,7 @@ from __future__ import division
 import re
 import os
 import json
+import urllib
 import base64
 import hashlib
 import logging
@@ -45,6 +46,9 @@ from google.appengine.runtime import apiproxy_errors
 # for debugging exceptions
 import traceback
 import sys
+
+# authentication data
+from auth_data import client_auth_data
 
 
 def get_hardware_data(handler, fragment):
@@ -89,7 +93,6 @@ def get_tree(handler=None):
         try:
             url_data = authed_fetch(url='https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master').content
         except urlfetch.DownloadError:
-            print '########################################'
             logging.info('Fetching the github api tree failed. Try try again')
             handler.error(408)
             return
@@ -105,17 +108,16 @@ def get_url_content(handler, url):
     url_hash = hashlib.md5(str(url)).hexdigest()
     result = memcache.get(str(url_hash))
     if result != None:
-        logging.info('Memcache get successful')
+        logging.info('Memcache get successful; %.10s' % result)
     else:
         logging.info('Getting the result from the GitHub API')
         try:
             url_data = authed_fetch(url).content
         except urlfetch.DownloadError:
-            logging.info('Fetching "%s" failed with a download error' % str(url))
+            logging.info('Fetching "%s" failed with a download error' % url)
             handler.error(408)
             return
         else:
-            print url_data
             result = json.loads(url_data)
             memcache.set(str(url_hash), result)
     return result
@@ -132,8 +134,10 @@ def dorender(handler, tname='base.html', values=None, write=True):
         return template.render(path, values or {})
 
 
-def authed_fetch(url):
-    r = urlfetch.fetch(url=url, headers={'Authorization': 'token %s' % (get_oauth_token())})
+def authed_fetch(url, headers={}):
+    headers.update({'X-Admin-Contact': 'admin@lysdev.com'})
+    url += '?' + urllib.urlencode(client_auth_data)
+    r = urlfetch.fetch(url=url, headers=headers)
     if 'x-ratelimit-remaining' in r.headers.keys():
         logging.info('%s requests remaining for this hour.' % (r.headers['x-ratelimit-remaining']))
     else:
@@ -141,15 +145,17 @@ def authed_fetch(url):
     return r
 
 
+# this function is no longer used, as it is no longer required
 def get_oauth_token(all_data=False):
     token = memcache.get('oauth_token')
     if token:
         return token
     else:
+        if not os.path.exists('auth_frag.txt'):
+            raise Exception('No authentication fragment found. Run the gen_auth file to generate it')
         with open('auth_frag.txt', 'r') as fh:
             auth_frag = fh.read()
         # use the next line to configure to a new github account
-        # auth_frag = base64.urlsafe_b64encode("%s:%s" % ('user', 'pass'))
         r = None
         count = 0
         while not r and count != 15:

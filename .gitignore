@@ -12,5 +12,5 @@
 build/
 
 # application specific
-auth_frag.txt
+auth_data.py
 .ropeproject

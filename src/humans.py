@@ -250,7 +250,6 @@ def data_tree(handler, data):
         return None
     modules = []
     for fragment in data:
-        print fragment
         if fragment['path'].endswith('.lua'):
             cur_module = {}
             cur_module['cur_path'] = str(fragment['path'].split('/')[-1])

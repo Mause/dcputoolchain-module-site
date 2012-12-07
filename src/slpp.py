@@ -20,6 +20,7 @@
 
 
 import re
+import logging
 
 ERRORS = {
     'unexp_end_string': u'Unexpected end of string while parsing Lua string.',
@@ -140,7 +141,7 @@ class SLPP:
                     if start != "[" or self.ch == ']':
                         return s
                 s += self.ch
-        print ERRORS['unexp_end_string']
+        logging.info(ERRORS['unexp_end_string'])
 
     def object(self):
         o = {}
@@ -194,7 +195,7 @@ class SLPP:
                         o[idx] = k
                         idx += 1
                         k = ''
-        print ERRORS['unexp_end_table']  # Bad exit here
+        logging.info(ERRORS['unexp_end_table'])  # Bad exit here
 
     def word(self):
         s = ''
@@ -240,7 +241,7 @@ class SLPP:
                     n += next_digit(ERRORS['mfnumber_sci'])
                     n += self.digit()
         except ParseError as e:
-            print e
+            logging.info(e)
             return 0
         try:
             return int(n, 0)
