@@ -21,10 +21,6 @@ from google.appengine.ext import testbed
 from google.appengine.api import memcache
 
 
-from main import app
-testapp = webtest.TestApp(app)
-
-
 class Test_Humans(unittest2.TestCase):
     def setUp(self):
         my_testbed = testbed.Testbed()
@@ -35,6 +31,9 @@ class Test_Humans(unittest2.TestCase):
         my_testbed.init_mail_stub()
         memcache.set('client_auth_data',
             {u'client_auth_data': {u'client_secret': u'false_data', u'client_id': u'false_data'}})
+
+        from main import app
+        self.testapp = webtest.TestApp(app)
 
         def mock_get_tree(handler):
             return [{
@@ -52,7 +51,7 @@ class Test_Humans(unittest2.TestCase):
         self.testbed.deactivate()
 
     def test_human_tree(self):
-        testapp.get('/human/tree')
+        self.testapp.get('/human/tree')
 
 
 # @httprettified
