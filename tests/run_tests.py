@@ -39,15 +39,17 @@ import unittest2
 import test_humans
 import test_dtmm_utils
 import test_misc
+import test_handlers
 
 
 def main():
     loader = unittest2.TestLoader()
     suite = loader.loadTestsFromModule(test_humans)
     suite.addTests(loader.loadTestsFromModule(test_dtmm_utils))
+    suite.addTests(loader.loadTestsFromModule(test_handlers))
     suite.addTests(loader.loadTestsFromModule(test_misc))
     runner = unittest2.TextTestRunner(verbosity=2)
-    # wait a second or for things to start
+    # wait a second or so for things to start
     time.sleep(2)
     end = runner.run(suite)
     if len(end.errors) > 1:
