@@ -56,12 +56,16 @@ class Test_Humans(unittest2.TestCase):
         self.testbed.deactivate()
 
     def test_human_tree_pretty(self):
+        # /human/tree/pretty
         self.testapp.get('/human/tree/pretty')
 
     def test_human_tree(self):
+        # human tree
         self.testapp.get('/human/tree')
 
     def test_human_search(self):
+        # /human/search
+
         self.testapp.get('/human/search')
 
         queries = ['', 'random', 'words']

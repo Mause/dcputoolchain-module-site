@@ -103,7 +103,6 @@ def get_tree(handler=None):
         else:
             result = json.loads(url_data)
             memcache.set('tree', result)
-    # print result
     assert 'tree' in result
     return result['tree']
 
@@ -119,7 +118,6 @@ def get_url_content(handler, url):
         try:
             r = authed_fetch(url)
             url_data = r.content
-            # print r.status_code
         except urlfetch.DownloadError:
             logging.info('Fetching "%s" failed with a download error' % url)
             handler.error(408)
