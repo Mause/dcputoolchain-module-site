@@ -34,33 +34,6 @@ class Test_DTMM_Utils(unittest2.TestCase):
 
     #### dtmm_utils.py file tests ####
 
-    @unittest2.skip
-    def test_oauth_token(self):
-        class fetch:
-            headers = {'x-ratelimit-remaining': 'lots'}
-            content = json.dumps(
-                {"scopes": ["repo"],
-                "token": "df11c284bf0a74752c65efc5595d407f1316837c"})
-            status_code = 200
-
-            def __init__(self, **kwargs):
-                pass
-
-            def __call__(self):
-                return self
-        patcher = patch('google.appengine.api.urlfetch.fetch', fetch)
-        self.addCleanup(patcher.stop)
-        patcher.start()
-
-        import dtmm_utils
-
-        with open('auth_data.json', 'w') as fh:
-            auth_data = {u'client_auth_data': {u'client_secret': u'Fake', u'client_id': u'Fake'}}
-            fh.write(json.dumps(auth_data))
-        data = dtmm_utils.get_oauth_token()
-        os.remove('auth_data.json')
-        self.assertEqual(data, 'df11c284bf0a74752c65efc5595d407f1316837c')
-
     def test_authed_fetch(self):
         def get_oauth_token():
             return 'oauth_token'
