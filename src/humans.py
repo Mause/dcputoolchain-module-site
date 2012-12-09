@@ -67,7 +67,6 @@ class PrettyTreeHandler(BaseRequestHandler):
         if not tree or not calc:
             data_tree = get_tree(self)
             data_tree = filter(lambda x: x['path'].endswith('.lua'), data_tree)
-            colours = pretty_colours(len(data_tree))
 
             tree = []
             calc = {}
@@ -82,7 +81,6 @@ class PrettyTreeHandler(BaseRequestHandler):
             for fragment in range(len(data_tree)):
                 cur_module = get_module_data(self, data_tree[fragment])
                 cur_module['filename'] = str(data_tree[fragment]['path']).split('/')[-1]
-                cur_module['background'] = colours[fragment]
                 if fragment_num % break_on == 0:
                     cur_module['row'] = 'yes'
                 else:
@@ -108,6 +106,11 @@ class PrettyTreeHandler(BaseRequestHandler):
             tree[0]['row'] = 'no'
             memcache.set('pretty_tree_tree', tree)
             memcache.set('pretty_tree_calc', calc)
+
+        # we want the colours to be different everytime
+        colours = pretty_colours(len(tree))
+        for fragment in range(len(tree)):
+            tree[fragment].update({'background': colours[fragment]})
 
         dorender(self, 'tree_pretty.html', {'tree': tree,
                                             'calc': calc})

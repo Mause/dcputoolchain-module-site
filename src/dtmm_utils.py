@@ -116,7 +116,7 @@ def get_url_content(handler, url):
     url_hash = hashlib.md5(str(url)).hexdigest()
     result = memcache.get(str(url_hash))
     if result != None:
-        logging.info('Memcache get successful; %.10s' % result)
+        logging.info('Memcache get successful; %.20s' % result)
     else:
         logging.info('Getting the result from the GitHub API')
         try:
@@ -151,6 +151,7 @@ def authed_fetch(url, headers={}):
         logging.info('%s requests remaining for this hour.' % (r.headers['x-ratelimit-remaining']))
     else:
         logging.info('Could not determine how many requests are remaining for this hour')
+        logging.info(r.content)
     return r
 
 

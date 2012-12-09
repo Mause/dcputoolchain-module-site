@@ -26,7 +26,7 @@ from google.appengine.ext import testbed
 from google.appengine.api import memcache
 
 
-class Test_Humans(unittest2.TestCase):
+class Test_Handlers(unittest2.TestCase):
     def setUp(self):
         self.testbed = testbed.Testbed()
         self.testbed.activate()
@@ -79,6 +79,22 @@ class Test_Humans(unittest2.TestCase):
                 {'q': sub[0],
                 'type': sub[1]})
             self.testapp.get(cur_url)
+
+    def test_human_listing(self):
+        self.testapp.get('/human/listing')
+
+    def test_human_inspect(self):
+        self.testapp.get('/human/inspect?name=assert.lua')
+
+    def test_human(self):
+        self.testapp.get('/human')
+
+    def test_modules(self):
+        pass
+        # TODO: check for redirect
+
+    def test_modules_search(self):
+        pass
 
 
 def main():
