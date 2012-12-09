@@ -108,8 +108,11 @@ def get_tree(handler=None):
     try:
         assert 'tree' in result
     except AssertionError:
-        print result
-        raise AssertionError
+        if result['message'].startswith('API Rate Limit Exceeded for'):
+            raise AssertionError('API Limit reached')
+        else:
+            print 'result', result
+            raise AssertionError
     return result['tree']
 
 
