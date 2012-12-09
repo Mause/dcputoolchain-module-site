@@ -33,6 +33,7 @@ class Test_Handlers(unittest2.TestCase):
         self.testbed.setup_env(app_id='dev~dcputoolchain-module-site')
         self.testbed.init_memcache_stub()
         self.testbed.init_urlfetch_stub()
+        self.testbed.init_datastore_v3_stub()
         self.testbed.init_mail_stub()
         memcache.set('client_auth_data',
             {u'client_auth_data': {u'client_secret': u'false_data', u'client_id': u'false_data'}})

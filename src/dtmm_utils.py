@@ -58,9 +58,10 @@ if not client_auth_data:
 def get_hardware_data(handler, fragment):
     """Given a get_tree fragment,
     returns hardware data in a python dict"""
+    module = get_url_content(handler, fragment['url'])
+    assert 'content' in module
     file_data = base64.b64decode(
-        get_url_content(handler,
-            fragment['url'])['content'])
+        module['content'])
     hardware_data = (
         re.search('HARDWARE\s*=\s*(?P<data>\{[^}]*\})',
                   file_data))
@@ -74,8 +75,9 @@ def get_hardware_data(handler, fragment):
 def get_module_data(handler, fragment):
     """Given a get_tree fragment,
     returns module data in a python dict"""
-    file_data = base64.b64decode(
-        get_url_content(handler, fragment['url'])['content'])
+    module = get_url_content(handler, fragment['url'])
+    assert 'content' in module
+    file_data = base64.b64decode(module['content'])
     module_data = (
         re.search('MODULE\s*=\s*(?P<data>\{[^}]*\})',
                   file_data))

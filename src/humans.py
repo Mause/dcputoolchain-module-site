@@ -134,10 +134,10 @@ class InspectHandler(BaseRequestHandler):
     """Returns a data tree specific to a module"""
     def get(self):
         "handlers get requests"
-        data = get_tree(self)
+        tree = get_tree(self)
         to_give = []
         module_name = self.request.get('name')
-        for fragment in data:
+        for fragment in tree:
             if fragment != {}:
                 if fragment['path'].split('/')[-1] == module_name:
                     to_give.append(fragment)

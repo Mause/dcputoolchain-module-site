@@ -1,5 +1,4 @@
 webapp2
-sure
 mock
 unittest2
 pyyaml
