@@ -206,14 +206,25 @@ class FourOhFourErrorLog(db.Model):
 
 class BaseRequestHandler(webapp2.RequestHandler):
     def handle_exception(self, exception, debug_mode):
-        lines = ''.join(traceback.format_exception(*sys.exc_info()))
-        logging.error(lines)
-        mail.send_mail(
-            sender='debugging@dcputoolchain-module-site.appspotmail.com',
-            to="jack.thatch@gmail.com",
-            subject='Caught Exception',
-            body=lines)
-        template_values = {}
-        if users.is_current_user_admin():
-            template_values['traceback'] = lines
-        self.response.out.write(dorender(self, 'error.html', template_values, write=False))
+        if not development():
+            lines = ''.join(traceback.format_exception(*sys.exc_info()))
+            logging.error(lines)
+            template_values = {}
+            if users.is_current_user_admin():
+                template_values['traceback'] = lines
+            mail.send_mail(
+                sender='debugging@dcputoolchain-module-site.appspotmail.com',
+                to="jack.thatch@gmail.com",
+                subject='Caught Exception',
+                body=dorender(self, 'error.html', template_values, write=False))
+            raise exception
+            # self.response.out.write(dorender(self, 'error.html', template_values, write=False))
+        else:
+            super(BaseRequestHandler, self).handle_exception(exception, debug_mode)
+
+
+def development():
+    if os.environ['SERVER_SOFTWARE'].find('Development') == 0:
+        return True
+    else:
+        return False

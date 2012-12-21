@@ -66,21 +66,22 @@ class PrettyTreeHandler(BaseRequestHandler):
         calc = memcache.get('pretty_tree_calc')
         if not tree or not calc:
             data_tree = get_tree(self)
-            data_tree = filter(lambda x: x['path'].endswith('.lua'), data_tree)
+            data_tree = (x for x in data_tree if x['path'].endswith('.lua'))
 
             tree = []
             calc = {}
             break_on = 3
             cell_height = 80  # in pixels :D
             header_diff = 20
-            fragment_num = 0
             calc['width'] = 900
             calc['cell_height'] = cell_height
             calc['margin_width'] = calc['width'] / 2
 
-            for fragment in range(len(data_tree)):
-                cur_module = get_module_data(self, data_tree[fragment])
-                cur_module['filename'] = str(data_tree[fragment]['path']).split('/')[-1]
+            for fragment_num, fragment in enumerate(data_tree):
+                logging.info('Fragment; %s' % fragment)
+                logging.info('Fragment_num; %s' % fragment_num)
+                cur_module = get_module_data(self, fragment)
+                cur_module['filename'] = str(fragment['path']).split('/')[-1]
                 if fragment_num % break_on == 0:
                     cur_module['row'] = 'yes'
                 else:
@@ -89,9 +90,8 @@ class PrettyTreeHandler(BaseRequestHandler):
                 cur_module['index'] = fragment_num
 
                 tree.append(cur_module)
-                fragment_num += 1
 
-            rows = len(filter(lambda x: x['row'] == 'yes', tree))
+            rows = sum([1 for x in tree if x['row'] == 'yes'])
             calc['height'] = (rows * cell_height) + header_diff
             logging.info('This many rows; %s' % (rows))
             calc['margin_height'] = calc['height'] / 2
@@ -109,8 +109,8 @@ class PrettyTreeHandler(BaseRequestHandler):
 
         # we want the colours to be different everytime
         colours = pretty_colours(len(tree))
-        for fragment in range(len(tree)):
-            tree[fragment].update({'background': colours[fragment]})
+        for colour, fragment in enumerate(tree):
+            fragment.update({'background': colours[colour]})
 
         dorender(self, 'tree_pretty.html', {'tree': tree,
                                             'calc': calc})
