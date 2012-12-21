@@ -211,7 +211,7 @@ class BuildStatusHandler(BaseRequestHandler):
                     # this is done to ensure unambiguity
                     end_status = 'unknown'
                 except ValueError:
-                    logging.error(
+                    logging.info(
                         'No JSON object could be decoded, from the buildbot output\n'
                         'Output was as follows; %s' % (content))
                     end_status = 'unknown'

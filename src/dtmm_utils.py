@@ -210,20 +210,28 @@ class BaseRequestHandler(webapp2.RequestHandler):
             lines = ''.join(traceback.format_exception(*sys.exc_info()))
             logging.error(lines)
             template_values = {}
-            if users.is_current_user_admin():
-                template_values['traceback'] = lines
+            template_values['traceback'] = lines.replace('\n', '<br/>')
             mail.send_mail(
                 sender='debugging@dcputoolchain-module-site.appspotmail.com',
                 to="jack.thatch@gmail.com",
                 subject='Caught Exception',
-                body=dorender(self, 'error.html', template_values, write=False))
-            raise exception
-            # self.response.out.write(dorender(self, 'error.html', template_values, write=False))
+                body=lines,
+                html=dorender(self, 'error.html', template_values, write=False))
+            # self.response.write(exception.args)
+            # self.response.write(''.join(traceback.format_exception(*sys.exc_info())).replace('\n', '<br/>\n'))
+            logging.info((traceback.format_exception(*sys.exc_info())))
+            # self.response.write([x for x in dir(exception) if not x.startswith('_')])
+            # self.response.write(dorender(self, 'error.html', template_values, write=False))
+            if users.is_current_user_admin():
+                raise exception
+            else:
+                self.error(500)
         else:
             super(BaseRequestHandler, self).handle_exception(exception, debug_mode)
 
 
 def development():
+    # return not not False
     if os.environ['SERVER_SOFTWARE'].find('Development') == 0:
         return True
     else:

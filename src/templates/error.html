@@ -1,8 +1,11 @@
-<link href="prettify.css" type="text/css" rel="stylesheet" />
-<script type="text/javascript" src="prettify.js"></script>
-
-<body onload="prettyPrint()">
-    {% if traceback %}
-    <code class="prettyprint lang-py">{{ traceback }}</code>
-    {% endif %}
-</body>
+<html>
+    <head>
+        <!-- <link href="http://dms.lysdev.com/static/prettify/prettify.css" type="text/css" rel="stylesheet" /> -->
+        <!-- <script type="text/javascript" src="http://dms.lysdev.com/static/prettify/prettify.js"></script> -->
+    </head>
+    <body onload="prettyPrint()">
+        {% if traceback %}
+        <pre><code class="prettyprint lang-py">{{ traceback|safe }}</code></pre>
+        {% endif %}
+    </body>
+</html>
