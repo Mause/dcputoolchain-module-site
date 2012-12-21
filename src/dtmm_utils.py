@@ -105,14 +105,9 @@ def get_tree(handler=None):
         else:
             result = json.loads(url_data)
             memcache.set('tree', result)
-    try:
-        assert 'tree' in result
-    except AssertionError:
-        if result['message'].startswith('API Rate Limit Exceeded for'):
-            raise AssertionError('API Limit reached')
-        else:
-            print 'result', result
-            raise AssertionError
+    # maybe not the best way to do this, but it works
+    assert 'tree' in result and not result['message'].startswith('API Rate Limit Exceeded for'), 'API Limit reached'
+    assert 'tree' in result
     return result['tree']
 
 
