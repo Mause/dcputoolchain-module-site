@@ -101,12 +101,12 @@ def get_tree(handler=None):
         except urlfetch.DownloadError:
             logging.info('Fetching the github api tree failed. Try try again')
             handler.error(408)
-            return
+            return None
         else:
             result = json.loads(url_data)
             memcache.set('tree', result)
     # check if the api limit has been reached
-    assert 'tree' in result and 'message' in result and not result['message'].startswith('API Rate Limit Exceeded for'), 'API Limit reached'
+    assert not result.get('message', '').startswith('API Rate Limit Exceeded for'), 'API Limit reached'
     assert 'tree' in result
     return result['tree']
 
@@ -116,7 +116,7 @@ def get_url_content(handler, url):
     url_hash = hashlib.md5(str(url)).hexdigest()
     result = memcache.get(str(url_hash))
     if result != None:
-        logging.info('Memcache get successful; %.20s' % result)
+        logging.info('Memcache get successful; %.40s' % result)
     else:
         logging.info('Getting the result from the GitHub API')
         try:

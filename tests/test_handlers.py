@@ -57,15 +57,15 @@ class Test_Handlers(unittest2.TestCase):
         self.testbed.deactivate()
 
     def test_human_tree_pretty(self):
-        # /human/tree/pretty
+        "tests/human/tree/pretty"
         self.testapp.get('/human/tree/pretty')
 
     def test_human_tree(self):
-        # human tree
+        "tests /human/tree"
         self.testapp.get('/human/tree')
 
     def test_human_search(self):
-        # /human/search
+        "tests /human/search"
 
         self.testapp.get('/human/search')
 
@@ -82,6 +82,7 @@ class Test_Handlers(unittest2.TestCase):
             self.testapp.get(cur_url)
 
     def test_human_listing(self):
+        "tests /human/listing"
         self.testapp.get('/human/listing')
 
     def test_human_inspect(self):

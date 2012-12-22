@@ -225,11 +225,6 @@ def search(handler, query, requested_type=''):
     return output
 
 
-def iround(num):
-    "returns input rounded and int'ed"
-    return int(round(num))
-
-
 # the theory for this colour generator was taken from;
 # http://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
 def pretty_colours(how_many):
@@ -242,7 +237,7 @@ def pretty_colours(how_many):
         hue += golden_ratio_conjugate * (tmp / (5 * random.random()))
         hue = hue % 1
         converted = (hsv_to_rgb(hue, 0.5, 0.95))
-        temp_c = map(lambda x: iround(x * 256), converted)
+        temp_c = map(lambda x: int(round(x * 256)), converted)
         final_colours.append('rgb(%s, %s, %s)' % tuple(temp_c))
     return final_colours
 
