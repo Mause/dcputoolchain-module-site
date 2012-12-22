@@ -76,7 +76,7 @@ def get_module_data(handler, fragment):
     """Given a get_tree fragment,
     returns module data in a python dict"""
     module = get_url_content(handler, fragment['url'])
-    assert 'content' in module
+    assert 'content' in module, 'The key "content" was not found in %s' % module
     file_data = base64.b64decode(module['content'])
     module_data = (
         re.search('MODULE\s*=\s*(?P<data>\{[^}]*\})',
@@ -105,8 +105,6 @@ def get_tree(handler=None):
         else:
             result = json.loads(url_data)
             memcache.set('tree', result)
-    # check if the api limit has been reached
-    assert not result.get('message', '').startswith('API Rate Limit Exceeded for'), 'API Limit reached'
     assert 'tree' in result
     return result['tree']
 
@@ -129,6 +127,8 @@ def get_url_content(handler, url):
         else:
             result = json.loads(url_data)
             memcache.set(str(url_hash), result)
+    # check if the api limit has been reached
+    assert not result.get('message', '').startswith('API Rate Limit Exceeded for'), 'API Limit reached'
     return result
 
 
