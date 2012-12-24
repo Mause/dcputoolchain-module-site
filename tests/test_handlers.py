@@ -71,20 +71,20 @@ class Test_Handlers(unittest2.TestCase):
         self.testbed.deactivate()
 
     def test_get_tree(self):
-        "tests/human/tree/pretty"
+        "testing /human/tree/pretty handler"
         import dtmm_utils
         dtmm_utils.get_tree(0)
 
     def test_human_tree_pretty(self):
-        "tests/human/tree/pretty"
+        "testing /human/tree/pretty handler"
         self.testapp.get('/human/tree/pretty')
 
     def test_human_tree(self):
-        "tests /human/tree"
+        "testing /human/tree handler"
         self.testapp.get('/human/tree')
 
     def test_human_search(self):
-        "tests /human/search"
+        "testing /human/search handler"
 
         self.testapp.get('/human/search')
 
@@ -101,13 +101,15 @@ class Test_Handlers(unittest2.TestCase):
             self.testapp.get(cur_url)
 
     def test_human_listing(self):
-        "tests /human/listing"
+        "testing /human/listing handler"
         self.testapp.get('/human/listing')
 
     def test_human_inspect(self):
+        "testing /human/inspect handler"
         self.testapp.get('/human/inspect?name=assert.lua')
 
     def test_human(self):
+        "testing /human handler"
         self.testapp.get('/human')
 
     def test_modules(self):

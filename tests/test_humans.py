@@ -28,6 +28,7 @@ class Test_Humans(unittest2.TestCase):
         self.testbed.deactivate()
 
     def test_gen_types(self):
+        "testing humans.get_types function"
         class BaseRequestHandler_replacement:
             pass
         patcher = patch(
@@ -54,6 +55,7 @@ class Test_Humans(unittest2.TestCase):
             {'selected': 'selected', 'name': 'optimizer'}])
 
     def test_search(self):
+        "testing humans.search function"
         class BaseRequestHandler_replacement:
             pass
         patcher = patch(
@@ -122,6 +124,7 @@ class Test_Humans(unittest2.TestCase):
                 u'size': 3979}])
 
     def test_pretty_colours(self):
+        "testing humans.pretty_colours function"
         class BaseRequestHandler_replacement:
             pass
         patcher = patch(

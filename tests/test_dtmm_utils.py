@@ -34,9 +34,8 @@ class Test_DTMM_Utils(unittest2.TestCase):
     #     response = requests.get('http://github.com')
     #     expect(response.status_code).to.equal(201)
 
-    #### dtmm_utils.py file tests ####
-
     def test_authed_fetch(self):
+        "testing dtmm_utils.authed_fetch function"
         # def get_oauth_token():
         #     return 'oauth_token'
         # oauth_patcher = patch('dtmm_utils.get_oauth_token', get_oauth_token)
@@ -63,6 +62,7 @@ class Test_DTMM_Utils(unittest2.TestCase):
         self.assertIsInstance(end_data, fetch)
 
     def test_get_url_content(self):
+        "testing dtmm_utils.get_url_content function"
         class authed_fetch:
             content = json.dumps({"tree": [
                 {"type": "blob",
@@ -95,6 +95,7 @@ class Test_DTMM_Utils(unittest2.TestCase):
             )
 
     def test_get_tree(self):
+        "testing dtmm_utils.get_tree function"
         class authed_fetch:
             content = json.dumps({"tree": [
                 {"type": "blob",
@@ -126,6 +127,7 @@ class Test_DTMM_Utils(unittest2.TestCase):
             )
 
     def test_get_module_data(self):
+        "testing dtmm_utils.get_module_data function"
         def get_url_content(handler=None, url=None):
             return {
                 'content': base64.b64encode('''
@@ -154,6 +156,7 @@ class Test_DTMM_Utils(unittest2.TestCase):
             'Name': 'HMD2043'})
 
     def test_get_hardware_data(self):
+        "testing dtmm_utils.get_hardware_data function"
         def get_url_content(handler=None, url=None):
             return {'content': base64.b64encode('''
                         HARDWARE = {
