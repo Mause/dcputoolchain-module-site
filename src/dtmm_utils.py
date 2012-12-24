@@ -105,7 +105,11 @@ def get_tree(handler=None):
         else:
             result = json.loads(url_data)
             memcache.set('tree', result)
+    # check if the api limit has been reached
+    assert result
+    assert not result.get('message', '').startswith('API Rate Limit Exceeded for'), 'API Limit reached'
     assert 'tree' in result
+    assert result['tree']
     return result['tree']
 
 
@@ -156,41 +160,41 @@ def authed_fetch(url, headers={}):
 
 
 # this function is no longer used, as it is no longer required
-def get_oauth_token(all_data=False):
-    token = memcache.get('oauth_token')
-    if token:
-        return token
-    else:
-        if not os.path.exists('auth_frag.txt'):
-            raise Exception('No authentication fragment found. Run the gen_auth file to generate it')
-        with open('auth_frag.txt', 'r') as fh:
-            auth_frag = fh.read()
-        # use the next line to configure to a new github account
-        r = None
-        count = 0
-        while not r and count != 15:
-            try:
-                r = urlfetch.fetch(
-                    url='https://api.github.com/authorizations',
-                    payload=json.dumps({
-                        'scopes': ["repo"],
-                        'note': 'DCPUToolchain'}),
-                    method=urlfetch.POST,
-                    headers={
-                        'Content-Type': 'application/json',
-                        "Authorization": "Basic " + auth_frag}
-                    )
-            except apiproxy_errors.ApplicationError:
-                count += 1
-                logging.info('Try try again for the oauth token. %s tries' % count)
-        if count > 14:
-            logging.info('More than fifteen tries. Aborting')
-            return
-        else:
-            if 200 <= r.status_code < 300:
-                token = json.loads(r.content)['token']
-                memcache.set('oauth_token', token)
-                return token
+# def get_oauth_token(all_data=False):
+#     token = memcache.get('oauth_token')
+#     if token:
+#         return token
+#     else:
+#         if not os.path.exists('auth_frag.txt'):
+#             raise Exception('No authentication fragment found. Run the gen_auth file to generate it')
+#         with open('auth_frag.txt', 'r') as fh:
+#             auth_frag = fh.read()
+#         # use the next line to configure to a new github account
+#         r = None
+#         count = 0
+#         while not r and count != 15:
+#             try:
+#                 r = urlfetch.fetch(
+#                     url='https://api.github.com/authorizations',
+#                     payload=json.dumps({
+#                         'scopes': ["repo"],
+#                         'note': 'DCPUToolchain'}),
+#                     method=urlfetch.POST,
+#                     headers={
+#                         'Content-Type': 'application/json',
+#                         "Authorization": "Basic " + auth_frag}
+#                     )
+#             except apiproxy_errors.ApplicationError:
+#                 count += 1
+#                 logging.info('Try try again for the oauth token. %s tries' % count)
+#         if count > 14:
+#             logging.info('More than fifteen tries. Aborting')
+#             return
+#         else:
+#             if 200 <= r.status_code < 300:
+#                 token = json.loads(r.content)['token']
+#                 memcache.set('oauth_token', token)
+#                 return token
 
 
 class FourOhFourErrorLog(db.Model):
@@ -212,22 +216,19 @@ class BaseRequestHandler(webapp2.RequestHandler):
                 subject='Caught Exception',
                 body=lines,
                 html=dorender(self, 'error.html', template_values, write=False))
-            # self.response.write(exception.args)
-            # self.response.write(''.join(traceback.format_exception(*sys.exc_info())).replace('\n', '<br/>\n'))
-            logging.info((traceback.format_exception(*sys.exc_info())))
-            # self.response.write([x for x in dir(exception) if not x.startswith('_')])
-            # self.response.write(dorender(self, 'error.html', template_values, write=False))
             if users.is_current_user_admin():
-                raise exception
-            else:
+            #     raise exception
+            # else:
                 self.error(500)
+                if isinstance(exception, AssertionError):
+                    dorender(self, 'unexpected_result.html', {})
         else:
             super(BaseRequestHandler, self).handle_exception(exception, debug_mode)
 
 
 def development():
-    # return not not False
-    if os.environ['SERVER_SOFTWARE'].find('Development') == 0:
-        return True
-    else:
-        return False
+    return not not False
+    # if os.environ['SERVER_SOFTWARE'].find('Development') == 0:
+    #     return True
+    # else:
+    #     return False

@@ -66,6 +66,7 @@ class PrettyTreeHandler(BaseRequestHandler):
         calc = memcache.get('pretty_tree_calc')
         if not tree or not calc:
             data_tree = get_tree(self)
+            assert data_tree
             data_tree = (x for x in data_tree if x['path'].endswith('.lua'))
 
             tree = []
@@ -135,12 +136,11 @@ class InspectHandler(BaseRequestHandler):
     def get(self):
         "handlers get requests"
         tree = get_tree(self)
-        to_give = []
+        tree = filter(bool, tree)
+        # print 'tree', tree
+        assert tree, repr(tree)
         module_name = self.request.get('name')
-        for fragment in tree:
-            if fragment != {}:
-                if fragment['path'].split('/')[-1] == module_name:
-                    to_give.append(fragment)
+        to_give = [fragment for fragment in tree if fragment['path'].split('/')[-1] == module_name]
         logging.info(str(to_give))
         self.response.write(data_tree(self, to_give))
 
