@@ -76,7 +76,6 @@ def get_module_data(handler, fragment):
     """Given a get_tree fragment,
     returns module data in a python dict"""
     module = get_url_content(handler, fragment['url'])
-    assert module['encoding'] == 'base64'
     assert 'content' in module, 'The key "content" was not found in %s' % module
     file_data = base64.b64decode(module['content'])
     module_data = (
