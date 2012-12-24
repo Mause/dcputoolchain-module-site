@@ -37,11 +37,11 @@ class Test_DTMM_Utils(unittest2.TestCase):
     #### dtmm_utils.py file tests ####
 
     def test_authed_fetch(self):
-        def get_oauth_token():
-            return 'oauth_token'
-        oauth_patcher = patch('dtmm_utils.get_oauth_token', get_oauth_token)
-        self.addCleanup(oauth_patcher.stop)
-        oauth_patcher.start()
+        # def get_oauth_token():
+        #     return 'oauth_token'
+        # oauth_patcher = patch('dtmm_utils.get_oauth_token', get_oauth_token)
+        # self.addCleanup(oauth_patcher.stop)
+        # oauth_patcher.start()
 
         class fetch:
             headers = {'x-ratelimit-remaining': 'lots'}
