@@ -13,7 +13,7 @@ An ancillary function also provided by the Module Site is demonstrated as follow
  *  Linux build status; ![Linux build status](http://dms.dcputoolcha.in/status/linux.png)
  *  Mac build status; ![Mac build status](http://dms.dcputoolcha.in/status/mac.png)
 
-This simply polls the buildbot for the status of the most recent build for each platform; you are welcome to inspect the [code behind it](https://github.com/Mause/dcputoolchain_lua_site/blob/master/main.py#L190);
+This simply polls the buildbot for the status of the most recent build for each platform; you are welcome to inspect the [code behind it](https://github.com/Mause/dcputoolchain-module-site/blob/master/src/main.py#L188);
 
 Finally, this project makes use of SirAnthony's simple lua-python data structures parser (slpp) to pull module and hardware information from the module files.
 
