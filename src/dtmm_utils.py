@@ -41,7 +41,6 @@ from google.appengine.api import users
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
 from google.appengine.ext.webapp import template
-from google.appengine.runtime import apiproxy_errors
 
 # for debugging exceptions
 import traceback
@@ -198,8 +197,8 @@ def authed_fetch(url, headers={}):
 
 
 class FourOhFourErrorLog(db.Model):
+    module = db.StringProperty(required=True)
     address = db.StringProperty(required=True)
-    requested_module = db.StringProperty(required=True)
     datetimer = db.DateTimeProperty(auto_now=True)
 
 
@@ -217,8 +216,8 @@ class BaseRequestHandler(webapp2.RequestHandler):
                 body=lines,
                 html=dorender(self, 'error.html', template_values, write=False))
             if users.is_current_user_admin():
-            #     raise exception
-            # else:
+                raise exception
+            else:
                 self.error(500)
                 if isinstance(exception, AssertionError):
                     dorender(self, 'unexpected_result.html', {})
@@ -227,8 +226,9 @@ class BaseRequestHandler(webapp2.RequestHandler):
 
 
 def development():
-    return not not False
-    # if os.environ['SERVER_SOFTWARE'].find('Development') == 0:
-    #     return True
-    # else:
-    #     return False
+    # return not False
+    # return False
+    if os.environ['SERVER_SOFTWARE'].find('Development') == 0:
+        return True
+    else:
+        return False

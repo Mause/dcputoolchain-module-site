@@ -22,10 +22,10 @@ It decodes the json returned by the API and the thence linked to base64 encoded
 files and provides said files in their original formats, ready to be served to
 the DCPUToolchain executables that make use of them.
 """
+
 # generic imports
 import os
 import base64
-import hashlib
 import logging
 import json
 
@@ -35,22 +35,19 @@ from google.appengine.api import urlfetch
 from google.appengine.api import memcache
 
 #  humans.py file
+from humans import search
 from humans import HomeHandler
-from humans import PrettyTreeHandler
 from humans import TreeHandler
 from humans import HumanSearch
-from humans import RedirectToHumanHandler
 from humans import ListingHandler
 from humans import InspectHandler
+from humans import PrettyTreeHandler
+from humans import RedirectToHumanHandler
 
-from humans import search
-
-# the mailer.py file
-from mailer import sendmail
 
 # the dtmm_utils file
-from dtmm_utils import get_url_content
 from dtmm_utils import get_tree
+from dtmm_utils import get_url_content
 from dtmm_utils import FourOhFourErrorLog
 from dtmm_utils import BaseRequestHandler
 
@@ -76,17 +73,21 @@ class DownloadModulesHandler(BaseRequestHandler):
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'
         module_name = self.request.get('name')
-        module_found = False
+
         data = get_tree(self)
-        for fragment in data:
-            if fragment != {}:
-                if fragment['path'].split('/')[-1] == module_name:
-                    module_found = True
-                    self.response.out.write(base64.b64decode(
-                        get_url_content(self, fragment['url'])['content']))
-        if not module_found:
+
+        data_dict = dict(
+            (fragment['path'].split('/')[-1], fragment['url'])
+            for fragment in data)
+
+        if module_name in data_dict:
+            self.response.out.write(base64.b64decode(
+                get_url_content(self, data_dict[module_name])['content']))
+        else:
             logging.info("Module not found: " + str(module_name))
-            entry = FourOhFourErrorLog(address=self.request.remote_addr, requested_module=str(module_name))
+            entry = FourOhFourErrorLog(
+                module=module_name or 'No module name was specified',
+                address=str(self.request.remote_addr))
             entry.put()
             self.error(404)
 
@@ -119,70 +120,70 @@ class FlushHandler(BaseRequestHandler):
         flusher(self)
 
 
-class SmartFlushHandler(BaseRequestHandler):
-    "Tries to efficiently flush the memcache"
-    def get(self):
-        self.response.out.write(
-            'The Smart Flusher Handler can be reached at this address')
+# class SmartFlushHandler(BaseRequestHandler):
+#     "Tries to efficiently flush the memcache"
+#     def get(self):
+#         self.response.out.write(
+#             'The Smart Flusher Handler can be reached at this address')
 
-    def post(self):
-        payload = self.request.get('payload')
-        payload = json.loads(payload)
-        files_changed = False
-        changed_files = []
-        info_dict = {}
-        for commit in payload['commits']:
-            changed_files += commit['modified']
-            try:
-                changed_files += commit['removed']
-            except KeyError:
-                pass
-        for changed_file in changed_files:
-            info_dict[str(changed_file)] = False
-        if len(changed_files) != 0 and changed_files != []:
-            files_changed = True
-            for changed_file in changed_files:
-                logging.info('type: ' + str(changed_file))
-                if changed_file != None and changed_file != '':
-                    logging.info(
-                        changed_file + ':' +
-                        str(memcache.get(changed_file)) + ':' +
-                        hashlib.md5(
-                            str(memcache.get(changed_file))).hexdigest())
-                    if memcache.get(changed_file) != None:
-                        memcache.delete(
-                            hashlib.md5(
-                                memcache.get(changed_file)).hexdigest())
-                    memcache.delete(changed_file)
-                    try:
-                        info_dict[str(changed_file)] = True
-                    except KeyError:
-                        pass
-            sendmail(
-                'Here is a list \n\n' +
-                str(changed_files) + '\n\n\n\n\n\n\n' + str(info_dict))
+#     def post(self):
+#         payload = self.request.get('payload')
+#         payload = json.loads(payload)
+#         files_changed = False
+#         changed_files = []
+#         info_dict = {}
+#         for commit in payload['commits']:
+#             changed_files += commit['modified']
+#             try:
+#                 changed_files += commit['removed']
+#             except KeyError:
+#                 pass
+#         for changed_file in changed_files:
+#             info_dict[str(changed_file)] = False
+#         if len(changed_files) != 0 and changed_files != []:
+#             files_changed = True
+#             for changed_file in changed_files:
+#                 logging.info('type: ' + str(changed_file))
+#                 if changed_file != None and changed_file != '':
+#                     logging.info(
+#                         changed_file + ':' +
+#                         str(memcache.get(changed_file)) + ':' +
+#                         hashlib.md5(
+#                             str(memcache.get(changed_file))).hexdigest())
+#                     if memcache.get(changed_file) != None:
+#                         memcache.delete(
+#                             hashlib.md5(
+#                                 memcache.get(changed_file)).hexdigest())
+#                     memcache.delete(changed_file)
+#                     try:
+#                         info_dict[str(changed_file)] = True
+#                     except KeyError:
+#                         pass
+#             sendmail(
+#                 'Here is a list \n\n' +
+#                 str(changed_files) + '\n\n\n\n\n\n\n' + str(info_dict))
 
-        removed_files = []
-        for commit in payload['commits']:
-            removed_files += commit['removed']
-        if len(removed_files) != 0 and removed_files != []:
-            files_changed = True
-            for removed_file in removed_files:
-                if removed_file != None and removed_file != '':
-                    if memcache.get(removed_file) != None:
-                        memcache.delete(
-                            hashlib.md5(
-                                memcache.get(removed_file)).hexdigest())
-                    memcache.delete(removed_file)
+#         removed_files = []
+#         for commit in payload['commits']:
+#             removed_files += commit['removed']
+#         if len(removed_files) != 0 and removed_files != []:
+#             files_changed = True
+#             for removed_file in removed_files:
+#                 if removed_file != None and removed_file != '':
+#                     if memcache.get(removed_file) != None:
+#                         memcache.delete(
+#                             hashlib.md5(
+#                                 memcache.get(removed_file)).hexdigest())
+#                     memcache.delete(removed_file)
 
-        added_files = []
-        for commit in payload['commits']:
-            added_files += commit['added']
-        if len(added_files) != 0 and added_files != []:
-            files_changed = True
-            get_tree(self)
-        if not files_changed:
-            sendmail('Odd. No files were changed in this commit')
+#         added_files = []
+#         for commit in payload['commits']:
+#             added_files += commit['added']
+#         if len(added_files) != 0 and added_files != []:
+#             files_changed = True
+#             get_tree(self)
+#         if not files_changed:
+#             sendmail('Odd. No files were changed in this commit')
 
 
 class BuildStatusHandler(BaseRequestHandler):
