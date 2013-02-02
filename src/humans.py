@@ -150,7 +150,7 @@ class ListingHandler(BaseRequestHandler):
     def get(self):
         "handlers get requests"
         requests = FourOhFourErrorLog.all()
-        output = ['%s - %s - %s</br>' % (fragment.datetimer, fragment.address, fragment.requested_module) for fragment in requests]
+        output = '\n'.join(['{fragment.datetimer} - {fragment.address} - {fragment.module}</br>'.format(fragment=fragment) for fragment in requests])
         dorender(self, 'module_not_found.html', {'requested': output})
 
     def post(self):
