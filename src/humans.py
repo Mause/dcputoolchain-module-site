@@ -29,19 +29,14 @@ import logging
 from colorsys import hsv_to_rgb
 
 # the dtmm_utils file
-from dtmm_utils import get_module_data
-from dtmm_utils import get_hardware_data
-from dtmm_utils import get_tree
-from dtmm_utils import dorender
-from dtmm_utils import FourOhFourErrorLog
-from dtmm_utils import BaseRequestHandler
+import dtmm_utils
 
 from google.appengine.api import memcache
 
 module_types = ['preprocessor', 'debugger', 'hardware', 'optimizer']
 
 
-class RedirectToHumanHandler(BaseRequestHandler):
+class RedirectToHumanHandler(dtmm_utils.BaseRequestHandler):
     "redirects the user to /human"
     def get(self):
         "handles get requests"
@@ -52,20 +47,20 @@ class RedirectToHumanHandler(BaseRequestHandler):
         self.redirect('/human')
 
 
-class HomeHandler(BaseRequestHandler):
+class HomeHandler(dtmm_utils.BaseRequestHandler):
     "Returns a list of the human pages"
     def get(self):
         pages = ['search', 'tree', 'tree/pretty', 'listing']
-        dorender(self, 'human_index.html', {'pages': pages})
+        dtmm_utils.dorender(self, 'human_index.html', {'pages': pages})
 
 
-class PrettyTreeHandler(BaseRequestHandler):
+class PrettyTreeHandler(dtmm_utils.BaseRequestHandler):
     "Basically the same as /humans/tree, but pretty <3"
     def get(self):
         tree = memcache.get('pretty_tree_tree')
         calc = memcache.get('pretty_tree_calc')
         if not tree or not calc:
-            data_tree = get_tree(self)
+            data_tree = dtmm_utils.get_tree(self)
             assert data_tree
             data_tree = (x for x in data_tree if x['path'].endswith('.lua'))
 
@@ -81,7 +76,7 @@ class PrettyTreeHandler(BaseRequestHandler):
             for fragment_num, fragment in enumerate(data_tree):
                 logging.info('Fragment; %s' % fragment)
                 logging.info('Fragment_num; %s' % fragment_num)
-                cur_module = get_module_data(self, fragment)
+                cur_module = dtmm_utils.get_module_data(self, fragment)
                 cur_module['filename'] = str(fragment['path']).split('/')[-1]
                 if fragment_num % break_on == 0:
                     cur_module['row'] = 'yes'
@@ -113,29 +108,29 @@ class PrettyTreeHandler(BaseRequestHandler):
         for colour, fragment in enumerate(tree):
             fragment.update({'background': colours[colour]})
 
-        dorender(self, 'tree_pretty.html', {'tree': tree,
+        dtmm_utils.dorender(self, 'tree_pretty.html', {'tree': tree,
                                             'calc': calc})
 
 
-class TreeHandler(BaseRequestHandler):
+class TreeHandler(dtmm_utils.BaseRequestHandler):
     """A simple debugging interface"""
     def get(self):
-        data = get_tree(self)
+        data = dtmm_utils.get_tree(self)
         if not data:
             self.error(408)
             return
-        dorender(self, 'tree.html', {'tree': data_tree(self, data)})
+        dtmm_utils.dorender(self, 'tree.html', {'tree': data_tree(self, data)})
 
     def post(self):
         "Handlers POST requests"
         self.response.write('POST not handled at this URI')
 
 
-class InspectHandler(BaseRequestHandler):
+class InspectHandler(dtmm_utils.BaseRequestHandler):
     """Returns a data tree specific to a module"""
     def get(self):
         "handlers get requests"
-        tree = get_tree(self)
+        tree = dtmm_utils.get_tree(self)
         tree = filter(bool, tree)
         # print 'tree', tree
         assert tree, repr(tree)
@@ -145,33 +140,34 @@ class InspectHandler(BaseRequestHandler):
         self.response.write(data_tree(self, to_give))
 
 
-class ListingHandler(BaseRequestHandler):
+class ListingHandler(dtmm_utils.BaseRequestHandler):
     """Lists failed module requests"""
     def get(self):
         "handlers get requests"
-        requests = FourOhFourErrorLog.all()
+        requests = dtmm_utils.FourOhFourErrorLog.all()
         output = '\n'.join(['{fragment.datetimer} - {fragment.address} - {fragment.module}</br>'.format(fragment=fragment) for fragment in requests])
-        dorender(self, 'module_not_found.html', {'requested': output})
+        dtmm_utils.dorender(self, 'module_not_found.html', {'requested': output})
 
     def post(self):
-        map(lambda x: x.delete(), FourOhFourErrorLog.all())
+        for x in dtmm_utils.FourOhFourErrorLog.all():
+            x.delete()
 
 
-class HumanSearch(BaseRequestHandler):
+class HumanSearch(dtmm_utils.BaseRequestHandler):
     "Handle searching of the repo"
     def get(self):
         query = self.request.get('q')
         requested_type = self.request.get('type')
         if query or requested_type:
             output = search(self, query, requested_type)
-            dorender(
+            dtmm_utils.dorender(
                 self,
                 'human_search.html',
                 {'results': data_tree(self, output),
                 'selected_type': requested_type,
                 'types': gen_types(requested_type)})
         else:
-            dorender(
+            dtmm_utils.dorender(
                 self,
                 'human_search.html',
                 {'selected_type': requested_type,
@@ -181,7 +177,7 @@ class HumanSearch(BaseRequestHandler):
         query = self.request.get('q')
         requested_type = self.request.get('type')
         output = search(self, query, requested_type)
-        dorender(
+        dtmm_utils.dorender(
             self,
             'human_search.html',
             {'results': data_tree(self, output),
@@ -205,7 +201,7 @@ def search(handler, query, requested_type=''):
     "filters modules according to input"
     output = []
     query = query.lower()
-    data = get_tree(handler)
+    data = dtmm_utils.get_tree(handler)
     requested_type = requested_type.lower()
 
     if requested_type not in module_types:
@@ -217,7 +213,7 @@ def search(handler, query, requested_type=''):
     else:
         logging.info('Type was specified: ' + str(requested_type))
         for fragment in data:
-            mod_data_frag = get_module_data(handler, fragment)
+            mod_data_frag = dtmm_utils.get_module_data(handler, fragment)
             if fragment['path'].endswith('.lua'):
                 if query in fragment['path'].split('/')[-1].lower():
                     if requested_type.lower() == mod_data_frag['Type'].lower():
@@ -251,13 +247,13 @@ def data_tree(handler, data):
         if fragment['path'].endswith('.lua'):
             cur_module = {}
             cur_module['cur_path'] = str(fragment['path'].split('/')[-1])
-            cur_module['module_data'] = get_module_data(handler, fragment)
+            cur_module['module_data'] = dtmm_utils.get_module_data(handler, fragment)
 
             if cur_module['module_data']['Type'].lower() == 'hardware':
-                cur_module['hardware_data'] = get_hardware_data(handler, fragment)
+                cur_module['hardware_data'] = dtmm_utils.get_hardware_data(handler, fragment)
 
                 cur_module['hardware_data']['ID'] = hex(cur_module['hardware_data']['ID'])
                 cur_module['hardware_data']['Version'] = hex(cur_module['hardware_data']['Version'])
                 cur_module['hardware_data']['Manufacturer'] = hex(cur_module['hardware_data']['Manufacturer'])
             modules.append(cur_module)
-    return dorender(handler, 'data_tree.html', {'modules': modules}, write=False)
+    return dtmm_utils.dorender(handler, 'data_tree.html', {'modules': modules}, write=False)
