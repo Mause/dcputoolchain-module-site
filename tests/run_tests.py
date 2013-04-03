@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 # setup the test environment
 import sys
 import os
@@ -53,9 +55,9 @@ def main():
     time.sleep(2)
     end = runner.run(suite)
     if len(end.errors) > 1:
-        print '%s errors appear to have occured.' % len(end.errors)
-        print 'Informing the test environment of such'
-        exit(1)
+        print('{} errors appear to have occured.'.format(len(end.errors)))
+        print('Informing the test environment of such')
+        sys.exit(1)
 
 if __name__ == '__main__':
     main()

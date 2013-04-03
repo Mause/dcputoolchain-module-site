@@ -30,6 +30,9 @@ ERRORS = {
     'mfnumber_sci': u'Malformed number (bad scientific format).',
 }
 
+if 'long' not in globals():
+    long = int
+
 
 class ParseError(Exception):
     pass
@@ -167,7 +170,12 @@ class SLPP:
                     self.next_chr()
                     if k:
                         o[idx] = k
-                    if not numeric_keys and len([key for key in o if type(key) in (str,  float,  bool,  tuple)]) == 0:
+                    if (not numeric_keys and
+                            len([
+                                key
+                                for key in o
+                                if type(key) in (
+                                    str,  float,  bool,  tuple)]) == 0):
                         ar = []
                         for key in o:
                             ar.insert(key, o[key])

@@ -87,7 +87,7 @@ class PrettyTreeHandler(dtmm_utils.BaseRequestHandler):
 
                 tree.append(cur_module)
 
-            rows = sum([1 for x in tree if x['row'] == 'yes'])
+            rows = sum([1 for module in tree if x['row'] == 'yes'])
             calc['height'] = (rows * cell_height) + header_diff
             logging.info('This many rows; %s' % (rows))
             calc['margin_height'] = calc['height'] / 2
@@ -135,7 +135,10 @@ class InspectHandler(dtmm_utils.BaseRequestHandler):
         # print 'tree', tree
         assert tree, repr(tree)
         module_name = self.request.get('name')
-        to_give = [fragment for fragment in tree if fragment['path'].split('/')[-1] == module_name]
+        to_give = [
+            fragment
+            for fragment in tree
+            if fragment['path'].split('/')[-1] == module_name]
         logging.info(str(to_give))
         self.response.write(data_tree(self, to_give))
 
@@ -144,9 +147,16 @@ class ListingHandler(dtmm_utils.BaseRequestHandler):
     """Lists failed module requests"""
     def get(self):
         "handlers get requests"
+        format_str = (
+            '{fragment.datetimer} -'
+            ' {fragment.address} - '
+            '{fragment.module}</br>')
         requests = dtmm_utils.FourOhFourErrorLog.all()
-        output = '\n'.join(['{fragment.datetimer} - {fragment.address} - {fragment.module}</br>'.format(fragment=fragment) for fragment in requests])
-        dtmm_utils.dorender(self, 'module_not_found.html', {'requested': output})
+        output = '\n'.join([
+            format_str.format(fragment=fragment)
+            for fragment in requests])
+        dtmm_utils.dorender(
+            self, 'module_not_found.html', {'requested': output})
 
     def post(self):
         for x in dtmm_utils.FourOhFourErrorLog.all():
@@ -247,13 +257,19 @@ def data_tree(handler, data):
         if fragment['path'].endswith('.lua'):
             cur_module = {}
             cur_module['cur_path'] = str(fragment['path'].split('/')[-1])
-            cur_module['module_data'] = dtmm_utils.get_module_data(handler, fragment)
+            cur_module['module_data'] = dtmm_utils.get_module_data(
+                handler, fragment)
 
             if cur_module['module_data']['Type'].lower() == 'hardware':
-                cur_module['hardware_data'] = dtmm_utils.get_hardware_data(handler, fragment)
+                cur_module['hardware_data'] = dtmm_utils.get_hardware_data(
+                    handler, fragment)
 
-                cur_module['hardware_data']['ID'] = hex(cur_module['hardware_data']['ID'])
-                cur_module['hardware_data']['Version'] = hex(cur_module['hardware_data']['Version'])
-                cur_module['hardware_data']['Manufacturer'] = hex(cur_module['hardware_data']['Manufacturer'])
+                cur_module['hardware_data']['ID'] = hex(
+                    cur_module['hardware_data']['ID'])
+                cur_module['hardware_data']['Version'] = hex(
+                    cur_module['hardware_data']['Version'])
+                cur_module['hardware_data']['Manufacturer'] = hex(
+                    cur_module['hardware_data']['Manufacturer'])
             modules.append(cur_module)
-    return dtmm_utils.dorender(handler, 'data_tree.html', {'modules': modules}, write=False)
+    return dtmm_utils.dorender(
+        handler, 'data_tree.html', {'modules': modules}, write=False)

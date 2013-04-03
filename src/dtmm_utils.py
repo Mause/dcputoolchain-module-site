@@ -75,7 +75,15 @@ def get_module_data(handler, fragment):
     """Given a get_tree fragment,
     returns module data in a python dict"""
     module = get_url_content(handler, fragment['url'])
-    assert 'content' in module, 'The key "content" was not found in %s' % module
+    try:
+        assert 'content' in module, (
+            'The key "content" was not found in {}'.format(module))
+    except AssertionError:
+        # if the data in the memcache is outdated :(
+        logging.info('the data in the memcache seems to be outdated :(')
+        memcache.flush()
+        module = get_url_content(handler, fragment['url'])
+
     file_data = base64.b64decode(module['content'])
     module_data = (
         re.search('MODULE\s*=\s*(?P<data>\{[^}]*\})',
@@ -95,18 +103,24 @@ def get_tree(handler=None):
         logging.info('Memcache get successful; got the repo tree')
     else:
         logging.info('Getting the result from the GitHub API')
-        try:
-            url_data = authed_fetch(url='https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master').content
-        except urlfetch.DownloadError:
-            logging.info('Fetching the github api tree failed. Try try again')
-            handler.error(408)
-            return None
-        else:
-            result = json.loads(url_data)
-            memcache.set('tree', result)
+        url_data = None
+        while not url_data:
+            try:
+                url_data = authed_fetch(
+                    'https://api.github.com/'
+                    'repos/DCPUTeam/DCPUModules/git/trees/master').content
+            except urlfetch.DownloadError:
+                logging.info(
+                    'Fetching the github api tree failed. Try try again')
+                handler.error(408)
+                return None
+            else:
+                result = json.loads(url_data)
+                memcache.set('tree', result)
     # check if the api limit has been reached
     assert result
-    assert not result.get('message', '').startswith('API Rate Limit Exceeded for'), 'API Limit reached'
+    assert not result.get('message', '').startswith(
+        'API Rate Limit Exceeded for'), 'API Limit reached'
     assert 'tree' in result
     assert result['tree']
     return result['tree']
@@ -131,7 +145,8 @@ def get_url_content(handler, url):
             result = json.loads(url_data)
             memcache.set(str(url_hash), result)
     # check if the api limit has been reached
-    assert not result.get('message', '').startswith('API Rate Limit Exceeded for'), 'API Limit reached'
+    assert not result.get('message', '').startswith(
+        'API Rate Limit Exceeded for'), 'API Limit reached'
     return result
 
 
@@ -151,49 +166,13 @@ def authed_fetch(url, headers={}):
     url += '?' + urllib.urlencode(client_auth_data)
     r = urlfetch.fetch(url=url, headers=headers)
     if 'x-ratelimit-remaining' in r.headers.keys():
-        logging.info('%s requests remaining for this hour.' % (r.headers['x-ratelimit-remaining']))
+        logging.info('{} requests remaining for this hour.'.format(
+            r.headers['x-ratelimit-remaining']))
     else:
-        logging.info('Could not determine how many requests are remaining for this hour')
+        logging.info(
+            'Could not determine number of requests remaining for this hour')
         logging.info(r.content)
     return r
-
-
-# this function is no longer used, as it is no longer required
-# def get_oauth_token(all_data=False):
-#     token = memcache.get('oauth_token')
-#     if token:
-#         return token
-#     else:
-#         if not os.path.exists('auth_frag.txt'):
-#             raise Exception('No authentication fragment found. Run the gen_auth file to generate it')
-#         with open('auth_frag.txt', 'r') as fh:
-#             auth_frag = fh.read()
-#         # use the next line to configure to a new github account
-#         r = None
-#         count = 0
-#         while not r and count != 15:
-#             try:
-#                 r = urlfetch.fetch(
-#                     url='https://api.github.com/authorizations',
-#                     payload=json.dumps({
-#                         'scopes': ["repo"],
-#                         'note': 'DCPUToolchain'}),
-#                     method=urlfetch.POST,
-#                     headers={
-#                         'Content-Type': 'application/json',
-#                         "Authorization": "Basic " + auth_frag}
-#                     )
-#             except apiproxy_errors.ApplicationError:
-#                 count += 1
-#                 logging.info('Try try again for the oauth token. %s tries' % count)
-#         if count > 14:
-#             logging.info('More than fifteen tries. Aborting')
-#             return
-#         else:
-#             if 200 <= r.status_code < 300:
-#                 token = json.loads(r.content)['token']
-#                 memcache.set('oauth_token', token)
-#                 return token
 
 
 class FourOhFourErrorLog(db.Model):
@@ -209,12 +188,13 @@ class BaseRequestHandler(webapp2.RequestHandler):
             logging.error(lines)
             template_values = {}
             template_values['traceback'] = lines.replace('\n', '<br/>')
+            html = dorender(self, 'error.html', template_values, write=False)
             mail.send_mail(
                 sender='debugging@dcputoolchain-module-site.appspotmail.com',
                 to="jack.thatch@gmail.com",
                 subject='Caught Exception',
                 body=lines,
-                html=dorender(self, 'error.html', template_values, write=False))
+                html=html)
             if users.is_current_user_admin():
                 raise exception
             else:
@@ -222,7 +202,8 @@ class BaseRequestHandler(webapp2.RequestHandler):
                 if isinstance(exception, AssertionError):
                     dorender(self, 'unexpected_result.html', {})
         else:
-            super(BaseRequestHandler, self).handle_exception(exception, debug_mode)
+            super(BaseRequestHandler, self).handle_exception(
+                exception, debug_mode)
 
 
 def development():

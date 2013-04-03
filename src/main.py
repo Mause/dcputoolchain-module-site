@@ -25,9 +25,9 @@ the DCPUToolchain executables that make use of them.
 
 # generic imports
 import os
+import json
 import base64
 import logging
-import json
 
 # google appengine imports
 import webapp2
@@ -61,7 +61,8 @@ class SearchModulesHandler(BaseRequestHandler):
         query = self.request.get('q')
         data = get_tree(self)
         for fragment in data:
-            if (fragment['path'].endswith('.lua') and query in fragment['path'].split('/')[-1]):
+            if (fragment['path'].endswith('.lua') and
+                    query in fragment['path'].split('/')[-1]):
                 self.response.out.write(
                     str(fragment['path'].split('/')[-1]) + '\n')
 
@@ -120,72 +121,6 @@ class FlushHandler(BaseRequestHandler):
         flusher(self)
 
 
-# class SmartFlushHandler(BaseRequestHandler):
-#     "Tries to efficiently flush the memcache"
-#     def get(self):
-#         self.response.out.write(
-#             'The Smart Flusher Handler can be reached at this address')
-
-#     def post(self):
-#         payload = self.request.get('payload')
-#         payload = json.loads(payload)
-#         files_changed = False
-#         changed_files = []
-#         info_dict = {}
-#         for commit in payload['commits']:
-#             changed_files += commit['modified']
-#             try:
-#                 changed_files += commit['removed']
-#             except KeyError:
-#                 pass
-#         for changed_file in changed_files:
-#             info_dict[str(changed_file)] = False
-#         if len(changed_files) != 0 and changed_files != []:
-#             files_changed = True
-#             for changed_file in changed_files:
-#                 logging.info('type: ' + str(changed_file))
-#                 if changed_file != None and changed_file != '':
-#                     logging.info(
-#                         changed_file + ':' +
-#                         str(memcache.get(changed_file)) + ':' +
-#                         hashlib.md5(
-#                             str(memcache.get(changed_file))).hexdigest())
-#                     if memcache.get(changed_file) != None:
-#                         memcache.delete(
-#                             hashlib.md5(
-#                                 memcache.get(changed_file)).hexdigest())
-#                     memcache.delete(changed_file)
-#                     try:
-#                         info_dict[str(changed_file)] = True
-#                     except KeyError:
-#                         pass
-#             sendmail(
-#                 'Here is a list \n\n' +
-#                 str(changed_files) + '\n\n\n\n\n\n\n' + str(info_dict))
-
-#         removed_files = []
-#         for commit in payload['commits']:
-#             removed_files += commit['removed']
-#         if len(removed_files) != 0 and removed_files != []:
-#             files_changed = True
-#             for removed_file in removed_files:
-#                 if removed_file != None and removed_file != '':
-#                     if memcache.get(removed_file) != None:
-#                         memcache.delete(
-#                             hashlib.md5(
-#                                 memcache.get(removed_file)).hexdigest())
-#                     memcache.delete(removed_file)
-
-#         added_files = []
-#         for commit in payload['commits']:
-#             added_files += commit['added']
-#         if len(added_files) != 0 and added_files != []:
-#             files_changed = True
-#             get_tree(self)
-#         if not files_changed:
-#             sendmail('Odd. No files were changed in this commit')
-
-
 class BuildStatusHandler(BaseRequestHandler):
     def get(self, platform):
         # we assume that the build status is unknown
@@ -193,7 +128,9 @@ class BuildStatusHandler(BaseRequestHandler):
         # ensure the platform is valid
         if platform in ['mac', 'linux', 'windows']:
             # create the build status url
-            url = 'http://bb.dcputoolcha.in:8080/json/builders/build_%s/builds?select=-1&as_text=1' % (platform)
+            url = ('http://bb.dcputoolcha.in:8080/'
+                    'json/builders/build_{}/builds?select=-1&as_text=1'.format(
+                        platform))
             logging.info(url)
             # check whether the build status is cached
             cached_status = memcache.get('build_status_%s' % (platform))
@@ -207,24 +144,23 @@ class BuildStatusHandler(BaseRequestHandler):
                     raw_data = json.loads(content)
                 except urlfetch.DownloadError:
                     # inform the logger that we could not get the build status
-                    logging.info('Could not get the info from the build server')
-                    # if it errors out, set the build status to unknown
-                    # this is done to ensure unambiguity
+                    logging.info(
+                        'Could not get the info from the build server')
                     end_status = 'unknown'
                 except ValueError:
                     logging.info(
-                        'No JSON object could be decoded, from the buildbot output\n'
-                        'Output was as follows; %s' % (content))
+                        'No JSON object could be decoded, from the buildbot '
+                        'output\nOutput was as follows; %s' % (content))
                     end_status = 'unknown'
                 else:
                     # if no exceptions occured
                     if '-1' in raw_data and 'text' in raw_data['-1']:
                         if 'successful' in raw_data['-1']['text']:
-                            # if the required fields are available, inform the logger so
                             logging.info('Builds are passing')
                             # set the build status to 'passing'
                             end_status = 'passing'
-                        elif 'failed' in raw_data['-1']['text'] or 'exception' in raw_data['-1']['text']:
+                        elif ('failed' in raw_data['-1']['text'] or
+                                'exception' in raw_data['-1']['text']):
                             logging.info('Builds are failing')
                             # set the build status to 'failing'
                             end_status = 'failing'
@@ -244,13 +180,12 @@ class BuildStatusHandler(BaseRequestHandler):
 
         # create the filename of the build status image
         filename = os.path.join(os.getcwd(), 'results/%s.png' % (end_status))
-        # prepare to inform the browser of the mime type of the incoming content
+
         self.response.headers['Content-Type'] = 'image/png'
         # try to ensure github and the browser do not cache the build status
         self.response.headers['Cache-Control'] = 'no-Cache'
-        # open the build status image file
+
         with open(filename, 'rb') as fh:
-            # write the build status image to the buffer
             self.response.write(fh.read())
 
 
@@ -281,7 +216,6 @@ app = webapp2.WSGIApplication([
     (r'/modules/download.?', DownloadModulesHandler),
     (r'/modules/list.?', ListModulesHandler),
     (r'/status/(?P<platform>.*).png', BuildStatusHandler),
-#    (r'/flush', SmartFlushHandler),
     (r'/exception', ExceptionTestHandler),
     (r'/flush', FlushHandler),
     (r'/debug', DebugHandler),

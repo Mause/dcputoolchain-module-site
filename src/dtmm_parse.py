@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+from __future__ import print_function
+
 import os
 import re
 import sys
@@ -37,19 +39,19 @@ def main():
             with open(sys.argv[1], 'r') as fh:
                 data = fh.read()
             module_data = get_module_data(data)
-            print 'Name:', module_data['Name']
-            print 'Type:', module_data['Type']
-            print 'Version:', module_data['Version']
+            print('Name:', module_data['Name'])
+            print('Type:', module_data['Type'])
+            print('Version:', module_data['Version'])
             print
             if module_data['Type'].lower() == 'hardware':
                 hardware_data = get_hardware_data(data)
-                print 'Hardware Version:', hardware_data['Version']
-                print 'Hardware ID:', hardware_data['ID']
-                print 'Hardware Manufacturer:', hardware_data['Manufacturer']
+                print('Hardware Version:', hardware_data['Version'])
+                print('Hardware ID:', hardware_data['ID'])
+                print('Hardware Manufacturer:', hardware_data['Manufacturer'])
         else:
-            print 'File could not be found'
+            print('File could not be found')
     else:
-        print "This program requires at least one argument"
+        print("This program requires at least one argument")
 
 if __name__ == '__main__':
     main()
