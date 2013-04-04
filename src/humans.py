@@ -87,7 +87,7 @@ class PrettyTreeHandler(dtmm_utils.BaseRequestHandler):
 
                 tree.append(cur_module)
 
-            rows = sum([1 for module in tree if x['row'] == 'yes'])
+            rows = sum([1 for module in tree if module['row'] == 'yes'])
             calc['height'] = (rows * cell_height) + header_diff
             logging.info('This many rows; %s' % (rows))
             calc['margin_height'] = calc['height'] / 2

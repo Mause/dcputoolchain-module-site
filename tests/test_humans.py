@@ -32,7 +32,7 @@ class Test_Humans(unittest2.TestCase):
         class BaseRequestHandler_replacement:
             pass
         patcher = patch(
-            'humans.BaseRequestHandler', BaseRequestHandler_replacement)
+            'dtmm_utils.BaseRequestHandler', BaseRequestHandler_replacement)
         self.addCleanup(patcher.stop)
         patcher.start()
         import humans
@@ -59,7 +59,7 @@ class Test_Humans(unittest2.TestCase):
         class BaseRequestHandler_replacement:
             pass
         patcher = patch(
-            'humans.BaseRequestHandler', BaseRequestHandler_replacement)
+            'dtmm_utils.BaseRequestHandler', BaseRequestHandler_replacement)
         self.addCleanup(patcher.stop)
         patcher.start()
 
@@ -74,7 +74,7 @@ class Test_Humans(unittest2.TestCase):
                 u'size': 3979}]
 
         patcher = patch(
-            'humans.get_tree', get_tree)
+            'dtmm_utils.get_tree', get_tree)
         self.addCleanup(patcher.stop)
         patcher.start()
 
@@ -128,7 +128,7 @@ class Test_Humans(unittest2.TestCase):
         class BaseRequestHandler_replacement:
             pass
         patcher = patch(
-            'humans.BaseRequestHandler', BaseRequestHandler_replacement)
+            'dtmm_utils.BaseRequestHandler', BaseRequestHandler_replacement)
         self.addCleanup(patcher.stop)
         patcher.start()
         import humans
