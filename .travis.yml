@@ -5,6 +5,8 @@ python:
 install: "pip install -r requirements.txt --use-mirrors"
 before_script: 
   - "sudo apt-get install libtidy-dev"
-  - "svn --quiet checkout http://googleappengine.googlecode.com/svn/trunk/python ."
+#  - "svn --quiet checkout http://googleappengine.googlecode.com/svn/trunk/python ."
+  - "wget https://code.google.com/p/googleappengine/downloads/detail?name=google_appengine_1.8.6.zip"
+  - "unzip google_appengine_1.8.6.zip"
 # command to run tests
 script: python tests/run_tests.py
