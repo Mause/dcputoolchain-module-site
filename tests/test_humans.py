@@ -9,6 +9,7 @@ sys.path.insert(0, 'C:\\Program Files (x86)\\Google\\google_appengine\\')
 import base64
 import unittest2
 from mock import patch
+import webapp2
 from google.appengine.ext import testbed
 from google.appengine.api import memcache
 
@@ -29,8 +30,8 @@ class Test_Humans(unittest2.TestCase):
 
     def test_gen_types(self):
         "testing humans.get_types function"
-        class BaseRequestHandler_replacement:
-            pass
+        class BaseRequestHandler_replacement(webapp2.RequestHandler):
+	    pass
         patcher = patch(
             'dtmm_utils.BaseRequestHandler', BaseRequestHandler_replacement)
         self.addCleanup(patcher.stop)
@@ -56,7 +57,7 @@ class Test_Humans(unittest2.TestCase):
 
     def test_search(self):
         "testing humans.search function"
-        class BaseRequestHandler_replacement:
+        class BaseRequestHandler_replacement(webapp2.RequestHandler):
             pass
         patcher = patch(
             'dtmm_utils.BaseRequestHandler', BaseRequestHandler_replacement)
@@ -125,7 +126,7 @@ class Test_Humans(unittest2.TestCase):
 
     def test_pretty_colours(self):
         "testing humans.pretty_colours function"
-        class BaseRequestHandler_replacement:
+        class BaseRequestHandler_replacement(webapp2.RequestHandler):
             pass
         patcher = patch(
             'dtmm_utils.BaseRequestHandler', BaseRequestHandler_replacement)

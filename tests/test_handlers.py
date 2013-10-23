@@ -26,7 +26,7 @@ from google.appengine.ext import testbed
 from google.appengine.api import memcache
 
 
-@unittest2.skip('webtest seems to be broken')
+#@unittest2.skip('webtest seems to be broken')
 class Test_Handlers(unittest2.TestCase):
     def setUp(self):
         self.testbed = testbed.Testbed()
