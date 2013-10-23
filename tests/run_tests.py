@@ -25,6 +25,7 @@ def setup_environ():
         os.path.join(AE_PATH, 'lib', 'fancy_urllib'),
         os.path.join(os.getcwd(), 'src'),
         os.path.join(os.getcwd(), '..', 'src'),
+        os.path.join(os.getcwd(), 'google_appengine'),
         'C:\\Program Files (x86)\\Google\\google_appengine\\',
         '/home/dominic/.google_appengine/',
         '/home/action/.google_appengine/'
