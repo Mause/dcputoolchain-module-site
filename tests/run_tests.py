@@ -26,7 +26,7 @@ def setup_environ():
         os.path.join(os.getcwd(), 'src'),
         os.path.join(os.getcwd(), '..', 'src'),
         'C:\\Program Files (x86)\\Google\\google_appengine\\',
-        '/home/dominic/gae/google_appengine',
+        '/home/dominic/.google_appengine/',
         '/home/action/.google_appengine/'
     ]
     sys.path = EXTRA_PATHS + sys.path
