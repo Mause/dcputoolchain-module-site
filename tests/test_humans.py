@@ -1,15 +1,7 @@
-# setup the test environment
-import sys
-import os
-sys.path.insert(0, 'src')
-sys.path.insert(0, '..%ssrc' % os.sep)
-sys.path.insert(0, 'C:\\Program Files (x86)\\Google\\google_appengine\\')
-
 # unit testing specific imports
 import base64
 import unittest2
 from mock import patch
-import webapp2
 from google.appengine.ext import testbed
 from google.appengine.api import memcache
 
@@ -30,12 +22,6 @@ class Test_Humans(unittest2.TestCase):
 
     def test_gen_types(self):
         "testing humans.get_types function"
-        class BaseRequestHandler_replacement(webapp2.RequestHandler):
-	    pass
-        patcher = patch(
-            'dtmm_utils.BaseRequestHandler', BaseRequestHandler_replacement)
-        self.addCleanup(patcher.stop)
-        patcher.start()
         import humans
         end_data = humans.gen_types()
 
@@ -57,13 +43,6 @@ class Test_Humans(unittest2.TestCase):
 
     def test_search(self):
         "testing humans.search function"
-        class BaseRequestHandler_replacement(webapp2.RequestHandler):
-            pass
-        patcher = patch(
-            'dtmm_utils.BaseRequestHandler', BaseRequestHandler_replacement)
-        self.addCleanup(patcher.stop)
-        patcher.start()
-
         # patch some functions
         def get_tree(handler=None):
             return [{
@@ -126,12 +105,6 @@ class Test_Humans(unittest2.TestCase):
 
     def test_pretty_colours(self):
         "testing humans.pretty_colours function"
-        class BaseRequestHandler_replacement(webapp2.RequestHandler):
-            pass
-        patcher = patch(
-            'dtmm_utils.BaseRequestHandler', BaseRequestHandler_replacement)
-        self.addCleanup(patcher.stop)
-        patcher.start()
         import humans
         import re
         import random
