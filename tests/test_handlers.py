@@ -25,18 +25,18 @@ use_library('django', '1.2')
 import common
 
 
-class Test_Handlers(common.DMSTestCase):
+class TestHandlers(common.DMSTestCase):
     def setUp(self):
-        super(Test_Handlers, self).setUp()
+        super(TestHandlers, self).setUp()
         self.testbed.init_mail_stub()
 
         def mock_get_tree(handler):
-            return common.test_handlers_get_tree
+            return common.TEST_HANDLERS_GET_TREE
         self.get_tree_patcher = patch('dtmm_utils.get_tree', mock_get_tree)
         self.get_tree_patcher.start()
 
         def mock_get_url_content(handler, url):
-            return common.test_handlers_url_content
+            return common.TEST_HANDLERS_URL_CONTENT
         self.get_url_content_patcher = patch('dtmm_utils.get_url_content', mock_get_url_content)
         self.get_url_content_patcher.start()
 
@@ -46,7 +46,7 @@ class Test_Handlers(common.DMSTestCase):
     def tearDown(self):
         self.get_tree_patcher.stop()
         self.get_url_content_patcher.stop()
-        super(Test_Handlers, self).tearDown()
+        super(TestHandlers, self).tearDown()
 
     def test_get_tree(self):
         "testing /human/tree/pretty handler"
