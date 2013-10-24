@@ -50,49 +50,34 @@ import sys
 client_auth_data = memcache.get('client_auth_data')
 if not client_auth_data:
     with open('auth_data.json', 'r') as fh:
-        auth_data = json.loads(fh.read())
+        auth_data = json.load(fh)
         client_auth_data = auth_data["client_auth_data"]
+
+
+def generic_get_module_data(handler, fragment_url, regex):
+    module = get_url_content(handler, fragment_url)
+    assert 'content' in module
+
+    data = base64.b64decode(module['content'])
+    data = re.search(regex, data)
+
+    if data:
+        data = lua.decode(data.groupdict()['data'])
+        return data
+    else:
+        return {}
 
 
 def get_hardware_data(handler, fragment):
     """Given a get_tree fragment,
     returns hardware data in a python dict"""
-    module = get_url_content(handler, fragment['url'])
-    assert 'content' in module
-    file_data = base64.b64decode(
-        module['content'])
-    hardware_data = (
-        re.search('HARDWARE\s*=\s*(?P<data>\{[^}]*\})',
-                  file_data))
-    if hardware_data:
-        hardware_data = lua.decode(hardware_data.groupdict()['data'])
-        return hardware_data
-    else:
-        return {}
+    return generic_get_module_data(handler, fragment['url'], 'HARDWARE\s*=\s*(?P<data>\{[^}]*\})')
 
 
 def get_module_data(handler, fragment):
     """Given a get_tree fragment,
     returns module data in a python dict"""
-    module = get_url_content(handler, fragment['url'])
-    try:
-        assert 'content' in module, (
-            'The key "content" was not found in {}'.format(module))
-    except AssertionError:
-        # if the data in the memcache is outdated :(
-        logging.info('the data in the memcache seems to be outdated :(')
-        memcache.flush()
-        module = get_url_content(handler, fragment['url'])
-
-    file_data = base64.b64decode(module['content'])
-    module_data = (
-        re.search('MODULE\s*=\s*(?P<data>\{[^}]*\})',
-                  file_data))
-    if module_data:
-        module_data = lua.decode(module_data.groupdict()['data'])
-        return module_data
-    else:
-        return {}
+    return generic_get_module_data(handler, fragment['url'], 'MODULE\s*=\s*(?P<data>\{[^}]*\})')
 
 
 def get_tree(handler=None):
