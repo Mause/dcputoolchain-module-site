@@ -3,26 +3,29 @@ if __name__ == '__main__':
     setup_environ()
 
 import json
+import common
 import base64
 import unittest2
 from mock import patch
-from google.appengine.ext import testbed
-from google.appengine.api import memcache
 
 
-class Test_DTMM_Utils(unittest2.TestCase):
-    def setUp(self):
-        self.testbed = testbed.Testbed()
-        self.testbed.activate()
-        self.testbed.setup_env(app_id='dcputoolchain-module-site')
-        self.testbed.init_datastore_v3_stub()
-        self.testbed.init_memcache_stub()
-        self.testbed.init_urlfetch_stub()
-        memcache.set('client_auth_data',
-            {u'client_auth_data': {u'client_secret': u'false_data', u'client_id': u'false_data'}})
+class TestDTMMUtils(common.DMSTestCase):
+    class authed_fetch:
+        content = json.dumps({
+            "tree": [{
+                "type": "blob",
+                "path": "README.md",
+                "mode": "100644",
+                "sha": "ac178f6489f2d3f601df6a9a5e641b62a0388eae",
+                "size": 314
+            }]
+        })
 
-    def tearDown(self):
-        self.testbed.deactivate()
+        def __init__(self, url):
+            pass
+
+        def __call__(self):
+            return self
 
     # @httprettified
     # def test_github_access(self):
@@ -36,12 +39,6 @@ class Test_DTMM_Utils(unittest2.TestCase):
 
     def test_authed_fetch(self):
         "testing dtmm_utils.authed_fetch function"
-        # def get_oauth_token():
-        #     return 'oauth_token'
-        # oauth_patcher = patch('dtmm_utils.get_oauth_token', get_oauth_token)
-        # self.addCleanup(oauth_patcher.stop)
-        # oauth_patcher.start()
-
         class fetch:
             headers = {'x-ratelimit-remaining': 'lots'}
             content = (
@@ -63,22 +60,9 @@ class Test_DTMM_Utils(unittest2.TestCase):
 
     def test_get_url_content(self):
         "testing dtmm_utils.get_url_content function"
-        class authed_fetch:
-            content = json.dumps({"tree": [
-                {"type": "blob",
-                "path": "README.md",
-                "mode": "100644",
-                "sha": "ac178f6489f2d3f601df6a9a5e641b62a0388eae",
-                "size": 314}]})
-
-            def __init__(self, url):
-                pass
-
-            def __call__(self):
-                return self
 
         fetch_patcher = patch(
-            'dtmm_utils.authed_fetch', authed_fetch)
+            'dtmm_utils.authed_fetch', self.authed_fetch)
         self.addCleanup(fetch_patcher.stop)
         fetch_patcher.start()
 
@@ -86,32 +70,21 @@ class Test_DTMM_Utils(unittest2.TestCase):
         end_data = dtmm_utils.get_url_content(None, 'http://mock.com')
         self.assertEqual(
             end_data,
-            {u'tree':
-                [{u'sha': u'ac178f6489f2d3f601df6a9a5e641b62a0388eae',
-                u'mode': u'100644',
-                u'path': u'README.md',
-                u'type': u'blob',
-                u'size': 314}]}
-            )
+            {
+                u'tree': [{
+                    u'sha': u'ac178f6489f2d3f601df6a9a5e641b62a0388eae',
+                    u'mode': u'100644',
+                    u'path': u'README.md',
+                    u'type': u'blob',
+                    u'size': 314
+                }]
+            }
+        )
 
     def test_get_tree(self):
         "testing dtmm_utils.get_tree function"
-        class authed_fetch:
-            content = json.dumps({"tree": [
-                {"type": "blob",
-                "path": "README.md",
-                "mode": "100644",
-                "sha": "ac178f6489f2d3f601df6a9a5e641b62a0388eae",
-                "size": 314}]})
-
-            def __init__(self, url):
-                pass
-
-            def __call__(self):
-                return self
-
         fetch_patcher = patch(
-            'dtmm_utils.authed_fetch', authed_fetch)
+            'dtmm_utils.authed_fetch', self.authed_fetch)
         self.addCleanup(fetch_patcher.stop)
         fetch_patcher.start()
 
@@ -119,12 +92,14 @@ class Test_DTMM_Utils(unittest2.TestCase):
         end_data = dtmm_utils.get_tree()
         self.assertEqual(
             end_data,
-            [{u'sha': u'ac178f6489f2d3f601df6a9a5e641b62a0388eae',
-            u'mode': u'100644',
-            u'path': u'README.md',
-            u'type': u'blob',
-            u'size': 314}]
-            )
+            [{
+                u'sha': u'ac178f6489f2d3f601df6a9a5e641b62a0388eae',
+                u'mode': u'100644',
+                u'path': u'README.md',
+                u'type': u'blob',
+                u'size': 314
+            }]
+        )
 
     def test_get_module_data(self):
         "testing dtmm_utils.get_module_data function"
@@ -137,7 +112,8 @@ class Test_DTMM_Utils(unittest2.TestCase):
                         Version = "1.1",
                         SDescription = "Deprecated HMD2043 hardware device",
                         URL = "False URL"
-                    };''')}
+                    };''')
+            }
 
         patcher = patch(
             'dtmm_utils.get_url_content', get_url_content)
@@ -149,11 +125,14 @@ class Test_DTMM_Utils(unittest2.TestCase):
             None, {"url": "http://mock.url/hardware_file"})
         self.assertEqual(
             end_data,
-            {'URL': 'False URL',
-            'SDescription': 'Deprecated HMD2043 hardware device',
-            'Version': '1.1',
-            'Type': 'Hardware',
-            'Name': 'HMD2043'})
+            {
+                'URL': 'False URL',
+                'SDescription': 'Deprecated HMD2043 hardware device',
+                'Version': '1.1',
+                'Type': 'Hardware',
+                'Name': 'HMD2043'
+            }
+        )
 
     def test_get_hardware_data(self):
         "testing dtmm_utils.get_hardware_data function"
