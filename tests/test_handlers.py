@@ -18,7 +18,8 @@ if __name__ == '__main__':
     from run_tests import setup_environ
     setup_environ()
 
-# these next two lines might be broken in the future. not sure what ill do after that :(
+# these next two lines might be broken in the future.
+# not sure what ill do after that :(
 from google.appengine.dist import use_library
 use_library('django', '1.2')
 
@@ -37,7 +38,8 @@ class TestHandlers(common.DMSTestCase):
 
         def mock_get_url_content(handler, url):
             return common.TEST_HANDLERS_URL_CONTENT
-        self.get_url_content_patcher = patch('dtmm_utils.get_url_content', mock_get_url_content)
+        self.get_url_content_patcher = patch('dtmm_utils.get_url_content',
+                                             mock_get_url_content)
         self.get_url_content_patcher.start()
 
         from main import app
