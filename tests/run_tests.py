@@ -52,7 +52,7 @@ def main():
     # wait a second or so for things to start
     time.sleep(2)
     end = runner.run(suite)
-    if len(end.errors) > 1:
+    if len(end.errors) > 0 or len(end.failures) > 0:
         print('{} errors appear to have occured.'.format(len(end.errors)))
         print('Informing the test environment of such')
         sys.exit(1)
