@@ -190,9 +190,4 @@ class BaseRequestHandler(webapp2.RequestHandler):
 
 
 def development():
-    # return not False
-    # return False
-    if os.environ['SERVER_SOFTWARE'].find('Development') == 0:
-        return True
-    else:
-        return False
+    return os.environ['SERVER_SOFTWARE'].find('Development') == 0
