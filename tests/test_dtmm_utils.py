@@ -10,7 +10,7 @@ from mock import patch
 
 
 class TestDTMMUtils(common.DMSTestCase):
-    class authed_fetch:
+    class authed_fetch(object):
         content = json.dumps({
             "tree": [{
                 "type": "blob",
@@ -39,7 +39,7 @@ class TestDTMMUtils(common.DMSTestCase):
 
     def test_authed_fetch(self):
         "testing dtmm_utils.authed_fetch function"
-        class fetch:
+        class fetch(object):
             headers = {'x-ratelimit-remaining': 'lots'}
             content = (
                 'Lorem ipsum dolor sit amet, consectetur adipisicing elit.')
