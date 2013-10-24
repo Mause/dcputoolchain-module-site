@@ -42,11 +42,11 @@ import unittest2
 
 # unit test subunits
 sub_units = ['test_humans', 'test_dtmm_utils', 'test_misc', 'test_handlers']
-sub_units = map(__import__, sub_units)
+
+
+def main():
     loader = unittest2.TestLoader()
-    suite = unittest2.TestSuite()
-    while sub_units:
-        suite.addTests(loader.loadTestsFromModule(sub_units.pop()))
+    suite = loader.loadTestsFromNames(sub_units)
 
     runner = unittest2.TextTestRunner(verbosity=2)
     # wait a second or so for things to start
