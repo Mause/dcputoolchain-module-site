@@ -41,7 +41,7 @@ setup_environ()
 import unittest2
 
 # unit test subunits
-SUB_UNITS = ['test_humans', 'test_dtmm_utils' 'test_handlers']
+SUB_UNITS = ['test_humans', 'test_dtmm_utils', 'test_handlers']
 
 
 def main():
