@@ -11,7 +11,7 @@
         <select name="type">
             <option value="">All results</option>
             {% for item in types %}
-            <option {{item.selected}} value="{{item.name}}">{{item.name.title}}</option>
+            <option {% if item.selected %} selected {% endif %} value="{{item.name}}">{{item.name.title}}</option>
             {% endfor %}
         </select>
         <input type="submit" value="Search"/>

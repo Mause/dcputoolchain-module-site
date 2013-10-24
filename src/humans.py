@@ -65,13 +65,14 @@ class PrettyTreeHandler(dtmm_utils.BaseRequestHandler):
             data_tree = (x for x in data_tree if x['path'].endswith('.lua'))
 
             tree = []
-            calc = {}
             break_on = 3
-            cell_height = 80  # in pixels :D
             header_diff = 20
-            calc['width'] = 900
-            calc['cell_height'] = cell_height
-            calc['margin_width'] = calc['width'] / 2
+            width = 900
+            calc = {
+                'width': width,
+                'cell_height': 80,  # in pixels :D
+                'margin_width': width / 2
+            }
 
             for fragment_num, fragment in enumerate(data_tree):
                 logging.info('Fragment; %s' % fragment)
@@ -87,7 +88,7 @@ class PrettyTreeHandler(dtmm_utils.BaseRequestHandler):
 
                 tree.append(cur_module)
 
-            rows = sum([1 for module in tree if module['row'] == 'yes'])
+            rows = len(1 for module in tree if module['row'] == 'yes')
             calc['height'] = (rows * cell_height) + header_diff
             logging.info('This many rows; %s' % (rows))
             calc['margin_height'] = calc['height'] / 2
@@ -196,15 +197,10 @@ class HumanSearch(dtmm_utils.BaseRequestHandler):
 
 
 def gen_types(selected=None):
-    final = []
-    for frag in module_types:
-        to_select = ''
-        if str(selected).lower() == str(frag).lower():
-            to_select = 'selected'
-        final.append(
-            {'name': frag,
-            'selected': to_select})
-    return final
+    return [
+        {'name': frag, 'selected': str(selected).lower() == str(frag).lower()}
+        for frag in module_types
+    ]
 
 
 def search(handler, query, requested_type=''):
