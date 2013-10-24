@@ -61,11 +61,7 @@ def generic_get_module_data(handler, fragment_url, regex):
     data = base64.b64decode(module['content'])
     data = re.search(regex, data)
 
-    if data:
-        data = lua.decode(data.groupdict()['data'])
-        return data
-    else:
-        return {}
+    return lua.decode(data.groupdict()['data']) if data else {}
 
 
 def get_hardware_data(handler, fragment):
