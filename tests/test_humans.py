@@ -27,19 +27,19 @@ class Test_Humans(unittest2.TestCase):
 
         self.assertEqual(
             end_data,
-            [{'selected': '', 'name': 'preprocessor'},
-            {'selected': '', 'name': 'debugger'},
-            {'selected': '', 'name': 'hardware'},
-            {'selected': '', 'name': 'optimizer'}])
+            [{'selected': False, 'name': 'preprocessor'},
+            {'selected': False, 'name': 'debugger'},
+            {'selected': False, 'name': 'hardware'},
+            {'selected': False, 'name': 'optimizer'}])
 
         end_data = humans.gen_types(selected='optimizer')
 
         self.assertEqual(
             end_data,
-            [{'selected': '', 'name': 'preprocessor'},
-            {'selected': '', 'name': 'debugger'},
-            {'selected': '', 'name': 'hardware'},
-            {'selected': 'selected', 'name': 'optimizer'}])
+            [{'selected': False, 'name': 'preprocessor'},
+            {'selected': False, 'name': 'debugger'},
+            {'selected': False, 'name': 'hardware'},
+            {'selected': True, 'name': 'optimizer'}])
 
     def test_search(self):
         "testing humans.search function"
