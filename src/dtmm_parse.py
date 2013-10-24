@@ -6,6 +6,11 @@ import re
 import sys
 from slpp import slpp as lua
 
+def validate(data):
+    if data:
+        return lua.decode(data.groupdict()['data'])
+    else:
+        return {}
 
 def get_hardware_data(data):
     """Given a get_tree fragment,
@@ -13,11 +18,7 @@ def get_hardware_data(data):
     hardware_data = (
         re.search('HARDWARE\s*=\s*(?P<data>\{[^}]*\})',
                   data))
-    if hardware_data:
-        hardware_data = lua.decode(hardware_data.groupdict()['data'])
-        return hardware_data
-    else:
-        return {}
+    return validate(hardware_data)
 
 
 def get_module_data(data):
@@ -26,11 +27,7 @@ def get_module_data(data):
     module_data = (
         re.search('MODULE\s*=\s*(?P<data>\{[^}]*\})',
                   data))
-    if module_data:
-        module_data = lua.decode(module_data.groupdict()['data'])
-        return module_data
-    else:
-        return {}
+    return validate(module_data)
 
 
 def main():
