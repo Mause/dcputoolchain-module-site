@@ -41,18 +41,13 @@ setup_environ()
 import unittest2
 
 # unit test subunits
-import test_humans
-import test_dtmm_utils
-import test_misc
-import test_handlers
-
-
-def main():
+sub_units = ['test_humans', 'test_dtmm_utils', 'test_misc', 'test_handlers']
+sub_units = map(__import__, sub_units)
     loader = unittest2.TestLoader()
-    suite = loader.loadTestsFromModule(test_humans)
-    suite.addTests(loader.loadTestsFromModule(test_dtmm_utils))
-    suite.addTests(loader.loadTestsFromModule(test_handlers))
-    suite.addTests(loader.loadTestsFromModule(test_misc))
+    suite = unittest2.TestSuite()
+    while sub_units:
+        suite.addTests(loader.loadTestsFromModule(sub_units.pop()))
+
     runner = unittest2.TextTestRunner(verbosity=2)
     # wait a second or so for things to start
     time.sleep(2)
