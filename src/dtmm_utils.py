@@ -80,9 +80,8 @@ def get_tree(handler=None):
     """this is a hard coded version of the get_url_content function
     but with extra features"""
     result = memcache.get('tree')
-    if result is not None:
-        logging.info('Memcache get successful; got the repo tree')
-    else:
+
+    if result is None:
         logging.info('Getting the result from the GitHub API')
         url_data = None
         while not url_data:
@@ -98,6 +97,9 @@ def get_tree(handler=None):
             else:
                 result = json.loads(url_data)
                 memcache.set('tree', result)
+    else:
+        logging.info('Memcache get successful; got the repo tree')
+
     # check if the api limit has been reached
     assert result
     assert not result.get('message', '').startswith(
@@ -110,10 +112,8 @@ def get_tree(handler=None):
 def get_url_content(handler, url):
     "this is a caching function, to help keep wait time short"
     url_hash = hashlib.md5(str(url)).hexdigest()
-    result = memcache.get(str(url_hash))
-    if result is not None:
-        logging.info('Memcache get successful; %.40s' % result)
-    else:
+    result = memcache.get(url_hash)
+    if result is None:
         logging.info('Getting the result from the GitHub API')
         try:
             r = authed_fetch(url)
@@ -125,6 +125,8 @@ def get_url_content(handler, url):
         else:
             result = json.loads(url_data)
             memcache.set(str(url_hash), result)
+    else:
+        logging.info('Memcache get successful; %.40s' % result)
     # check if the api limit has been reached
     assert not result.get('message', '').startswith(
         'API Rate Limit Exceeded for'), 'API Limit reached'
