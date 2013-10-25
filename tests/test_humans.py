@@ -1,24 +1,13 @@
 # unit testing specific imports
+import common
 import base64
 import unittest2
 from mock import patch
-from google.appengine.ext import testbed
-from google.appengine.api import memcache
 
 
-class Test_Humans(unittest2.TestCase):
+class TestHumans(common.DMSTestCase):
     def setUp(self):
-        self.testbed = testbed.Testbed()
-        self.testbed.activate()
-        self.testbed.setup_env(app_id='dcputoolchain-module-site')
-        self.testbed.init_datastore_v3_stub()
-        self.testbed.init_memcache_stub()
-        self.testbed.init_urlfetch_stub()
-        memcache.set('client_auth_data',
-            {u'client_auth_data': {u'client_secret': u'false_data', u'client_id': u'false_data'}})
-
-    def tearDown(self):
-        self.testbed.deactivate()
+        super(TestHumans, self).setUp()
 
     def test_gen_types(self):
         "testing humans.get_types function"
@@ -27,19 +16,25 @@ class Test_Humans(unittest2.TestCase):
 
         self.assertEqual(
             end_data,
-            [{'selected': False, 'name': 'preprocessor'},
-            {'selected': False, 'name': 'debugger'},
-            {'selected': False, 'name': 'hardware'},
-            {'selected': False, 'name': 'optimizer'}])
+            [
+                {'selected': False, 'name': 'preprocessor'},
+                {'selected': False, 'name': 'debugger'},
+                {'selected': False, 'name': 'hardware'},
+                {'selected': False, 'name': 'optimizer'}
+            ]
+        )
 
         end_data = humans.gen_types(selected='optimizer')
 
         self.assertEqual(
             end_data,
-            [{'selected': False, 'name': 'preprocessor'},
-            {'selected': False, 'name': 'debugger'},
-            {'selected': False, 'name': 'hardware'},
-            {'selected': True, 'name': 'optimizer'}])
+            [
+                {'selected': False, 'name': 'preprocessor'},
+                {'selected': False, 'name': 'debugger'},
+                {'selected': False, 'name': 'hardware'},
+                {'selected': True, 'name': 'optimizer'}
+            ]
+        )
 
     def test_search(self):
         "testing humans.search function"

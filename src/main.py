@@ -35,7 +35,6 @@ from google.appengine.api import urlfetch
 from google.appengine.api import memcache
 
 #  humans.py file
-from humans import search
 from humans import HomeHandler
 from humans import TreeHandler
 from humans import HumanSearch
@@ -123,29 +122,26 @@ class FlushHandler(BaseRequestHandler):
 
 class BuildStatusHandler(BaseRequestHandler):
     def get(self, platform):
-        # we assume that the build status is unknown
+
         end_status = 'unknown'
+        FMT_STRING = 'http://bb.dcputoolcha.in:8080/json/builders/build_{}/builds?select=-1&as_text=1'
         # ensure the platform is valid
         if platform in ['mac', 'linux', 'windows']:
             # create the build status url
-            url = ('http://bb.dcputoolcha.in:8080/'
-                    'json/builders/build_{}/builds?select=-1&as_text=1'.format(
-                        platform))
+            url = FMT_STRING.format(platform)
             logging.info(url)
             # check whether the build status is cached
             cached_status = memcache.get('build_status_%s' % (platform))
-            # if it was not cached, or is no longer in the cache
+
             if not cached_status:
-                # inform the logger of such
                 logging.info('Okay, no cached status, hitting the buildbot')
+
                 try:
                     # try to pull build status from the buildbot
                     content = urlfetch.fetch(url).content
                     raw_data = json.loads(content)
                 except urlfetch.DownloadError:
-                    # inform the logger that we could not get the build status
-                    logging.info(
-                        'Could not get the info from the build server')
+                    logging.info('Could not get the info from the build server')
                     end_status = 'unknown'
                 except ValueError:
                     logging.info(
@@ -155,21 +151,21 @@ class BuildStatusHandler(BaseRequestHandler):
                 else:
                     # if no exceptions occured
                     if '-1' in raw_data and 'text' in raw_data['-1']:
-                        if 'successful' in raw_data['-1']['text']:
+                        status_text = raw_data['-1']['text']
+
+                        if 'successful' in status_text:
                             logging.info('Builds are passing')
-                            # set the build status to 'passing'
+
                             end_status = 'passing'
-                        elif ('failed' in raw_data['-1']['text'] or
-                                'exception' in raw_data['-1']['text']):
+                        elif ('failed' in status_text or
+                                'exception' in status_text):
                             logging.info('Builds are failing')
-                            # set the build status to 'failing'
+
                             end_status = 'failing'
                     else:
-                        # if the required fields were not available
-                        # inform the logger so
                         logging.info('Build status is unknown')
                         end_status = 'unknown'
-                # cache the end build status
+
                 memcache.set('build_status_%s' % (platform), end_status, 60)
             else:
                 # if the build status was indeed cached
@@ -189,16 +185,6 @@ class BuildStatusHandler(BaseRequestHandler):
             self.response.write(fh.read())
 
 
-class DebugHandler(BaseRequestHandler):
-    def get(self):
-        self.response.write(search(None, 'hmd', ''))
-
-
-class ExceptionTestHandler(BaseRequestHandler):
-    def get(self):
-        raise Exception
-
-
 class RootModulesHandler(BaseRequestHandler):
     def get(self):
         self.redirect('/human/')
@@ -216,8 +202,6 @@ app = webapp2.WSGIApplication([
     (r'/modules/download.?', DownloadModulesHandler),
     (r'/modules/list.?', ListModulesHandler),
     (r'/status/(?P<platform>.*).png', BuildStatusHandler),
-    (r'/exception', ExceptionTestHandler),
     (r'/flush', FlushHandler),
-    (r'/debug', DebugHandler),
     (r'/', RedirectToHumanHandler)
     ], debug=True)

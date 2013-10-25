@@ -6,11 +6,13 @@ import re
 import sys
 from slpp import slpp as lua
 
+
 def validate(data):
     if data:
         return lua.decode(data.groupdict()['data'])
     else:
         return {}
+
 
 def get_hardware_data(data):
     """Given a get_tree fragment,
