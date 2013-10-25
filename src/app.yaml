@@ -30,8 +30,5 @@ handlers:
   script: google.appengine.ext.admin.application
   login: admin
 
-- url: /spec.*
-  script: spec.app
-
 - url: .*
   script: main.app
