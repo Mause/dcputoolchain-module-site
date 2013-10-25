@@ -166,27 +166,27 @@ class FourOhFourErrorLog(db.Model):
 
 class BaseRequestHandler(webapp2.RequestHandler):
     def handle_exception(self, exception, debug_mode):
-        if not development():
-            lines = ''.join(traceback.format_exception(*sys.exc_info()))
-            logging.error(lines)
-            template_values = {}
-            template_values['traceback'] = lines.replace('\n', '<br/>')
-            html = dorender(self, 'error.html', template_values, write=False)
-            mail.send_mail(
-                sender='debugging@dcputoolchain-module-site.appspotmail.com',
-                to="jack.thatch@gmail.com",
-                subject='Caught Exception',
-                body=lines,
-                html=html)
-            if users.is_current_user_admin():
-                raise exception
-            else:
-                self.error(500)
-                if isinstance(exception, AssertionError):
-                    dorender(self, 'unexpected_result.html', {})
+        if development():
+            return super().handle_exception(exception, debug_mode)
+
+        lines = ''.join(traceback.format_exception(*sys.exc_info()))
+        logging.error(lines)
+        template_values = {
+            'traceback': lines.replace('\n', '<br/>')
+        }
+        html = dorender(self, 'error.html', template_values, write=False)
+        mail.send_mail(
+            sender='debugging@dcputoolchain-module-site.appspotmail.com',
+            to="jack.thatch@gmail.com",
+            subject='Caught Exception',
+            body=lines,
+            html=html)
+        if users.is_current_user_admin():
+            raise exception
         else:
-            super(BaseRequestHandler, self).handle_exception(
-                exception, debug_mode)
+            self.error(500)
+            if isinstance(exception, AssertionError):
+                dorender(self, 'unexpected_result.html', {})
 
 
 def development():
