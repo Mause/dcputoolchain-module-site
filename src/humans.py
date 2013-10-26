@@ -109,8 +109,13 @@ class PrettyTreeHandler(dtmm_utils.BaseRequestHandler):
         for colour, fragment in enumerate(tree):
             fragment.update({'background': colours[colour]})
 
-        dtmm_utils.dorender(self, 'tree_pretty.html', {'tree': tree,
-                                            'calc': calc})
+        dtmm_utils.dorender(
+            self, 'tree_pretty.html',
+            {
+                'tree': tree,
+                'calc': calc
+            }
+        )
 
 
 class TreeHandler(dtmm_utils.BaseRequestHandler):
@@ -174,15 +179,21 @@ class HumanSearch(dtmm_utils.BaseRequestHandler):
             dtmm_utils.dorender(
                 self,
                 'human_search.html',
-                {'results': data_tree(self, output),
-                'selected_type': requested_type,
-                'types': gen_types(requested_type)})
+                {
+                    'results': data_tree(self, output),
+                    'selected_type': requested_type,
+                    'types': gen_types(requested_type)
+                }
+            )
         else:
             dtmm_utils.dorender(
                 self,
                 'human_search.html',
-                {'selected_type': requested_type,
-                'types': gen_types(requested_type)})
+                {
+                    'selected_type': requested_type,
+                    'types': gen_types(requested_type)
+                }
+            )
 
     def post(self):
         query = self.request.get('q')
@@ -191,9 +202,12 @@ class HumanSearch(dtmm_utils.BaseRequestHandler):
         dtmm_utils.dorender(
             self,
             'human_search.html',
-            {'results': data_tree(self, output),
-            'selected_type': requested_type,
-            'types': gen_types(requested_type)})
+            {
+                'results': data_tree(self, output),
+                'selected_type': requested_type,
+                'types': gen_types(requested_type)
+            }
+        )
 
 
 def gen_types(selected=None):

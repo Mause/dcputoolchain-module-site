@@ -15,16 +15,17 @@
 # limitations under the License.
 #
 from google.appengine.api import mail
-BODY = ('\n'
-	'Dear Dominic,'
-	'\n'
-	'%s'
-	'\n'
-	'\n'
-	'Please let us know if you have any questions.'
-	'\n'
-	'\n'
-	'The Lysdev.com Team\n'
+BODY = (
+    '\n'
+    'Dear Dominic,'
+    '\n'
+    '%s'
+    '\n'
+    '\n'
+    'Please let us know if you have any questions.'
+    '\n'
+    '\n'
+    'The Lysdev.com Team\n'
 )
 
 
