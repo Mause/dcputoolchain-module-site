@@ -36,37 +36,30 @@ class TestHumans(common.DMSTestCase):
             ]
         )
 
+    def mock_get_tree(handler=None):
+        return [{
+            u'url': '',
+            u'sha': u'7cc95910b367f08159cf207c08918ae5d4c04bb5',
+            u'mode': u'100644',
+            u'path': u'hmd2043.lua',
+            u'type': u'blob',
+            u'size': 3979}]
+
+    def mock_get_url_content(handler=None, url=None):
+        return {
+            'content': base64.b64encode('''
+                MODULE = {
+                    Type = "Hardware",
+                    Name = "HMD2043",
+                    Version = "1.1",
+                    SDescription = "Deprecated HMD2043 hardware device",
+                    URL = "False URL"
+                };''')}
+
+    @patch('dtmm_utils.get_tree', mock_get_tree)
+    @patch('dtmm_utils.get_url_content', mock_get_url_content)
     def test_search(self):
         "testing humans.search function"
-        # patch some functions
-        def get_tree(handler=None):
-            return [{
-                u'url': '',
-                u'sha': u'7cc95910b367f08159cf207c08918ae5d4c04bb5',
-                u'mode': u'100644',
-                u'path': u'hmd2043.lua',
-                u'type': u'blob',
-                u'size': 3979}]
-
-        patcher = patch(
-            'dtmm_utils.get_tree', get_tree)
-        self.addCleanup(patcher.stop)
-        patcher.start()
-
-        def get_url_content(handler=None, url=None):
-            return {
-                'content': base64.b64encode('''
-                    MODULE = {
-                        Type = "Hardware",
-                        Name = "HMD2043",
-                        Version = "1.1",
-                        SDescription = "Deprecated HMD2043 hardware device",
-                        URL = "False URL"
-                    };''')}
-        patcher = patch(
-            'dtmm_utils.get_url_content', get_url_content)
-        self.addCleanup(patcher.stop)
-        patcher.start()
 
         # run the actual tests
         import humans
