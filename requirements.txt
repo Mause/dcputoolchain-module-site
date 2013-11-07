@@ -1,8 +1,6 @@
-webapp2
-mock
-unittest2
-pyyaml
-webob
-simplejson
-pytidylib
-webtest
+
+# for testing
+unittest2==0.5.1
+mock==1.0.1
+WebTest==2.0.9
+
