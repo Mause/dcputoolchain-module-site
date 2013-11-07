@@ -23,6 +23,17 @@ files and provides said files in their original formats, ready to be served to
 the DCPUToolchain executables that make use of them.
 """
 
+from __future__ import (
+    division,
+    absolute_import,
+    division,
+    generators,
+    nested_scopes,
+    print_function,
+    unicode_literals,
+    with_statement
+)
+
 # generic imports
 import os
 import json
@@ -34,21 +45,25 @@ import webapp2
 from google.appengine.api import urlfetch
 from google.appengine.api import memcache
 
-#  humans.py file
-from humans import HomeHandler
-from humans import TreeHandler
-from humans import HumanSearch
-from humans import ListingHandler
-from humans import InspectHandler
-from humans import PrettyTreeHandler
-from humans import RedirectToHumanHandler
-
+# humans.py file
+from humans import (
+    HomeHandler,
+    TreeHandler,
+    HumanSearch,
+    ListingHandler,
+    InspectHandler,
+    PrettyTreeHandler,
+    RedirectToHumanHandler
+)
 
 # the dtmm_utils file
-from dtmm_utils import get_tree
-from dtmm_utils import get_url_content
-from dtmm_utils import FourOhFourErrorLog
-from dtmm_utils import BaseRequestHandler
+from dtmm_utils import (
+    get_tree,
+    get_url_content,
+    FourOhFourErrorLog,
+    BaseRequestHandler,
+    rpart
+)
 
 
 class SearchModulesHandler(BaseRequestHandler):
