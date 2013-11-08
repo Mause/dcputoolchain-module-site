@@ -117,6 +117,19 @@ def get_tree(handler=None):
     return result['tree']
 
 
+def get_modules(handler=None):
+    """
+    Returns the file hierarchy/tree, filtered by a .lua extension
+    """
+    tree = get_tree(handler)
+
+    return [
+        fragment
+        for fragment in tree
+        if fragment['path'].endswith('.lua')
+    ]
+
+
 def get_url_content(handler, url):
     "this is a caching function, to help keep wait time short"
     url_hash = hashlib.md5(str(url)).hexdigest()
@@ -166,6 +179,10 @@ def authed_fetch(url, headers={}):
     return r
 
 
+def authed_fetch_json(*args, **kwargs):
+    return json.load(authed_fetch(*args, **kwargs).raw)
+
+
 class FourOhFourErrorLog(db.Model):
     module = db.StringProperty(required=True)
     address = db.StringProperty(required=True)
@@ -175,7 +192,7 @@ class FourOhFourErrorLog(db.Model):
 class BaseRequestHandler(webapp2.RequestHandler):
     def handle_exception(self, exception, debug_mode):
         if development():
-            return super().handle_exception(exception, debug_mode)
+            return super(BaseRequestHandler, self).handle_exception(exception, debug_mode)
 
         lines = ''.join(traceback.format_exception(*sys.exc_info()))
         logging.error(lines)
@@ -199,3 +216,7 @@ class BaseRequestHandler(webapp2.RequestHandler):
 
 def development():
     return os.environ['SERVER_SOFTWARE'].find('Development') == 0
+
+
+def rpart(path):
+    return path.rpartition('/')[-1]
