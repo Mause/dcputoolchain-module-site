@@ -75,13 +75,13 @@ def generic_get_module_data(handler, fragment_url, regex):
 def get_hardware_data(handler, fragment):
     """Given a get_tree fragment,
     returns hardware data in a python dict"""
-    return generic_get_module_data(handler, fragment['url'], 'HARDWARE\s*=\s*(?P<data>\{[^}]*\})')
+    return generic_get_module_data(handler, fragment['url'], r'HARDWARE\s*=\s*(?P<data>\{[^}]*\})')
 
 
 def get_module_data(handler, fragment):
     """Given a get_tree fragment,
     returns module data in a python dict"""
-    return generic_get_module_data(handler, fragment['url'], 'MODULE\s*=\s*(?P<data>\{[^}]*\})')
+    return generic_get_module_data(handler, fragment['url'], r'MODULE\s*=\s*(?P<data>\{[^}]*\})')
 
 
 def get_tree(handler=None):
