@@ -39,6 +39,7 @@ import os
 import json
 import base64
 import logging
+from operator import itemgetter
 
 # google appengine imports
 import webapp2
@@ -59,10 +60,11 @@ from humans import (
 # the dtmm_utils file
 from dtmm_utils import (
     get_tree,
+    get_modules,
     get_url_content,
     FourOhFourErrorLog,
     BaseRequestHandler,
-    rpart
+    rpart,
 )
 
 
@@ -70,15 +72,20 @@ class SearchModulesHandler(BaseRequestHandler):
     "Handle searching of the repo"
     def get(self):
         "Handles get requests"
+        query = self.request.get('q')
+        data = get_modules(self)
+
+        filenames = map(itemgetter('path'), data)
+        filenames = map(rpart, filenames)
+        filenames = (
+            filename
+            for filename in filenames
+            if query in filename
+        )
+
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'
-        query = self.request.get('q')
-        data = get_tree(self)
-        for fragment in data:
-            if (fragment['path'].endswith('.lua') and
-                    query in fragment['path'].split('/')[-1]):
-                self.response.out.write(
-                    str(fragment['path'].split('/')[-1]) + '\n')
+        self.response.out.write('\n'.join(filenames))
 
 
 class DownloadModulesHandler(BaseRequestHandler):
@@ -111,13 +118,14 @@ class ListModulesHandler(BaseRequestHandler):
     "returns a list of accessable modules"
     def get(self):
         "Handlers get requests"
+        data = get_modules(self)
+
+        modules = map(itemgetter('path'), data)
+        modules = map(rpart, modules)
+
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'
-        data = get_tree(self)
-        for fragment in data:
-            if fragment['path'].endswith('.lua'):
-                self.response.out.write(
-                    str(fragment['path'].split('/')[-1]) + '\n')
+        self.response.out.write('\n'.join(modules))
 
 
 def flusher(handler):
