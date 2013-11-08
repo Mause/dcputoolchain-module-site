@@ -7,10 +7,11 @@ import common
 import base64
 import unittest2
 from mock import patch
+from StringIO import StringIO
 
 
-class TestDTMMUtils(common.DMSTestCase):
-    class authed_fetch(object):
+def mock_authed_fetch(*args, **kwargs):
+    class AuthedFetchObject(object):
         content = json.dumps({
             "tree": [{
                 "type": "blob",
@@ -20,13 +21,21 @@ class TestDTMMUtils(common.DMSTestCase):
                 "size": 314
             }]
         })
+        raw = StringIO(content)
 
-        def __init__(self, url):
-            pass
+    return AuthedFetchObject()
 
-        def __call__(self):
-            return self
 
+def mock_fetch(url, headers):
+    class FetchObject(object):
+        headers = {'x-ratelimit-remaining': 'lots'}
+        content = (
+            'Lorem ipsum dolor sit amet, consectetur adipisicing elit.')
+
+    return FetchObject()
+
+
+class TestDTMMUtils(common.DMSTestCase):
     # @httprettified
     # def test_github_access(self):
         # HTTPretty.register_uri(HTTPretty.GET,
@@ -37,34 +46,17 @@ class TestDTMMUtils(common.DMSTestCase):
     #     response = requests.get('http://github.com')
     #     expect(response.status_code).to.equal(201)
 
+    @patch('google.appengine.api.urlfetch.fetch', mock_fetch)
     def test_authed_fetch(self):
         "testing dtmm_utils.authed_fetch function"
-        class fetch(object):
-            headers = {'x-ratelimit-remaining': 'lots'}
-            content = (
-                'Lorem ipsum dolor sit amet, consectetur adipisicing elit.')
-
-            def __init__(self, url, headers):
-                pass
-
-            def __call__(self):
-                return self
-        fetch_patcher = patch('google.appengine.api.urlfetch.fetch', fetch)
-        self.addCleanup(fetch_patcher.stop)
-        fetch_patcher.start()
 
         import dtmm_utils
         end_data = dtmm_utils.authed_fetch('http://mock.com')
-        self.assertEqual(fetch(None, None).content, end_data.content)
-        self.assertIsInstance(end_data, fetch)
+        self.assertEqual(mock_fetch(None, None).content, end_data.content)
 
+    @patch('dtmm_utils.authed_fetch', mock_authed_fetch)
     def test_get_url_content(self):
         "testing dtmm_utils.get_url_content function"
-
-        fetch_patcher = patch(
-            'dtmm_utils.authed_fetch', self.authed_fetch)
-        self.addCleanup(fetch_patcher.stop)
-        fetch_patcher.start()
 
         import dtmm_utils
         end_data = dtmm_utils.get_url_content(None, 'http://mock.com')
@@ -81,12 +73,9 @@ class TestDTMMUtils(common.DMSTestCase):
             }
         )
 
+    @patch('dtmm_utils.authed_fetch', mock_authed_fetch)
     def test_get_tree(self):
         "testing dtmm_utils.get_tree function"
-        fetch_patcher = patch(
-            'dtmm_utils.authed_fetch', self.authed_fetch)
-        self.addCleanup(fetch_patcher.stop)
-        fetch_patcher.start()
 
         import dtmm_utils
         end_data = dtmm_utils.get_tree()
@@ -154,7 +143,12 @@ class TestDTMMUtils(common.DMSTestCase):
             None, {"url": "http://mock.url/hardware_file"})
         self.assertEqual(
             end_data,
-            {'Version': 1986, 'ID': 1962560686, 'Manufacturer': 559171912})
+            {
+                'Version': 1986,
+                'ID': 1962560686,
+                'Manufacturer': 559171912
+            }
+        )
 
 
 def main():
