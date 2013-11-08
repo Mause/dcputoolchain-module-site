@@ -48,7 +48,6 @@ class TestDTMMUtils(common.DMSTestCase):
 
     @patch('google.appengine.api.urlfetch.fetch', mock_fetch)
     def test_authed_fetch(self):
-        "testing dtmm_utils.authed_fetch function"
 
         import dtmm_utils
         end_data = dtmm_utils.authed_fetch('http://mock.com')
@@ -56,7 +55,6 @@ class TestDTMMUtils(common.DMSTestCase):
 
     @patch('dtmm_utils.authed_fetch', mock_authed_fetch)
     def test_get_url_content(self):
-        "testing dtmm_utils.get_url_content function"
 
         import dtmm_utils
         end_data = dtmm_utils.get_url_content(None, 'http://mock.com')
@@ -75,7 +73,6 @@ class TestDTMMUtils(common.DMSTestCase):
 
     @patch('dtmm_utils.authed_fetch', mock_authed_fetch)
     def test_get_tree(self):
-        "testing dtmm_utils.get_tree function"
 
         import dtmm_utils
         end_data = dtmm_utils.get_tree()
@@ -91,7 +88,6 @@ class TestDTMMUtils(common.DMSTestCase):
         )
 
     def test_get_module_data(self):
-        "testing dtmm_utils.get_module_data function"
         def get_url_content(handler=None, url=None):
             return {
                 'content': base64.b64encode('''
@@ -124,7 +120,6 @@ class TestDTMMUtils(common.DMSTestCase):
         )
 
     def test_get_hardware_data(self):
-        "testing dtmm_utils.get_hardware_data function"
         def get_url_content(handler=None, url=None):
             return {'content': base64.b64encode('''
                         HARDWARE = {

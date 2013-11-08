@@ -28,7 +28,6 @@ class TestHumans(common.DMSTestCase):
         super(TestHumans, self).setUp()
 
     def test_gen_types(self):
-        "testing humans.get_types function"
         import humans
         end_data = humans.gen_types()
 
@@ -78,7 +77,6 @@ class TestHumans(common.DMSTestCase):
     @patch('dtmm_utils.get_url_content', mock_get_url_content)
     @patch('dtmm_utils.get_tree', mock_get_tree)
     def test_search(self, *args, **kwargs):
-        "testing humans.search function"
 
         # run the actual tests
         import humans
@@ -112,7 +110,6 @@ class TestHumans(common.DMSTestCase):
                 u'size': 3979}])
 
     def test_pretty_colours(self):
-        "testing humans.pretty_colours function"
         import humans
         import re
         import random

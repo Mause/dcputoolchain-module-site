@@ -51,20 +51,16 @@ class TestHandlers(common.DMSTestCase):
         super(TestHandlers, self).tearDown()
 
     def test_get_tree(self):
-        "testing /human/tree/pretty handler"
         import dtmm_utils
         dtmm_utils.get_tree(0)
 
     def test_human_tree_pretty(self):
-        "testing /human/tree/pretty handler"
         self.testapp.get('/human/tree/pretty')
 
     def test_human_tree(self):
-        "testing /human/tree handler"
         self.testapp.get('/human/tree')
 
     def test_human_search(self):
-        "testing /human/search handler"
 
         self.testapp.get('/human/search')
 
@@ -83,15 +79,12 @@ class TestHandlers(common.DMSTestCase):
             self.testapp.get(cur_url)
 
     def test_human_listing(self):
-        "testing /human/listing handler"
         self.testapp.get('/human/listing')
 
     def test_human_inspect(self):
-        "testing /human/inspect handler"
         self.testapp.get('/human/inspect?name=assert.lua')
 
     def test_human(self):
-        "testing /human handler"
         self.testapp.get('/human')
 
     def test_modules(self):
