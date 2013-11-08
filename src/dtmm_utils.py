@@ -145,17 +145,25 @@ def dorender(handler, tname='base.html', values=None, write=True):
         return template.render(path, values or {})
 
 
-def authed_fetch(url, headers={}):
+def authed_fetch(url, headers=None):
+    # add admin contact, auth_data
+    headers = headers or {}
     headers.update({'X-Admin-Contact': 'admin@lysdev.com'})
-    url += '?' + urllib.urlencode(client_auth_data)
+
+    # build the url
+    url += '&' if '?' in url else '?'
+    url += urllib.urlencode(client_auth_data)
+
     r = urlfetch.fetch(url=url, headers=headers)
-    if 'x-ratelimit-remaining' in r.headers.keys():
-        logging.info('{} requests remaining for this hour.'.format(
-            r.headers['x-ratelimit-remaining']))
+
+    remaining = r.headers.get('x-ratelimit-remaining')
+    if remaining:
+        logging.info('{} requests remaining for this hour.'.format(remaining))
     else:
         logging.info(
             'Could not determine number of requests remaining for this hour')
         logging.info(r.content)
+
     return r
 
 
