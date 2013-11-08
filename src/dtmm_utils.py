@@ -132,20 +132,21 @@ def get_modules(handler=None):
 
 def get_url_content(handler, url):
     "this is a caching function, to help keep wait time short"
-    url_hash = hashlib.md5(str(url)).hexdigest()
+    url_hash = hashlib.md5(url).hexdigest()
     result = memcache.get(url_hash)
+
     if result is None:
         logging.info('Getting the result from the GitHub API')
+
         try:
-            r = authed_fetch(url)
-            url_data = r.content
-        except urlfetch.DownloadError:
-            logging.info('Fetching "%s" failed with a download error' % url)
+            result = authed_fetch_json(url)
+        except urlfetch.DownloadError as e:
+            logging.info('Fetching "{}" failed with a {}'.format(url, e))
             handler.error(408)
             return
         else:
-            result = json.loads(url_data)
-            memcache.set(str(url_hash), result)
+            memcache.set(url_hash, result)
+
     else:
         logging.info('Memcache get successful; %.40s' % result)
     # check if the api limit has been reached
