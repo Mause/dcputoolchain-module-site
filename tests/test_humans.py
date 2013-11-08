@@ -1,3 +1,21 @@
+# setup the test environment
+import sys
+import os
+sys.path.insert(0, 'src')
+sys.path.insert(0, '..%ssrc' % os.sep)
+sys.path.insert(0, 'C:\\Program Files (x86)\\Google\\google_appengine\\')
+
+# this needs to be done before anything to do with gae gets imported
+if __name__ == '__main__':
+    from run_tests import setup_environ
+    setup_environ()
+
+# these next two lines might be broken in the future.
+# not sure what ill do after that :(
+from google.appengine.dist import use_library
+use_library('django', '1.2')
+
+
 # unit testing specific imports
 import common
 import base64
@@ -43,26 +61,28 @@ class TestHumans(common.DMSTestCase):
             u'mode': u'100644',
             u'path': u'hmd2043.lua',
             u'type': u'blob',
-            u'size': 3979}]
+            u'size': 3979
+        }]
 
     def mock_get_url_content(handler=None, url=None):
-        return {
-            'content': base64.b64encode('''
-                MODULE = {
-                    Type = "Hardware",
-                    Name = "HMD2043",
-                    Version = "1.1",
-                    SDescription = "Deprecated HMD2043 hardware device",
-                    URL = "False URL"
-                };''')}
+        content = '''
+        MODULE = {
+            Type = "Hardware",
+            Name = "HMD2043",
+            Version = "1.1",
+            SDescription = "Deprecated HMD2043 hardware device",
+            URL = "False URL"
+        };'''
+        return {'content': base64.b64encode(content)}
 
-    @patch('dtmm_utils.get_tree', mock_get_tree)
     @patch('dtmm_utils.get_url_content', mock_get_url_content)
-    def test_search(self):
+    @patch('dtmm_utils.get_tree', mock_get_tree)
+    def test_search(self, *args, **kwargs):
         "testing humans.search function"
 
         # run the actual tests
         import humans
+
         # tests with and without success. firstly, without a type specified
         end_data = humans.search(None, 'query', '')
         self.assertEqual(end_data, [])
