@@ -19,9 +19,17 @@ contains some functions
 required by both main.py and humans.py
 """
 # this could be dangerous D:
-from __future__ import division
+from __future__ import (
+    division,
+    absolute_import,
+    division,
+    generators,
+    nested_scopes,
+    print_function,
+    unicode_literals,
+    with_statement
+)
 
-# generic imports
 import re
 import os
 import json
@@ -43,8 +51,8 @@ from google.appengine.api import urlfetch
 from google.appengine.ext.webapp import template
 
 # for debugging exceptions
-import traceback
 import sys
+import traceback
 
 # authentication data
 client_auth_data = memcache.get('client_auth_data')

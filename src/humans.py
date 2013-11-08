@@ -20,6 +20,17 @@ to interact with the dtmm server
 in a variety of ways :)
 """
 
+from __future__ import (
+    division,
+    absolute_import,
+    division,
+    generators,
+    nested_scopes,
+    print_function,
+    unicode_literals,
+    with_statement
+)
+
 # generic imports
 import math
 import random
