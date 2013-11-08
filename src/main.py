@@ -81,7 +81,7 @@ class SearchModulesHandler(BaseRequestHandler):
 
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'
-        self.response.out.write('\n'.join(filenames))
+        self.response.write('\n'.join(filenames))
 
 
 class DownloadModulesHandler(BaseRequestHandler):
@@ -103,7 +103,7 @@ class DownloadModulesHandler(BaseRequestHandler):
             encoded_content = get_url_content(self, data_dict[module_name])
             content = base64.b64decode(encoded_content['content'])
 
-            self.response.out.write(content)
+            self.response.write(content)
 
         else:
             logging.info("Module not found: {}".format(module_name))
@@ -125,7 +125,7 @@ class ListModulesHandler(BaseRequestHandler):
 
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'
-        self.response.out.write('\n'.join(modules))
+        self.response.write('\n'.join(modules))
 
 
 def flusher(handler):
