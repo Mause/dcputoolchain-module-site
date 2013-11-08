@@ -64,7 +64,7 @@ from dtmm_utils import (
     get_url_content,
     FourOhFourErrorLog,
     BaseRequestHandler,
-    rpart,
+    rpart
 )
 
 
@@ -77,11 +77,7 @@ class SearchModulesHandler(BaseRequestHandler):
 
         filenames = map(itemgetter('path'), data)
         filenames = map(rpart, filenames)
-        filenames = (
-            filename
-            for filename in filenames
-            if query in filename
-        )
+        filenames = filter(lambda filename: query in filename, filenames)
 
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'
@@ -96,17 +92,21 @@ class DownloadModulesHandler(BaseRequestHandler):
         self.response.headers['Cache-Control'] = 'no-Cache'
         module_name = self.request.get('name')
 
-        data = get_tree(self)
+        data = get_modules(self)
 
-        data_dict = dict(
-            (fragment['path'].split('/')[-1], fragment['url'])
-            for fragment in data)
+        data_dict = {
+            rpart(fragment['path']): fragment['url']
+            for fragment in data
+        }
 
         if module_name in data_dict:
-            self.response.out.write(base64.b64decode(
-                get_url_content(self, data_dict[module_name])['content']))
+            encoded_content = get_url_content(self, data_dict[module_name])
+            content = base64.b64decode(encoded_content['content'])
+
+            self.response.out.write(content)
+
         else:
-            logging.info("Module not found: " + str(module_name))
+            logging.info("Module not found: {}".format(module_name))
             entry = FourOhFourErrorLog(
                 module=module_name or 'No module name was specified',
                 address=str(self.request.remote_addr))
