@@ -134,7 +134,6 @@ class FlushHandler(BaseRequestHandler):
 
 class BuildStatusHandler(BaseRequestHandler):
     def get(self, platform):
-
         end_status = 'unknown'
         FMT_STRING = 'http://bb.dcputoolcha.in:8080/json/builders/build_{}/builds?select=-1&as_text=1'
         # ensure the platform is valid
@@ -148,6 +147,7 @@ class BuildStatusHandler(BaseRequestHandler):
             if not cached_status:
                 logging.info('Okay, no cached status, hitting the buildbot')
 
+                content = None
                 try:
                     # try to pull build status from the buildbot
                     content = urlfetch.fetch(url).content

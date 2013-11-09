@@ -256,7 +256,7 @@ def data_tree(handler, data):
     for fragment in data:
         if fragment['path'].endswith('.lua'):
             cur_module = {}
-            cur_module['cur_path'] = str(fragment['path'].split('/')[-1])
+            cur_module['cur_path'] = dtmm_utils.rpart(fragment['path'])
             cur_module['module_data'] = dtmm_utils.get_live_module_data(
                 handler, fragment)
 
