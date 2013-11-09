@@ -170,6 +170,9 @@ class TestHandlers(common.DMSTestCase):
         self.testapp.get('/')
         self.testapp.post('/')
 
+    def test_root_modules_redirect(self):
+        self.testapp.get('/modules')
+
 
 def main():
     unittest2.main()
