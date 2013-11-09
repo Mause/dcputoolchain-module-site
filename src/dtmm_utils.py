@@ -33,6 +33,7 @@ from __future__ import (
 import os
 import json
 import urllib
+import base64
 import hashlib
 import logging
 from operator import itemgetter
@@ -64,7 +65,8 @@ if not client_auth_data:
 def _get_live_data(handler, fragment):
     module = get_url_content(handler, fragment['url'])
     assert 'content' in module
-    return module
+
+    return base64.b64decode(module['content'])
 
 
 def get_live_hardware_data(handler, fragment):

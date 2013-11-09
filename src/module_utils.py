@@ -1,11 +1,9 @@
 import re
-import base64
 from slpp import slpp as lua
 
 
 def generic_get_module_data(module, regex):
-    data = base64.b64decode(module['content'])
-    data = re.search(regex, data)
+    data = re.search(regex, module)
 
     return lua.decode(data.groupdict()['data']) if data else {}
 
