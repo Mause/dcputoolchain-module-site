@@ -87,12 +87,17 @@ class TestHandlers(common.DMSTestCase):
     def test_human(self):
         self.testapp.get('/human')
 
-    def test_modules(self):
-        pass
-        # TODO: check for redirect
+    def test_search_modules(self):
+        self.testapp.get('/modules/search?q=assert')
 
-    def test_modules_search(self):
-        pass
+    def test_download_modules(self):
+        self.assertRaises(webtest.AppError,
+                          self.testapp.get, ('/modules/download'))
+
+        self.testapp.get('/modules/download', {'name': 'assert.lua'})
+
+    def test_list_modules(self):
+        self.testapp.get('/modules/list')
 
 
 def main():
