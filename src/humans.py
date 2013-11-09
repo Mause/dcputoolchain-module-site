@@ -143,10 +143,6 @@ class TreeHandler(dtmm_utils.BaseRequestHandler):
             }
         )
 
-    def post(self):
-        "Handlers POST requests"
-        self.response.write('POST not handled at this URI')
-
 
 class InspectHandler(dtmm_utils.BaseRequestHandler):
     """Returns a data tree specific to a module"""

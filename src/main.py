@@ -187,7 +187,7 @@ class BuildStatusHandler(BaseRequestHandler):
                 end_status = cached_status
 
         # create the filename of the build status image
-        filename = os.path.join(os.getcwd(), 'results/%s.png' % (end_status))
+        filename = os.path.join(os.path.dirname(__file__), 'results/%s.png' % (end_status))
 
         self.response.headers['Content-Type'] = 'image/png'
         # try to ensure github and the browser do not cache the build status
