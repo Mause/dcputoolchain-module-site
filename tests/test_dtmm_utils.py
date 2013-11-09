@@ -77,23 +77,18 @@ class TestDTMMUtils(common.DMSTestCase):
             }]
         )
 
-    def test_get_module_data(self):
-        def get_url_content(handler=None, url=None):
-            return {
-                'content': base64.b64encode('''
-                    MODULE = {
-                        Type = "Hardware",
-                        Name = "HMD2043",
-                        Version = "1.1",
-                        SDescription = "Deprecated HMD2043 hardware device",
-                        URL = "False URL"
-                    };''')
-            }
-
-        patcher = patch(
-            'dtmm_utils.get_url_content', get_url_content)
-        self.addCleanup(patcher.stop)
-        patcher.start()
+    @patch('dtmm_utils.get_url_content')
+    def test_get_module_data(self, get_url_content):
+        get_url_content.return_value = {
+            'content': base64.b64encode('''
+                MODULE = {
+                    Type = "Hardware",
+                    Name = "HMD2043",
+                    Version = "1.1",
+                    SDescription = "Deprecated HMD2043 hardware device",
+                    URL = "False URL"
+                };''')
+        }
 
         import dtmm_utils
         end_data = dtmm_utils.get_module_data(
@@ -109,19 +104,16 @@ class TestDTMMUtils(common.DMSTestCase):
             }
         )
 
-    def test_get_hardware_data(self):
-        def get_url_content(handler=None, url=None):
-            return {'content': base64.b64encode('''
-                        HARDWARE = {
-                            ID = 0x74fa4cae,
-                            Version = 0x07c2,
-                            Manufacturer = 0x21544948 -- HAROLD_IT
-                        };''')}
-
-        patcher = patch(
-            'dtmm_utils.get_url_content', get_url_content)
-        self.addCleanup(patcher.stop)
-        patcher.start()
+    @patch('dtmm_utils.get_url_content')
+    def test_get_hardware_data(self, get_url_content):
+        get_url_content.return_value = {
+            'content': base64.b64encode('''
+                HARDWARE = {
+                    ID = 0x74fa4cae,
+                    Version = 0x07c2,
+                    Manufacturer = 0x21544948 -- HAROLD_IT
+                };''')
+        }
 
         import dtmm_utils
         end_data = dtmm_utils.get_hardware_data(
