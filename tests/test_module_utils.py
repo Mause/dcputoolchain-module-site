@@ -2,7 +2,7 @@ import common
 
 
 class TestModuleUtils(common.DMSTestCase):
-    def test_get_module_data(self, get_url_content):
+    def test_get_module_data(self):
         data = \
             '''
             MODULE = {
@@ -26,7 +26,7 @@ class TestModuleUtils(common.DMSTestCase):
             }
         )
 
-    def test_get_hardware_data(self, get_url_content):
+    def test_get_hardware_data(self):
         data = \
             '''
             HARDWARE = {
