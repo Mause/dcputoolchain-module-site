@@ -91,7 +91,7 @@ class TestDTMMUtils(common.DMSTestCase):
         }
 
         import dtmm_utils
-        end_data = dtmm_utils.get_module_data(
+        end_data = dtmm_utils.get_live_module_data(
             None, {"url": "http://mock.url/hardware_file"})
         self.assertEqual(
             end_data,
@@ -116,7 +116,7 @@ class TestDTMMUtils(common.DMSTestCase):
         }
 
         import dtmm_utils
-        end_data = dtmm_utils.get_hardware_data(
+        end_data = dtmm_utils.get_live_hardware_data(
             None, {"url": "http://mock.url/hardware_file"})
         self.assertEqual(
             end_data,
