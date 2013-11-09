@@ -87,7 +87,7 @@ def get_tree(handler=None):
 
     result = get_url_content(handler, 'https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master')
 
-    assert 'tree' in result and result['tree'], result
+    assert result['tree'], result
 
     return result['tree']
 
@@ -148,10 +148,11 @@ def dorender(handler, tname='base.html', values=None, write=True):
     it in everytime we want to use a template"""
     handler.response.headers['content-type'] = 'text/html'
     path = os.path.join(os.path.dirname(__file__), 'templates/' + tname)
+
+    data = template.render(path, values or {})
+
     if write:
-        handler.response.out.write(template.render(path, values or {}))
-    else:
-        return template.render(path, values or {})
+        handler.response.out.write(data)
 
 
 def authed_fetch(url, headers=None):
@@ -177,6 +178,9 @@ def authed_fetch(url, headers=None):
 
 
 def authed_fetch_json(*args, **kwargs):
+    """
+    parse json output from proxied authed_fetch
+    """
     return json.load(authed_fetch(*args, **kwargs).raw)
 
 
