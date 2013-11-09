@@ -6,6 +6,7 @@ sys.path.insert(0, '..%ssrc' % os.sep)
 sys.path.insert(0, 'C:\\Program Files (x86)\\Google\\google_appengine\\')
 
 # unit testing specific imports
+import json
 import webtest
 import unittest2
 import itertools
@@ -16,7 +17,7 @@ if __name__ == '__main__':
     from run_tests import setup_environ
     setup_environ()
 
-from google.appengine.api import memcache
+from google.appengine.api import memcache, urlfetch
 
 import common
 
@@ -126,10 +127,44 @@ class TestHandlers(common.DMSTestCase):
     def test_list_modules(self):
         self.testapp.get('/modules/list')
 
-    def test_build_status(self):
+    @patch('google.appengine.api.urlfetch.fetch')
+    def test_build_status(self, fetch):
+
         for platform in ['linux', 'windows', 'mac']:
+            url = '/status/{}.png'.format(platform)
             memcache.set('build_status_{}'.format(platform), 'passing')
-            self.testapp.get('/status/{}.png'.format(platform))
+            self.testapp.get(url)
+
+            memcache.flush_all()
+            fetch.reset_mock()
+
+            fetch.return_value.content = json.dumps({'-1': {'text': 'successful'}})
+            self.testapp.get(url)
+
+            fetch.reset_mock()
+
+            fetch.return_value.content = json.dumps({'-1': {'text': 'failed'}})
+            self.testapp.get(url)
+
+            fetch.reset_mock()
+
+            fetch.return_value.content = json.dumps([])
+            self.testapp.get(url)
+
+            fetch.reset_mock()
+
+            # import pudb
+            # pudb.set_trace()
+
+            fetch.side_effect = urlfetch.DownloadError
+            self.testapp.get(url)
+
+            fetch.reset_mock()
+
+            fetch.side_effect = ValueError
+            self.testapp.get(url)
+
+            fetch.reset_mock()
 
 
 def main():
