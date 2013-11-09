@@ -10,12 +10,6 @@ if __name__ == '__main__':
     from run_tests import setup_environ
     setup_environ()
 
-# these next two lines might be broken in the future.
-# not sure what ill do after that :(
-from google.appengine.dist import use_library
-use_library('django', '1.2')
-
-
 # unit testing specific imports
 import common
 import base64

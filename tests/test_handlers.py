@@ -18,11 +18,6 @@ if __name__ == '__main__':
 
 from google.appengine.api import memcache
 
-# these next two lines might be broken in the future.
-# not sure what ill do after that :(
-from google.appengine.dist import use_library
-use_library('django', '1.2')
-
 import common
 
 

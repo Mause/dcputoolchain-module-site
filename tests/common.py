@@ -30,12 +30,19 @@ from google.appengine.api import memcache
 
 class DMSTestCase(unittest2.TestCase):
     def setUp(self):
+        # setup the testbed
         self.testbed = testbed.Testbed()
         self.testbed.activate()
-        self.testbed.setup_env(app_id='dcputoolchain-module-site')
+        self.testbed.setup_env(
+            APPENGINE_RUNTIME='python27',
+            app_id='dcputoolchain-module-site')
+
+        # initiate the stubs
         self.testbed.init_datastore_v3_stub()
         self.testbed.init_memcache_stub()
         self.testbed.init_urlfetch_stub()
+
+        # setup data
         memcache.set('client_auth_data', CLIENT_AUTH_DATA)
 
     def tearDown(self):
