@@ -59,10 +59,9 @@ from humans import (
 
 # the dtmm_utils file
 from dtmm_utils import (
-    get_tree,
     get_modules,
+    get_module_names,
     get_url_content,
-    FourOhFourErrorLog,
     BaseRequestHandler,
     rpart
 )
@@ -73,10 +72,8 @@ class SearchModulesHandler(BaseRequestHandler):
     def get(self):
         "Handles get requests"
         query = self.request.get('q')
-        data = get_modules(self)
 
-        filenames = map(itemgetter('path'), data)
-        filenames = map(rpart, filenames)
+        filenames = get_module_names(self)
         filenames = filter(lambda filename: query in filename, filenames)
 
         self.response.headers['Content-Type'] = 'text/plain'
@@ -118,10 +115,7 @@ class ListModulesHandler(BaseRequestHandler):
     "returns a list of accessable modules"
     def get(self):
         "Handlers get requests"
-        data = get_modules(self)
-
-        modules = map(itemgetter('path'), data)
-        modules = map(rpart, modules)
+        modules = get_module_names(self)
 
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'

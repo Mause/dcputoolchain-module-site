@@ -37,6 +37,7 @@ import urllib
 import base64
 import hashlib
 import logging
+from operator import itemgetter
 
 # lua interpreter functions
 from slpp import slpp as lua
@@ -107,6 +108,12 @@ def get_modules(handler=None):
         for fragment in tree
         if fragment['path'].endswith('.lua')
     ]
+
+
+def get_module_names(handler):
+    modules = get_modules(handler)
+    modules = map(itemgetter('path'), modules)
+    return map(rpart, modules)
 
 
 def get_url_content(handler, url):
