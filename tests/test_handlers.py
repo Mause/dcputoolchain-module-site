@@ -78,9 +78,6 @@ class TestHandlers(common.DMSTestCase):
             self.testapp.get(*args)
             self.testapp.post(*args)
 
-    def test_human_listing(self):
-        self.testapp.get('/human/listing')
-
     def test_human_inspect(self):
         self.testapp.get('/human/inspect?name=assert.lua')
 

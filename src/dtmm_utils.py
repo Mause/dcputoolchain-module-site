@@ -40,7 +40,6 @@ from operator import itemgetter
 
 # google appengine imports
 import webapp2
-from google.appengine.ext import db
 from google.appengine.api import mail
 from google.appengine.api import users
 from google.appengine.api import memcache
@@ -179,12 +178,6 @@ def authed_fetch(url, headers=None):
 
 def authed_fetch_json(*args, **kwargs):
     return json.load(authed_fetch(*args, **kwargs).raw)
-
-
-class FourOhFourErrorLog(db.Model):
-    module = db.StringProperty(required=True)
-    address = db.StringProperty(required=True)
-    datetimer = db.DateTimeProperty(auto_now=True)
 
 
 class BaseRequestHandler(webapp2.RequestHandler):

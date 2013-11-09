@@ -51,7 +51,6 @@ from humans import (
     HomeHandler,
     TreeHandler,
     HumanSearch,
-    ListingHandler,
     InspectHandler,
     PrettyTreeHandler,
     RedirectToHumanHandler
@@ -208,7 +207,6 @@ app = webapp2.WSGIApplication(
         (r'/human/tree/pretty.?', PrettyTreeHandler),
         (r'/human/tree.?', TreeHandler),
         (r'/human/search.?', HumanSearch),
-        (r'/human/listing.?', ListingHandler),
         (r'/human/inspect.?', InspectHandler),
         (r'/human.?', HomeHandler),
         (r'/modules.?', RootModulesHandler),

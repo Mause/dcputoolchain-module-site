@@ -161,32 +161,6 @@ class InspectHandler(dtmm_utils.BaseRequestHandler):
         self.response.write(data_tree(self, to_give))
 
 
-class ListingHandler(dtmm_utils.BaseRequestHandler):
-    """Lists failed module requests"""
-    def get(self):
-        "handlers get requests"
-        format_str = (
-            '{fragment.datetimer} -'
-            ' {fragment.address} - '
-            '{fragment.module}</br>')
-        requests = dtmm_utils.FourOhFourErrorLog.all()
-        output = '\n'.join(
-            format_str.format(fragment=fragment)
-            for fragment in requests
-        )
-
-        dtmm_utils.dorender(
-            self, 'module_not_found.html',
-            {
-                'requested': output
-            }
-        )
-
-    def post(self):
-        for x in dtmm_utils.FourOhFourErrorLog.all():
-            x.delete()
-
-
 class HumanSearch(dtmm_utils.BaseRequestHandler):
     "Handle searching of the repo"
     def get(self):
