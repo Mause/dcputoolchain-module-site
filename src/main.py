@@ -63,7 +63,8 @@ from dtmm_utils import (
     get_module_names,
     get_url_content,
     BaseRequestHandler,
-    rpart
+    rpart,
+    development
 )
 
 
@@ -202,18 +203,21 @@ class RootModulesHandler(BaseRequestHandler):
         self.redirect('/human/')
 
 
-app = webapp2.WSGIApplication([
-    (r'/human/tree/pretty.?', PrettyTreeHandler),
-    (r'/human/tree.?', TreeHandler),
-    (r'/human/search.?', HumanSearch),
-    (r'/human/listing.?', ListingHandler),
-    (r'/human/inspect.?', InspectHandler),
-    (r'/human.?', HomeHandler),
-    (r'/modules.?', RootModulesHandler),
-    (r'/modules/search.?', SearchModulesHandler),
-    (r'/modules/download.?', DownloadModulesHandler),
-    (r'/modules/list.?', ListModulesHandler),
-    (r'/status/(?P<platform>.*).png', BuildStatusHandler),
-    (r'/flush', FlushHandler),
-    (r'/', RedirectToHumanHandler)
-    ], debug=True)
+app = webapp2.WSGIApplication(
+    [
+        (r'/human/tree/pretty.?', PrettyTreeHandler),
+        (r'/human/tree.?', TreeHandler),
+        (r'/human/search.?', HumanSearch),
+        (r'/human/listing.?', ListingHandler),
+        (r'/human/inspect.?', InspectHandler),
+        (r'/human.?', HomeHandler),
+        (r'/modules.?', RootModulesHandler),
+        (r'/modules/search.?', SearchModulesHandler),
+        (r'/modules/download.?', DownloadModulesHandler),
+        (r'/modules/list.?', ListModulesHandler),
+        (r'/status/(?P<platform>.*).png', BuildStatusHandler),
+        (r'/flush', FlushHandler),
+        (r'/', RedirectToHumanHandler)
+    ],
+    debug=development()
+)
