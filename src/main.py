@@ -85,30 +85,25 @@ class DownloadModulesHandler(BaseRequestHandler):
     "Handles download requests"
     def get(self):
         "Handlers get requests"
-        self.response.headers['Content-Type'] = 'text/plain'
-        self.response.headers['Cache-Control'] = 'no-Cache'
-        module_name = self.request.get('name')
 
         data = get_modules(self)
+
+        module_name = self.request.get('name')
+        if module_name not in map(itemgetter('path'), data):
+            self.error(404)
+            return
 
         data_dict = {
             rpart(fragment['path']): fragment['url']
             for fragment in data
         }
 
-        if module_name in data_dict:
-            encoded_content = get_url_content(self, data_dict[module_name])
-            content = base64.b64decode(encoded_content['content'])
+        encoded_content = get_url_content(self, data_dict[module_name])
+        content = base64.b64decode(encoded_content['content'])
 
-            self.response.write(content)
-
-        else:
-            logging.info("Module not found: {}".format(module_name))
-            entry = FourOhFourErrorLog(
-                module=module_name or 'No module name was specified',
-                address=str(self.request.remote_addr))
-            entry.put()
-            self.error(404)
+        self.response.headers['Content-Type'] = 'text/plain'
+        self.response.headers['Cache-Control'] = 'no-Cache'
+        self.response.write(content)
 
 
 class ListModulesHandler(BaseRequestHandler):
