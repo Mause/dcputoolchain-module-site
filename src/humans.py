@@ -87,7 +87,7 @@ class PrettyTreeHandler(dtmm_utils.BaseRequestHandler):
                 logging.info('Fragment; %s' % fragment)
                 logging.info('Fragment_num; %s' % fragment_num)
 
-                cur_module = dtmm_utils.get_module_data(self, fragment)
+                cur_module = dtmm_utils.get_live_module_data(self, fragment)
                 cur_module['filename'] = dtmm_utils.rpart(fragment['path'])
 
                 if fragment_num % break_on == 0:
@@ -249,7 +249,7 @@ def search(handler, query, requested_type=''):
     else:
         logging.info('Type was specified: {}'.format(requested_type))
         for fragment in data:
-            mod_data_frag = dtmm_utils.get_module_data(handler, fragment)
+            mod_data_frag = dtmm_utils.get_live_module_data(handler, fragment)
             if query in dtmm_utils.rpart(fragment['path']).lower():
                 if requested_type.lower() == mod_data_frag['Type'].lower():
                     output.append(fragment)
@@ -283,11 +283,11 @@ def data_tree(handler, data):
         if fragment['path'].endswith('.lua'):
             cur_module = {}
             cur_module['cur_path'] = str(fragment['path'].split('/')[-1])
-            cur_module['module_data'] = dtmm_utils.get_module_data(
+            cur_module['module_data'] = dtmm_utils.get_live_module_data(
                 handler, fragment)
 
             if cur_module['module_data']['Type'].lower() == 'hardware':
-                cur_module['hardware_data'] = dtmm_utils.get_hardware_data(
+                cur_module['hardware_data'] = dtmm_utils.get_live_hardware_data(
                     handler, fragment)
 
                 cur_module['hardware_data']['ID'] = hex(

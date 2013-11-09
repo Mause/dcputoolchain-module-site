@@ -78,7 +78,7 @@ class TestDTMMUtils(common.DMSTestCase):
         )
 
     @patch('dtmm_utils.get_url_content')
-    def test_get_module_data(self, get_url_content):
+    def test_get_live_module_data(self, get_url_content):
         get_url_content.return_value = {
             'content': base64.b64encode('''
                 MODULE = {
@@ -105,7 +105,7 @@ class TestDTMMUtils(common.DMSTestCase):
         )
 
     @patch('dtmm_utils.get_url_content')
-    def test_get_hardware_data(self, get_url_content):
+    def test_get_live_hardware_data(self, get_url_content):
         get_url_content.return_value = {
             'content': base64.b64encode('''
                 HARDWARE = {

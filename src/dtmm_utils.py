@@ -30,17 +30,12 @@ from __future__ import (
     with_statement
 )
 
-import re
 import os
 import json
 import urllib
-import base64
 import hashlib
 import logging
 from operator import itemgetter
-
-# lua interpreter functions
-from slpp import slpp as lua
 
 # google appengine imports
 import webapp2
@@ -55,6 +50,9 @@ from google.appengine.ext.webapp import template
 import sys
 import traceback
 
+# application specific
+from module_utils import get_hardware_data, get_module_data
+
 # authentication data
 client_auth_data = memcache.get('client_auth_data')
 if not client_auth_data:
@@ -63,26 +61,22 @@ if not client_auth_data:
         client_auth_data = auth_data["client_auth_data"]
 
 
-def generic_get_module_data(handler, fragment_url, regex):
-    module = get_url_content(handler, fragment_url)
+def _get_live_data(handler, fragment):
+    module = get_url_content(handler, fragment['url'])
     assert 'content' in module
-
-    data = base64.b64decode(module['content'])
-    data = re.search(regex, data)
-
-    return lua.decode(data.groupdict()['data']) if data else {}
+    return module
 
 
-def get_hardware_data(handler, fragment):
+def get_live_hardware_data(handler, fragment):
     """Given a get_tree fragment,
     returns hardware data in a python dict"""
-    return generic_get_module_data(handler, fragment['url'], r'HARDWARE\s*=\s*(?P<data>\{[^}]*\})')
+    return get_hardware_data(_get_live_data(handler, fragment))
 
 
-def get_module_data(handler, fragment):
+def get_live_module_data(handler, fragment):
     """Given a get_tree fragment,
     returns module data in a python dict"""
-    return generic_get_module_data(handler, fragment['url'], r'MODULE\s*=\s*(?P<data>\{[^}]*\})')
+    return get_module_data(_get_live_data(handler, fragment))
 
 
 def get_tree(handler=None):
