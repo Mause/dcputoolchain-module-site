@@ -5,43 +5,40 @@ if __name__ == '__main__':
 import json
 import common
 import base64
+import hashlib
 import unittest2
-from mock import patch
-from StringIO import StringIO
+from mock import patch, MagicMock
 
+from google.appengine.api import memcache, urlfetch
 
-def mock_authed_fetch(*args, **kwargs):
-    class AuthedFetchObject(object):
-        content = json.dumps({
-            "tree": [{
-                "type": "blob",
-                "path": "README.md",
-                "mode": "100644",
-                "sha": "ac178f6489f2d3f601df6a9a5e641b62a0388eae",
-                "size": 314
-            }]
-        })
-        raw = StringIO(content)
-
-    return AuthedFetchObject()
-
-
-def mock_fetch(url, headers):
-    class FetchObject(object):
-        headers = {'x-ratelimit-remaining': 'lots'}
-        content = (
-            'Lorem ipsum dolor sit amet, consectetur adipisicing elit.')
-
-    return FetchObject()
+mock_authed_fetch = MagicMock()
+content = json.dumps({
+    "tree": [{
+        "type": "blob",
+        "path": "README.md",
+        "mode": "100644",
+        "sha": "ac178f6489f2d3f601df6a9a5e641b62a0388eae",
+        "size": 314
+    }]
+})
+mock_authed_fetch.return_value.raw = MagicMock()
+mock_authed_fetch.return_value.raw.read = lambda: content
+mock_authed_fetch.return_value.content = content
 
 
 class TestDTMMUtils(common.DMSTestCase):
-    @patch('google.appengine.api.urlfetch.fetch', mock_fetch)
-    def test_authed_fetch(self):
+    @patch('google.appengine.api.urlfetch.fetch')
+    def test_authed_fetch(self, fetch):
+        fetch.return_value.headers = {'x-ratelimit-remaining': 'lots'}
+        fetch.return_value.content = (
+            'Lorem ipsum dolor sit amet, consectetur adipisicing elit.')
 
         import dtmm_utils
         end_data = dtmm_utils.authed_fetch('http://mock.com')
-        self.assertEqual(mock_fetch(None, None).content, end_data.content)
+        self.assertEqual(fetch.return_value.content, end_data.content)
+
+        fetch.return_value.headers['x-ratelimit-remaining'] = None
+        end_data = dtmm_utils.authed_fetch('http://mock.com')
 
     @patch('dtmm_utils.authed_fetch', mock_authed_fetch)
     def test_get_url_content(self):
