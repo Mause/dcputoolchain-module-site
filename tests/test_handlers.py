@@ -103,7 +103,7 @@ class TestHandlers(common.DMSTestCase):
 
     def test_build_status(self):
         for platform in ['linux', 'windows', 'mac']:
-            memcache.set('build_status_{}'.format(platform), [])
+            memcache.set('build_status_{}'.format(platform), 'passing')
             self.testapp.get('/status/{}.png'.format(platform))
 
 
