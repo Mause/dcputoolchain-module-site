@@ -10,7 +10,7 @@ import json
 import webtest
 import unittest2
 import itertools
-from mock import patch
+from mock import patch, MagicMock
 
 # this needs to be done before anything to do with gae gets imported
 if __name__ == '__main__':
@@ -172,6 +172,35 @@ class TestHandlers(common.DMSTestCase):
 
     def test_root_modules_redirect(self):
         self.testapp.get('/modules')
+
+    @patch('dtmm_utils.dorender')
+    @patch('dtmm_utils.development')
+    @patch('google.appengine.api.users')
+    def test_base_handler(self, users, development, dorender):
+        dorender.return_value = 'world'
+
+        import dtmm_utils
+        handler = dtmm_utils.BaseRequestHandler(MagicMock(), MagicMock())
+
+        development.return_value = False
+        handler.handle_exception(Exception(), MagicMock())
+        development.reset_mock()
+
+        users.is_current_user_admin.return_value = False
+        handler.handle_exception(AssertionError(), MagicMock())
+        users.reset_mock()
+
+        users.is_current_user_admin.return_value = True
+        handler.handle_exception(Exception(), MagicMock())
+
+        # put an exception on the stack
+        try:
+            Exception()
+        except:
+            pass
+
+        development.return_value = True
+        self.assertRaises(TypeError, handler.handle_exception, (None, MagicMock()))
 
 
 def main():
