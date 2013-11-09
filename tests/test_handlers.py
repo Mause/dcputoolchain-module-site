@@ -47,7 +47,36 @@ class TestHandlers(common.DMSTestCase):
 
     # human interface
 
-    def test_human_tree_pretty(self):
+    @patch('dtmm_utils.get_modules')
+    @patch('dtmm_utils._get_live_data', lambda handler, fragment: common.DATA_TREE_DATA)
+    def test_human_tree_pretty(self, get_modules):
+        get_modules.return_value = [{'path': 'assert.lua'}]
+
+        self.testapp.get('/human/tree/pretty')
+        get_modules.reset_mock()
+        memcache.flush_all()
+
+        get_modules.return_value = [
+            {'path': 'assert.lua'},
+            {'path': 'assertdb.lua'},
+            {'path': 'assertpp.lua'},
+            {'path': 'four.lua'},
+            {'path': 'five.lua'}
+        ]
+
+        self.testapp.get('/human/tree/pretty')
+
+        get_modules.reset_mock()
+        memcache.flush_all()
+
+        get_modules.return_value = [
+            {'path': 'assert.lua'},
+            {'path': 'assertdb.lua'},
+            {'path': 'assertpp.lua'}
+        ]
+        self.testapp.get('/human/tree/pretty')
+
+        # intentional double-up
         self.testapp.get('/human/tree/pretty')
 
     def test_human_tree(self):
