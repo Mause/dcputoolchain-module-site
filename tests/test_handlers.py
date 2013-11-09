@@ -50,9 +50,7 @@ class TestHandlers(common.DMSTestCase):
         self.get_url_content_patcher.stop()
         super(TestHandlers, self).tearDown()
 
-    def test_get_tree(self):
-        import dtmm_utils
-        dtmm_utils.get_tree(0)
+    # human interface
 
     def test_human_tree_pretty(self):
         self.testapp.get('/human/tree/pretty')
@@ -86,6 +84,8 @@ class TestHandlers(common.DMSTestCase):
 
     def test_human(self):
         self.testapp.get('/human')
+
+    # machine interface
 
     def test_search_modules(self):
         self.testapp.get('/modules/search?q=assert')
