@@ -6,8 +6,6 @@ sys.path.insert(0, '..%ssrc' % os.sep)
 sys.path.insert(0, 'C:\\Program Files (x86)\\Google\\google_appengine\\')
 
 # unit testing specific imports
-import copy
-import urllib
 import webtest
 import unittest2
 import itertools
@@ -17,6 +15,8 @@ from mock import patch
 if __name__ == '__main__':
     from run_tests import setup_environ
     setup_environ()
+
+from google.appengine.api import memcache
 
 # these next two lines might be broken in the future.
 # not sure what ill do after that :(
@@ -59,22 +59,24 @@ class TestHandlers(common.DMSTestCase):
         self.testapp.get('/human/tree')
 
     def test_human_search(self):
-
         self.testapp.get('/human/search')
-
         queries = ['', 'random', 'words']
+
         import humans
-        custom_module_types = copy.copy(humans.module_types)
-        custom_module_types.append('')
+        custom_module_types = humans.module_types + ['']
         subtests = itertools.product(queries, custom_module_types)
 
         for sub in subtests:
-            cur_url = '/human/search?'
-            cur_url += urllib.urlencode({
-                'q': sub[0],
-                'type': sub[1]
-            })
-            self.testapp.get(cur_url)
+            args = (
+                '/human/search?',
+                {
+                    'q': sub[0],
+                    'type': sub[1]
+                }
+            )
+
+            self.testapp.get(*args)
+            self.testapp.post(*args)
 
     def test_human_listing(self):
         self.testapp.get('/human/listing')
@@ -98,6 +100,11 @@ class TestHandlers(common.DMSTestCase):
 
     def test_list_modules(self):
         self.testapp.get('/modules/list')
+
+    def test_build_status(self):
+        for platform in ['linux', 'windows', 'mac']:
+            memcache.set('build_status_{}'.format(platform), [])
+            self.testapp.get('/status/{}.png'.format(platform))
 
 
 def main():
