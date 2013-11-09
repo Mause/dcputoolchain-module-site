@@ -79,8 +79,12 @@ class TestHandlers(common.DMSTestCase):
         # intentional double-up
         self.testapp.get('/human/tree/pretty')
 
-    def test_human_tree(self):
+    @patch('dtmm_utils.get_tree')
+    def test_human_tree(self, get_tree):
         self.testapp.get('/human/tree')
+
+        get_tree.return_value = None
+        self.assertRaises(webtest.AppError, self.testapp.get, ('/human/tree'))
 
     def test_human_search(self):
         self.testapp.get('/human/search')
