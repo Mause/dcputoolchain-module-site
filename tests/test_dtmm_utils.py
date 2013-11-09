@@ -61,6 +61,19 @@ class TestDTMMUtils(common.DMSTestCase):
             }
         )
 
+        url_digest = hashlib.md5('http://mock.com').hexdigest()
+
+        memcache.set(url_digest, {'content': 'word'})
+        end_data = dtmm_utils.get_url_content(None, 'http://mock.com')
+        self.assertEqual(end_data, {'content': 'word'})
+        memcache.set(url_digest, None)
+
+        mock_handler = MagicMock()
+        mock_authed_fetch.side_effect = urlfetch.DownloadError
+        end_data = dtmm_utils.get_url_content(mock_handler, 'http://mock.com')
+
+        self.assertEqual(mock_handler.error.call_args[0][0], 408)
+
     @patch('dtmm_utils.authed_fetch', mock_authed_fetch)
     def test_get_tree(self):
 
