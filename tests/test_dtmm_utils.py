@@ -36,16 +36,6 @@ def mock_fetch(url, headers):
 
 
 class TestDTMMUtils(common.DMSTestCase):
-    # @httprettified
-    # def test_github_access(self):
-        # HTTPretty.register_uri(HTTPretty.GET,
-        #     "https://api.github.com/authorizations",
-        #     body=json.dumps(
-        #         {"token": "df11c284bf0a74752c65efc5595d407f1316837c"}),
-        #     status=200)
-    #     response = requests.get('http://github.com')
-    #     expect(response.status_code).to.equal(201)
-
     @patch('google.appengine.api.urlfetch.fetch', mock_fetch)
     def test_authed_fetch(self):
 
