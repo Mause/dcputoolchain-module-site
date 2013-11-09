@@ -166,6 +166,10 @@ class TestHandlers(common.DMSTestCase):
 
             fetch.reset_mock()
 
+    def test_redirect(self):
+        self.testapp.get('/')
+        self.testapp.post('/')
+
 
 def main():
     unittest2.main()
