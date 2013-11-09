@@ -114,6 +114,16 @@ class TestHumans(common.DMSTestCase):
             self.assertTrue(re.match(
                 r'rgb\(\d+?, \d+?, \d+?\)', colour))
 
+    @patch('dtmm_utils.dorender')
+    @patch('dtmm_utils._get_live_data', lambda handler, fragment: common.DATA_TREE_DATA)
+    def test_data_tree(self, dorender):
+        import humans
+
+        humans.data_tree(None, [
+            {'path': 'assert.lua', 'url': 'mock'},
+            {'path': 'assert.py'}
+        ])
+
 
 def main():
     unittest2.main()
