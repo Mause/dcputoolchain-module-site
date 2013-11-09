@@ -111,13 +111,20 @@ def get_modules(handler=None):
 
 
 def get_module_names(handler):
+    """
+    Returns list containing the path attributes of all modules
+    """
+
     modules = get_modules(handler)
     modules = map(itemgetter('path'), modules)
     return map(rpart, modules)
 
 
 def get_url_content(handler, url):
-    "this is a caching function, to help keep wait time short"
+    """
+    A wrapper around authed_fetch_json, caches results to help keep wait time short
+    """
+
     url_hash = hashlib.md5(url).hexdigest()
     result = memcache.get(url_hash)
 
