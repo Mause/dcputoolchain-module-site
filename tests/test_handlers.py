@@ -16,15 +16,16 @@ class TestHandlers(common.DMSTestCase):
         super(TestHandlers, self).setUp()
         self.testbed.init_mail_stub()
 
-        def mock_get_tree(handler):
-            return common.TEST_HANDLERS_GET_TREE
-        self.get_tree_patcher = patch('dtmm_utils.get_tree', mock_get_tree)
+        self.get_tree_patcher = patch(
+            'dtmm_utils.get_tree',
+            lambda handler: common.TEST_HANDLERS_GET_TREE
+        )
         self.get_tree_patcher.start()
 
-        def mock_get_url_content(handler, url):
-            return common.TEST_HANDLERS_URL_CONTENT
-        self.get_url_content_patcher = patch('dtmm_utils.get_url_content',
-                                             mock_get_url_content)
+        self.get_url_content_patcher = patch(
+            'dtmm_utils.get_url_content',
+            lambda handler, url: common.TEST_HANDLERS_URL_CONTENT
+        )
         self.get_url_content_patcher.start()
 
         from main import app
