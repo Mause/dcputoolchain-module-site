@@ -71,7 +71,8 @@ class TestDTMMUtils(common.DMSTestCase):
         self.assertEqual(end_data, {'content': 'word'})
 
     @patch('dtmm_utils.authed_fetch')
-    def test_get_url_content_download_error_handleing(self, authed_fetch):
+    @patch('logging.error')
+    def test_get_url_content_download_error_handling(self, _, authed_fetch):
         import dtmm_utils
 
         mock_handler = MagicMock()

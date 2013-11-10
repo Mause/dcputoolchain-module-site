@@ -257,7 +257,8 @@ class TestHandlers(common.DMSTestCase):
 
     @patch('dtmm_utils.BaseRequestHandler.dorender')
     @patch('dtmm_utils.development')
-    def test_base_handler_not_development(self, development, dorender):
+    @patch('logging.error')
+    def test_base_handler_not_development(self, _, development, dorender):
         dorender.return_value = 'world'
         development.return_value = False
 
@@ -268,7 +269,8 @@ class TestHandlers(common.DMSTestCase):
     @patch('dtmm_utils.users')
     @patch('dtmm_utils.development')
     @patch('dtmm_utils.BaseRequestHandler.dorender')
-    def test_base_handler_not_admin(self, dorender, development, users):
+    @patch('logging.error')
+    def test_base_handler_not_admin(self, _, dorender, development, users):
         dorender.return_value = 'world'
         development.return_value = False
         users.is_current_user_admin.return_value = False
@@ -280,7 +282,8 @@ class TestHandlers(common.DMSTestCase):
     @patch('dtmm_utils.users')
     @patch('dtmm_utils.development')
     @patch('dtmm_utils.BaseRequestHandler.dorender')
-    def test_base_handler_is_admin(self, dorender, development, users):
+    @patch('logging.error')
+    def test_base_handler_is_admin(self, _, dorender, development, users):
         dorender.return_value = 'world'
         development.return_value = False
         users.is_current_user_admin.return_value = True
