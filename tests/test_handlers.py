@@ -128,43 +128,65 @@ class TestHandlers(common.DMSTestCase):
         self.testapp.get('/modules/list')
 
     @patch('google.appengine.api.urlfetch.fetch')
-    def test_build_status(self, fetch):
-
-        for platform in ['linux', 'windows', 'mac']:
-            url = '/status/{}.png'.format(platform)
+    def test_build_status_memcache_passing(self, fetch):
+        for platform, url in common.PLATFORM_W_URLS:
             memcache.set('build_status_{}'.format(platform), 'passing')
             self.testapp.get(url)
 
-            memcache.flush_all()
-            fetch.reset_mock()
-
+    @patch('google.appengine.api.urlfetch.fetch')
+    def test_build_status_remote_passing(self, fetch):
+        for platform, url in common.PLATFORM_W_URLS:
             fetch.return_value.content = json.dumps({'-1': {'text': 'successful'}})
             self.testapp.get(url)
 
-            fetch.reset_mock()
+            self.assertEqual(
+                memcache.get('build_status_{}'.format(platform)),
+                'passing'
+            )
 
+    @patch('google.appengine.api.urlfetch.fetch')
+    def test_build_status_remote_failing(self, fetch):
+        for platform, url in common.PLATFORM_W_URLS:
             fetch.return_value.content = json.dumps({'-1': {'text': 'failed'}})
             self.testapp.get(url)
 
-            fetch.reset_mock()
+            self.assertEqual(
+                memcache.get('build_status_{}'.format(platform)),
+                'failing'
+            )
 
+    @patch('google.appengine.api.urlfetch.fetch')
+    def test_build_status_remote_get_empty(self, fetch):
+        for platform, url in common.PLATFORM_W_URLS:
             fetch.return_value.content = json.dumps([])
             self.testapp.get(url)
 
-            fetch.reset_mock()
+            self.assertEqual(
+                memcache.get('build_status_{}'.format(platform)),
+                'unknown'
+            )
 
-            # import pudb
-            # pudb.set_trace()
-
-            fetch.side_effect = urlfetch.DownloadError
+    @patch('google.appengine.api.urlfetch.fetch')
+    def test_build_status_remote_download_error(self, fetch):
+        for platform, url in common.PLATFORM_W_URLS:
+            fetch.side_effect = urlfetch.DownloadError('error')
             self.testapp.get(url)
 
-            fetch.reset_mock()
+            self.assertEqual(
+                memcache.get('build_status_{}'.format(platform)),
+                'unknown'
+            )
 
+    @patch('google.appengine.api.urlfetch.fetch')
+    def test_build_status_remote_value_error(self, fetch):
+        for platform, url in common.PLATFORM_W_URLS:
             fetch.side_effect = ValueError
             self.testapp.get(url)
 
-            fetch.reset_mock()
+            self.assertEqual(
+                memcache.get('build_status_{}'.format(platform)),
+                'unknown'
+            )
 
     def test_redirect(self):
         self.testapp.get('/')
