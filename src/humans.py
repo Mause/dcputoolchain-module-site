@@ -61,7 +61,7 @@ class RedirectToHumanHandler(dtmm_utils.BaseRequestHandler):
 class HomeHandler(dtmm_utils.BaseRequestHandler):
     "Returns a list of the human pages"
     def get(self):
-        pages = ['search', 'tree', 'tree/pretty', 'listing']
+        pages = ['search', 'tree', 'tree/pretty']
         self.dorender('human_index.html', {'pages': pages})
 
 
@@ -137,9 +137,11 @@ class TreeHandler(dtmm_utils.BaseRequestHandler):
     """A simple debugging interface"""
     def get(self):
         data = dtmm_utils.get_tree(self)
+
         if not data:
             self.error(408)
             return
+
         self.dorender(
             'tree.html',
             {

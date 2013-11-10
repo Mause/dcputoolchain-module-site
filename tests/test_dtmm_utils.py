@@ -18,7 +18,6 @@ content = json.dumps({
     }]
 })
 mock_authed_fetch = MagicMock()
-mock_authed_fetch.return_value.raw = MagicMock(read=lambda: content)
 mock_authed_fetch.return_value.content = content
 
 
