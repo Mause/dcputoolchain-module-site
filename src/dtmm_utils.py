@@ -62,6 +62,9 @@ if not client_auth_data:
 
 
 def _get_live_data(handler, fragment):
+    """
+    get_url_content's fragment['url'], b64decode's module['content']
+    """
     module = get_url_content(handler, fragment['url'])
     assert 'content' in module
 
@@ -69,14 +72,18 @@ def _get_live_data(handler, fragment):
 
 
 def get_live_hardware_data(handler, fragment):
-    """Given a get_tree fragment,
-    returns hardware data in a python dict"""
+    """
+    Given a get_tree fragment,
+    returns hardware data in a python dict
+    """
     return get_hardware_data(_get_live_data(handler, fragment))
 
 
 def get_live_module_data(handler, fragment):
-    """Given a get_tree fragment,
-    returns module data in a python dict"""
+    """
+    Given a get_tree fragment,
+    returns module data in a python dict
+    """
     return get_module_data(_get_live_data(handler, fragment))
 
 
@@ -88,7 +95,6 @@ def get_tree(handler=None):
     result = get_url_content(handler, 'https://api.github.com/repos/DCPUTeam/DCPUModules/git/trees/master')
 
     assert result['tree'], result
-
     return result['tree']
 
 
