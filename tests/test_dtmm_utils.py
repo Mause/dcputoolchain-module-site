@@ -1,9 +1,6 @@
-if __name__ == '__main__':
-    from run_tests import setup_environ
-    setup_environ()
+import common
 
 import json
-import common
 import base64
 import hashlib
 import unittest2
