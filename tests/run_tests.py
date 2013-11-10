@@ -7,8 +7,16 @@ import time
 
 
 def setup_environ():
+    POSSIBLE_LOCATIONS = [
+        'C:\\Program Files (x86)\\Google\\google_appengine\\',
+        '~/.google_appengine/',
+    ]
+
     # locate app-engine SDK
-    AE_PATH = "."
+    POSSIBLE_LOCATIONS = map(os.path.expanduser, POSSIBLE_LOCATIONS)
+    POSSIBLE_LOCATIONS = filter(os.path.exists, POSSIBLE_LOCATIONS)
+    POSSIBLE_LOCATIONS = filter(os.path.isdir, POSSIBLE_LOCATIONS)
+    AE_PATH = POSSIBLE_LOCATIONS[0]
 
     # path to app code
     APP_PATH = os.path.abspath(".")
@@ -26,9 +34,6 @@ def setup_environ():
         os.path.join(os.getcwd(), 'src'),
         os.path.join(os.getcwd(), '..', 'src'),
         os.path.join(os.getcwd(), 'google_appengine'),
-        'C:\\Program Files (x86)\\Google\\google_appengine\\',
-        '/home/dominic/.google_appengine/',
-        '/home/action/.google_appengine/'
     ]
     sys.path = EXTRA_PATHS + sys.path
 

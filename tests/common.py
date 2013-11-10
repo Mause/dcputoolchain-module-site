@@ -66,3 +66,16 @@ class DMSTestCase(unittest2.TestCase):
 
     def tearDown(self):
         self.testbed.deactivate()
+
+
+# setup the test environment
+import os
+import sys
+sys.path.insert(0, 'src')
+sys.path.insert(0, '..%ssrc' % os.sep)
+sys.path.insert(0, 'C:\\Program Files (x86)\\Google\\google_appengine\\')
+
+# this needs to be done before anything to do with gae gets imported
+if __name__ == '__main__':
+    from run_tests import setup_environ
+    setup_environ()

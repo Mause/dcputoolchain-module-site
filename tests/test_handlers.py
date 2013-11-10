@@ -1,25 +1,14 @@
-# setup the test environment
-import sys
-import os
-sys.path.insert(0, 'src')
-sys.path.insert(0, '..%ssrc' % os.sep)
-sys.path.insert(0, 'C:\\Program Files (x86)\\Google\\google_appengine\\')
+import common
 
 # unit testing specific imports
 import json
+import base64
 import webtest
 import unittest2
 import itertools
 from mock import patch, MagicMock
 
-# this needs to be done before anything to do with gae gets imported
-if __name__ == '__main__':
-    from run_tests import setup_environ
-    setup_environ()
-
 from google.appengine.api import memcache, urlfetch
-
-import common
 
 
 class TestHandlers(common.DMSTestCase):
