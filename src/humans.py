@@ -98,21 +98,17 @@ class PrettyTreeHandler(dtmm_utils.BaseRequestHandler):
 
                 tree.append(cur_module)
 
-            rows = len([1 for module in tree if module['row']])
-
             rows = len(filter(itemgetter('row'), tree))
-
             calc['height'] = (rows * calc['cell_height']) + header_diff
             logging.info('This many rows; %s' % (rows))
             calc['margin_height'] = calc['height'] / 2
             calc['outer_container_height'] = calc['height']
 
             if len(tree) % break_on != 0:
-                if len(tree) % break_on == 1:
-                    tree[-1]['width'] = calc['width']
-                if len(tree) % break_on == 2:
-                    tree[-1]['width'] = calc['width'] / 2
-                    tree[-2]['width'] = calc['width'] / 2
+                remainer = len(tree) % break_on
+                for i in range(1, remainer + 1):
+                    tree[-i]['width'] = calc['width'] / remainer
+
             tree[0]['row'] = False
             memcache.set_multi({
                 'pretty_tree_tree': tree,

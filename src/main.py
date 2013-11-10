@@ -218,3 +218,6 @@ app = webapp2.WSGIApplication(
     ],
     debug=development()
 )
+
+logging.info('Running in {} mode'.format(
+    'development' if development() else 'production'))
