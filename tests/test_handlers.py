@@ -104,17 +104,37 @@ class TestHandlers(common.DMSTestCase):
 
     # machine interface
 
-    def test_search_modules(self):
-        self.testapp.get('/modules/search?q=assert')
+    def test_search_modules_with_response(self):
+        response = self.testapp.get('/modules/search?q=assert')
 
-    def test_download_modules(self):
+        self.assertEqual(
+            response.body,
+            'assert.lua'
+        )
+
+    def test_search_modules_without_response(self):
+        response = self.testapp.get('/modules/search?q=nonexistant')
+
+        self.assertEqual(response.body, '')
+
+    def test_download_modules_failure(self):
         self.assertRaises(webtest.AppError,
                           self.testapp.get, ('/modules/download'))
 
-        self.testapp.get('/modules/download', {'name': 'assert.lua'})
+    def test_download_modules_success(self):
+        response = self.testapp.get('/modules/download', {'name': 'assert.lua'})
+        content = base64.b64decode(common.TEST_HANDLERS_URL_CONTENT['content'])
+
+        self.assertEqual(response.body, content)
 
     def test_list_modules(self):
-        self.testapp.get('/modules/list')
+        response = self.testapp.get('/modules/list')
+        self.assertEqual('200 OK', response.status)
+
+        self.assertEqual(
+            response.body,
+            'assert.lua'
+        )
 
     @patch('google.appengine.api.urlfetch.fetch')
     def test_build_status_memcache_passing(self, fetch):
