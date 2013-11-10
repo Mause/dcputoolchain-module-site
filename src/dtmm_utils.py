@@ -134,9 +134,9 @@ def get_url_content(handler, url):
         try:
             result = authed_fetch_json(url)
         except urlfetch.DownloadError as e:
-            logging.info('Fetching "{}" failed with a {}'.format(url, e))
+            logging.error(e)
             handler.error(408)
-            return
+            return []
         else:
             memcache.set(url_hash, result)
 
