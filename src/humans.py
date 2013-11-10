@@ -261,15 +261,14 @@ def data_tree(handler, data):
                 handler, fragment)
 
             if cur_module['module_data']['Type'].lower() == 'hardware':
-                cur_module['hardware_data'] = dtmm_utils.get_live_hardware_data(
+                hardware_data = dtmm_utils.get_live_hardware_data(
                     handler, fragment)
 
-                cur_module['hardware_data']['ID'] = hex(
-                    cur_module['hardware_data']['ID'])
-                cur_module['hardware_data']['Version'] = hex(
-                    cur_module['hardware_data']['Version'])
-                cur_module['hardware_data']['Manufacturer'] = hex(
-                    cur_module['hardware_data']['Manufacturer'])
+                cur_module['hardware_data'] = {
+                    'ID': hex(hardware_data['ID']),
+                    'Version': hex(hardware_data['Version']),
+                    'Manufacturer': hex(hardware_data['Manufacturer'])
+                }
             modules.append(cur_module)
 
     return dtmm_utils.dorender(
