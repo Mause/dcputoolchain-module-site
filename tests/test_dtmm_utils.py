@@ -38,7 +38,7 @@ class TestDTMMUtils(common.DMSTestCase):
 
     @patch('google.appengine.api.urlfetch.fetch')
     def test_authed_fetch_without_remaining(self, fetch):
-        fetch.return_value.headers['x-ratelimit-remaining'] = None
+        fetch.return_value.headers = {'x-ratelimit-remaining': None}
         fetch.return_value.content = (
             'Lorem ipsum dolor sit amet, consectetur adipisicing elit.')
 
