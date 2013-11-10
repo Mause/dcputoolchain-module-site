@@ -61,7 +61,7 @@
 			<div class="header"><h1>DCPUToolchain Modules</h1></div>
 			<div class="inner_container">
 				{% for breadcrumb in tree %}
-					{% ifequal breadcrumb.row 'yes' %}
+					{% ifequal breadcrumb.row True %}
 					<br /><br />
 					{% endifequal %}
 					<div class="square square{{breadcrumb.index}}">

@@ -35,6 +35,7 @@ from __future__ import (
 import math
 import random
 import logging
+from operator import itemgetter
 
 # the colorsys module is required for color conversion
 from colorsys import hsv_to_rgb
@@ -91,14 +92,17 @@ class PrettyTreeHandler(dtmm_utils.BaseRequestHandler):
 
                 cur_module.update({
                     'filename': dtmm_utils.rpart(fragment['path']),
-                    'row': 'yes' if fragment_num % break_on == 0 else 'no',
+                    'row': fragment_num % break_on == 0,
                     'width': calc['width'] / break_on,
                     'index': fragment_num
                 })
 
                 tree.append(cur_module)
 
-            rows = len([1 for module in tree if module['row'] == 'yes'])
+            rows = len([1 for module in tree if module['row']])
+
+            rows = len(filter(itemgetter('row'), tree))
+
             calc['height'] = (rows * calc['cell_height']) + header_diff
             logging.info('This many rows; %s' % (rows))
             calc['margin_height'] = calc['height'] / 2
@@ -110,7 +114,7 @@ class PrettyTreeHandler(dtmm_utils.BaseRequestHandler):
                 if len(tree) % break_on == 2:
                     tree[-1]['width'] = calc['width'] / 2
                     tree[-2]['width'] = calc['width'] / 2
-            tree[0]['row'] = 'no'
+            tree[0]['row'] = False
             memcache.set_multi({
                 'pretty_tree_tree': tree,
                 'pretty_tree_calc': calc
