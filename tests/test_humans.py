@@ -3,7 +3,7 @@ import common
 # unit testing specific imports
 import base64
 import unittest2
-from mock import patch
+from mock import patch, MagicMock
 
 
 class TestHumans(common.DMSTestCase):
@@ -109,12 +109,11 @@ class TestHumans(common.DMSTestCase):
             self.assertTrue(re.match(
                 r'rgb\(\d+?, \d+?, \d+?\)', colour))
 
-    @patch('dtmm_utils.dorender')
     @patch('dtmm_utils._get_live_data', lambda handler, fragment: common.DATA_TREE_DATA)
-    def test_data_tree(self, dorender):
+    def test_data_tree(self):
         import humans
 
-        humans.data_tree(None, [
+        humans.data_tree(MagicMock(), [
             {'path': 'assert.lua', 'url': 'mock'},
             {'path': 'assert.py'}
         ])

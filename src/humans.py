@@ -62,7 +62,7 @@ class HomeHandler(dtmm_utils.BaseRequestHandler):
     "Returns a list of the human pages"
     def get(self):
         pages = ['search', 'tree', 'tree/pretty', 'listing']
-        dtmm_utils.dorender(self, 'human_index.html', {'pages': pages})
+        self.dorender('human_index.html', {'pages': pages})
 
 
 class PrettyTreeHandler(dtmm_utils.BaseRequestHandler):
@@ -120,8 +120,8 @@ class PrettyTreeHandler(dtmm_utils.BaseRequestHandler):
         for colour, fragment in enumerate(tree):
             fragment.update({'background': colours[colour]})
 
-        dtmm_utils.dorender(
-            self, 'tree_pretty.html',
+        self.dorender(
+            'tree_pretty.html',
             {
                 'tree': tree,
                 'calc': calc
@@ -136,8 +136,8 @@ class TreeHandler(dtmm_utils.BaseRequestHandler):
         if not data:
             self.error(408)
             return
-        dtmm_utils.dorender(
-            self, 'tree.html',
+        self.dorender(
+            'tree.html',
             {
                 'tree': data_tree(self, data)
             }
@@ -166,32 +166,23 @@ class HumanSearch(dtmm_utils.BaseRequestHandler):
     def get(self):
         query = self.request.get('q')
         requested_type = self.request.get('type')
+
+        template_values = {
+            'selected_type': requested_type,
+            'types': gen_types(requested_type)
+        }
+
         if query or requested_type:
             output = search(self, query, requested_type)
-            dtmm_utils.dorender(
-                self, 'human_search.html',
-                {
-                    'results': data_tree(self, output),
-                    'selected_type': requested_type,
-                    'types': gen_types(requested_type)
-                }
-            )
-        else:
-            dtmm_utils.dorender(
-                self,
-                'human_search.html',
-                {
-                    'selected_type': requested_type,
-                    'types': gen_types(requested_type)
-                }
-            )
+            template_values['results'] = data_tree(self, output)
+
+        self.dorender('human_search.html', template_values)
 
     def post(self):
         query = self.request.get('q')
         requested_type = self.request.get('type')
         output = search(self, query, requested_type)
-        dtmm_utils.dorender(
-            self,
+        self.dorender(
             'human_search.html',
             {
                 'results': data_tree(self, output),
@@ -271,8 +262,8 @@ def data_tree(handler, data):
                 }
             modules.append(cur_module)
 
-    return dtmm_utils.dorender(
-        handler, 'data_tree.html',
+    return handler.dorender(
+        'data_tree.html',
         {
             'modules': modules
         }, write=False

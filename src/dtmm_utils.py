@@ -143,18 +143,6 @@ def get_url_content(handler, url):
     return result
 
 
-def dorender(handler, tname='base.html', values=None, write=True):
-    """automates some stuff so we dont have to type
-    it in everytime we want to use a template"""
-    handler.response.headers['content-type'] = 'text/html'
-    path = os.path.join(os.path.dirname(__file__), 'templates/' + tname)
-
-    data = template.render(path, values or {})
-
-    if write:
-        handler.response.out.write(data)
-
-
 def authed_fetch(url, headers=None):
     # add admin contact, auth_data
     headers = headers or {}
@@ -194,7 +182,7 @@ class BaseRequestHandler(webapp2.RequestHandler):
         template_values = {
             'traceback': lines.replace('\n', '<br/>')
         }
-        html = dorender(self, 'error.html', template_values, write=False)
+        html = self.dorender('error.html', template_values, write=False)
         mail.send_mail(
             sender='debugging@dcputoolchain-module-site.appspotmail.com',
             to="jack.thatch@gmail.com",
@@ -206,7 +194,18 @@ class BaseRequestHandler(webapp2.RequestHandler):
         else:
             self.error(500)
             if isinstance(exception, AssertionError):
-                dorender(self, 'unexpected_result.html', {})
+                self.dorender('unexpected_result.html', {})
+
+    def dorender(handler, tname='base.html', values=None, write=True):
+        """automates some stuff so we dont have to type
+        it in everytime we want to use a template"""
+        handler.response.headers['content-type'] = 'text/html'
+        path = os.path.join(os.path.dirname(__file__), 'templates/' + tname)
+
+        data = template.render(path, values or {})
+
+        if write:
+            handler.response.out.write(data)
 
 
 def development():
