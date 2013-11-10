@@ -204,34 +204,45 @@ class TestHandlers(common.DMSTestCase):
     def test_root_modules_redirect(self):
         self.testapp.get('/modules')
 
-    @patch('dtmm_utils.dorender')
+    @patch('dtmm_utils.BaseRequestHandler.dorender')
     @patch('dtmm_utils.development')
-    @patch('google.appengine.api.users')
-    def test_base_handler(self, users, development, dorender):
+    def test_base_handler_not_development(self, development, dorender):
         dorender.return_value = 'world'
+        development.return_value = False
+
+        import dtmm_utils
+        handler = dtmm_utils.BaseRequestHandler(MagicMock(), MagicMock())
+        handler.handle_exception(Exception(), MagicMock())
+
+    @patch('dtmm_utils.users')
+    @patch('dtmm_utils.development')
+    @patch('dtmm_utils.BaseRequestHandler.dorender')
+    def test_base_handler_not_admin(self, dorender, development, users):
+        dorender.return_value = 'world'
+        development.return_value = False
+        users.is_current_user_admin.return_value = False
+
+        import dtmm_utils
+        handler = dtmm_utils.BaseRequestHandler(MagicMock(), MagicMock())
+        handler.handle_exception(AssertionError(), MagicMock())
+
+    @patch('dtmm_utils.users')
+    @patch('dtmm_utils.development')
+    @patch('dtmm_utils.BaseRequestHandler.dorender')
+    def test_base_handler_is_admin(self, dorender, development, users):
+        dorender.return_value = 'world'
+        development.return_value = False
+        users.is_current_user_admin.return_value = True
 
         import dtmm_utils
         handler = dtmm_utils.BaseRequestHandler(MagicMock(), MagicMock())
 
-        development.return_value = False
-        handler.handle_exception(Exception(), MagicMock())
-        development.reset_mock()
+        self.assertRaises(
+            Exception, handler.handle_exception, (Exception(), MagicMock()))
 
-        users.is_current_user_admin.return_value = False
-        handler.handle_exception(AssertionError(), MagicMock())
-        users.reset_mock()
-
-        users.is_current_user_admin.return_value = True
-        handler.handle_exception(Exception(), MagicMock())
-
-        # put an exception on the stack
-        try:
-            Exception()
-        except:
-            pass
-
-        development.return_value = True
-        self.assertRaises(TypeError, handler.handle_exception, (None, MagicMock()))
+    def test_flush_handler(self):
+        self.testapp.get('/flush')
+        self.testapp.post('/flush')
 
 
 def main():
