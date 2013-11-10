@@ -88,14 +88,13 @@ class PrettyTreeHandler(dtmm_utils.BaseRequestHandler):
                 logging.info('Fragment_num; %s' % fragment_num)
 
                 cur_module = dtmm_utils.get_live_module_data(self, fragment)
-                cur_module['filename'] = dtmm_utils.rpart(fragment['path'])
 
-                if fragment_num % break_on == 0:
-                    cur_module['row'] = 'yes'
-                else:
-                    cur_module['row'] = 'no'
-                cur_module['width'] = calc['width'] / break_on
-                cur_module['index'] = fragment_num
+                cur_module.update({
+                    'filename': dtmm_utils.rpart(fragment['path']),
+                    'row': 'yes' if fragment_num % break_on == 0 else 'no',
+                    'width': calc['width'] / break_on,
+                    'index': fragment_num
+                })
 
                 tree.append(cur_module)
 
@@ -112,13 +111,15 @@ class PrettyTreeHandler(dtmm_utils.BaseRequestHandler):
                     tree[-1]['width'] = calc['width'] / 2
                     tree[-2]['width'] = calc['width'] / 2
             tree[0]['row'] = 'no'
-            memcache.set('pretty_tree_tree', tree)
-            memcache.set('pretty_tree_calc', calc)
+            memcache.set_multi({
+                'pretty_tree_tree': tree,
+                'pretty_tree_calc': calc
+            })
 
         # we want the colours to be different everytime
         colours = pretty_colours(len(tree))
-        for colour, fragment in enumerate(tree):
-            fragment.update({'background': colours[colour]})
+        for idx, fragment in enumerate(tree):
+            fragment.update({'background': colours[idx]})
 
         self.dorender(
             'tree_pretty.html',

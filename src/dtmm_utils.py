@@ -202,16 +202,19 @@ class BaseRequestHandler(webapp2.RequestHandler):
             if isinstance(exception, AssertionError):
                 self.dorender('unexpected_result.html', {})
 
-    def dorender(handler, tname='base.html', values=None, write=True):
-        """automates some stuff so we dont have to type
-        it in everytime we want to use a template"""
-        handler.response.headers['content-type'] = 'text/html'
+    def dorender(self, tname='base.html', values=None, write=True):
+        """
+        automates some stuff so we dont have to type
+        it in everytime we want to use a template
+        """
+
+        self.response.headers['content-type'] = 'text/html'
         path = os.path.join(os.path.dirname(__file__), 'templates/' + tname)
 
         data = template.render(path, values or {})
 
         if write:
-            handler.response.out.write(data)
+            self.response.out.write(data)
 
 
 def development():
