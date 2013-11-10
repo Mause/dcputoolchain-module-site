@@ -21,7 +21,7 @@ class TestHumans(common.DMSTestCase):
     def setUp(self):
         super(TestHumans, self).setUp()
 
-    def test_gen_types(self):
+    def test_gen_types_with_selected(self):
         import humans
         end_data = humans.gen_types()
 
@@ -34,6 +34,9 @@ class TestHumans(common.DMSTestCase):
                 {'selected': False, 'name': 'optimizer'}
             ]
         )
+
+    def test_gen_types_without_selected(self):
+        import humans
 
         end_data = humans.gen_types(selected='optimizer')
 
@@ -70,14 +73,12 @@ class TestHumans(common.DMSTestCase):
 
     @patch('dtmm_utils.get_url_content', mock_get_url_content)
     @patch('dtmm_utils.get_tree', mock_get_tree)
-    def test_search(self, *args, **kwargs):
-
-        # run the actual tests
+    def test_search_with_type(self, *args, **kwargs):
         import humans
 
-        # tests with and without success. firstly, without a type specified
         end_data = humans.search(None, 'query', '')
         self.assertEqual(end_data, [])
+
         end_data = humans.search(None, 'hmd', '')
         self.assertEqual(
             end_data,
@@ -89,9 +90,14 @@ class TestHumans(common.DMSTestCase):
                 u'type': u'blob',
                 u'size': 3979}])
 
-        # secondly, without a type specified
+    @patch('dtmm_utils.get_url_content', mock_get_url_content)
+    @patch('dtmm_utils.get_tree', mock_get_tree)
+    def test_search_without_type(self):
+        import humans
+
         end_data = humans.search(None, 'query', 'hardware')
         self.assertEqual(end_data, [])
+
         end_data = humans.search(None, 'HMD2043')
         self.assertEqual(
             end_data,
@@ -104,8 +110,8 @@ class TestHumans(common.DMSTestCase):
                 u'size': 3979}])
 
     def test_pretty_colours(self):
-        import humans
         import re
+        import humans
         import random
 
         output = humans.pretty_colours(random.randint(200, 500))
