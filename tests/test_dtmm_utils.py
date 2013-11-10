@@ -27,7 +27,7 @@ mock_authed_fetch.return_value.content = content
 
 class TestDTMMUtils(common.DMSTestCase):
     @patch('google.appengine.api.urlfetch.fetch')
-    def test_authed_fetch(self, fetch):
+    def test_authed_fetch_with_remaining(self, fetch):
         fetch.return_value.headers = {'x-ratelimit-remaining': 'lots'}
         fetch.return_value.content = (
             'Lorem ipsum dolor sit amet, consectetur adipisicing elit.')
@@ -36,8 +36,16 @@ class TestDTMMUtils(common.DMSTestCase):
         end_data = dtmm_utils.authed_fetch('http://mock.com')
         self.assertEqual(fetch.return_value.content, end_data.content)
 
+    @patch('google.appengine.api.urlfetch.fetch')
+    def test_authed_fetch_without_remaining(self, fetch):
         fetch.return_value.headers['x-ratelimit-remaining'] = None
-        end_data = dtmm_utils.authed_fetch('http://mock.com')
+        fetch.return_value.content = (
+            'Lorem ipsum dolor sit amet, consectetur adipisicing elit.')
+
+        import dtmm_utils
+        dtmm_utils.authed_fetch('http://mock.com')
+
+        # a little unsure how to ensure correct behaviour here
 
     @patch('dtmm_utils.authed_fetch', mock_authed_fetch)
     def test_get_url_content_fetch_from_remote(self):
