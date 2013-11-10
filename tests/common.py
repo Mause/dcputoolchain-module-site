@@ -37,6 +37,10 @@ HARDWARE = {
 };'''
 
 
+PLATFORMS = ['linux', 'mac', 'windows']
+PLATFORM_URLS = ['/status/{}.png'.format(platform) for platform in PLATFORMS]
+
+
 import unittest2
 from google.appengine.ext import testbed
 from google.appengine.api import memcache
