@@ -174,7 +174,7 @@ def authed_fetch_json(*args, **kwargs):
     """
     parse json output from proxied authed_fetch
     """
-    return json.load(authed_fetch(*args, **kwargs).raw)
+    return json.loads(authed_fetch(*args, **kwargs).content)
 
 
 class BaseRequestHandler(webapp2.RequestHandler):
@@ -207,13 +207,15 @@ class BaseRequestHandler(webapp2.RequestHandler):
         it in everytime we want to use a template
         """
 
-        self.response.headers['content-type'] = 'text/html'
+        self.response.headers['Content-Type'] = 'text/html'
         path = os.path.join(os.path.dirname(__file__), 'templates/' + tname)
 
         data = template.render(path, values or {})
 
         if write:
             self.response.out.write(data)
+        else:
+            return data
 
 
 def development():
