@@ -26,7 +26,6 @@ from __future__ import (
     generators,
     nested_scopes,
     print_function,
-    unicode_literals,
     with_statement
 )
 
