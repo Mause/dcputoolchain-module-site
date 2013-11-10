@@ -40,7 +40,7 @@ class TestDTMMUtils(common.DMSTestCase):
         end_data = dtmm_utils.authed_fetch('http://mock.com')
 
     @patch('dtmm_utils.authed_fetch', mock_authed_fetch)
-    def test_get_url_content(self):
+    def test_get_url_content_fetch_from_remote(self):
 
         import dtmm_utils
         end_data = dtmm_utils.get_url_content(None, 'http://mock.com')
@@ -57,17 +57,23 @@ class TestDTMMUtils(common.DMSTestCase):
             }
         )
 
+    def test_get_url_content_retrieve_from_memcache(self):
+        import dtmm_utils
+
         url_digest = hashlib.md5('http://mock.com').hexdigest()
 
         memcache.set(url_digest, {'content': 'word'})
         end_data = dtmm_utils.get_url_content(None, 'http://mock.com')
         self.assertEqual(end_data, {'content': 'word'})
-        memcache.set(url_digest, None)
+
+    @patch('dtmm_utils.authed_fetch')
+    def test_get_url_content_download_error_handleing(self, authed_fetch):
+        import dtmm_utils
 
         mock_handler = MagicMock()
-        mock_authed_fetch.side_effect = urlfetch.DownloadError
-        end_data = dtmm_utils.get_url_content(mock_handler, 'http://mock.com')
+        authed_fetch.side_effect = urlfetch.DownloadError
 
+        dtmm_utils.get_url_content(mock_handler, 'http://mock.com')
         self.assertEqual(mock_handler.error.call_args[0][0], 408)
 
     @patch('dtmm_utils.authed_fetch', mock_authed_fetch)
