@@ -11,7 +11,6 @@ from mock import patch, MagicMock
 
 from google.appengine.api import memcache, urlfetch
 
-mock_authed_fetch = MagicMock()
 content = json.dumps({
     "tree": [{
         "type": "blob",
@@ -21,8 +20,8 @@ content = json.dumps({
         "size": 314
     }]
 })
-mock_authed_fetch.return_value.raw = MagicMock()
-mock_authed_fetch.return_value.raw.read = lambda: content
+mock_authed_fetch = MagicMock()
+mock_authed_fetch.return_value.raw = MagicMock(read=lambda: content)
 mock_authed_fetch.return_value.content = content
 
 
