@@ -7,9 +7,6 @@ from mock import patch, MagicMock
 
 
 class TestHumans(common.DMSTestCase):
-    def setUp(self):
-        super(TestHumans, self).setUp()
-
     def test_gen_types_with_selected(self):
         import humans
         end_data = humans.gen_types()

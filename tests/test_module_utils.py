@@ -1,7 +1,5 @@
 import common
 
-import unittest2
-
 
 class TestModuleUtils(common.DMSTestCase):
     def test_get_module_data(self):
@@ -48,8 +46,5 @@ class TestModuleUtils(common.DMSTestCase):
             }
         )
 
-def main():
-    unittest2.main()
-
 if __name__ == '__main__':
-    main()
+    common.main()
