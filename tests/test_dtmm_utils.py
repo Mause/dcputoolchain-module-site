@@ -4,21 +4,9 @@ import json
 import base64
 import hashlib
 import unittest2
-from mock import patch, MagicMock, Mock
+from mock import patch, Mock
 
 from google.appengine.api import memcache, urlfetch
-
-content = json.dumps({
-    "tree": [{
-        "type": "blob",
-        "path": "README.md",
-        "mode": "100644",
-        "sha": "ac178f6489f2d3f601df6a9a5e641b62a0388eae",
-        "size": 314
-    }]
-})
-mock_authed_fetch = MagicMock()
-mock_authed_fetch.return_value.content = content
 
 
 class TestDTMMUtils(common.DMSTestCase):
@@ -45,20 +33,23 @@ class TestDTMMUtils(common.DMSTestCase):
 
     @patch('dtmm_utils.authed_fetch')
     def test_get_url_content_fetch_from_remote(self, mock_authed_fetch):
+        url = 'http://mock.com'
+        content = {
+            u'tree': [{
+                u'sha': u'ac178f6489f2d3f601df6a9a5e641b62a0388eae',
+                u'mode': u'100644',
+                u'path': u'README.md',
+                u'type': u'blob',
+                u'size': 314
+            }]
+        }
+        mock_authed_fetch.return_value.content = json.dumps(content)
 
         import dtmm_utils
         end_data = dtmm_utils.get_url_content(None, 'http://mock.com')
         self.assertEqual(
-            end_data,
-            {
-                u'tree': [{
-                    u'sha': u'ac178f6489f2d3f601df6a9a5e641b62a0388eae',
-                    u'mode': u'100644',
-                    u'path': u'README.md',
-                    u'type': u'blob',
-                    u'size': 314
-                }]
-            }
+            memcache.get(hashlib.md5(url).hexdigest()),
+            content
         )
 
     def test_get_url_content_retrieve_from_memcache(self):
@@ -82,21 +73,18 @@ class TestDTMMUtils(common.DMSTestCase):
 
         mock_handler.error.assert_called_with(408)
 
-    @patch('dtmm_utils.authed_fetch', mock_authed_fetch)
-    def test_get_tree(self):
-
-        import dtmm_utils
-        end_data = dtmm_utils.get_tree()
-        self.assertEqual(
-            end_data,
-            [{
+    @patch('dtmm_utils.authed_fetch')
+    def test_get_tree(self, mock_authed_fetch):
+        content = {
+            'tree': [{
                 u'sha': u'ac178f6489f2d3f601df6a9a5e641b62a0388eae',
                 u'mode': u'100644',
                 u'path': u'README.md',
                 u'type': u'blob',
                 u'size': 314
             }]
-        )
+        }
+        mock_authed_fetch.return_value.content = json.dumps(content)
 
     @patch('dtmm_utils.get_url_content', autospec=True)
     def test_get_live_module_data(self, get_url_content):
