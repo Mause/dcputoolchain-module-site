@@ -86,13 +86,13 @@ class TestHandlers(common.DMSTestCase):
             'assert.lua'
         )
 
-    @patch('google.appengine.api.urlfetch.fetch')
+    @patch('google.appengine.api.urlfetch.fetch', autospec=True)
     def test_build_status_memcache_passing(self, fetch):
         for platform, url in common.PLATFORM_W_URLS:
             memcache.set('build_status_{}'.format(platform), 'passing')
             self.testapp.get(url)
 
-    @patch('google.appengine.api.urlfetch.fetch')
+    @patch('google.appengine.api.urlfetch.fetch', autospec=True)
     def test_build_status_remote_passing(self, fetch):
         for platform, url in common.PLATFORM_W_URLS:
             fetch.return_value.content = json.dumps({'-1': {'text': 'successful'}})
@@ -103,7 +103,7 @@ class TestHandlers(common.DMSTestCase):
                 'passing'
             )
 
-    @patch('google.appengine.api.urlfetch.fetch')
+    @patch('google.appengine.api.urlfetch.fetch', autospec=True)
     def test_build_status_remote_failing(self, fetch):
         for platform, url in common.PLATFORM_W_URLS:
             fetch.return_value.content = json.dumps({'-1': {'text': 'failed'}})
@@ -114,7 +114,7 @@ class TestHandlers(common.DMSTestCase):
                 'failing'
             )
 
-    @patch('google.appengine.api.urlfetch.fetch')
+    @patch('google.appengine.api.urlfetch.fetch', autospec=True)
     def test_build_status_remote_get_empty(self, fetch):
         for platform, url in common.PLATFORM_W_URLS:
             fetch.return_value.content = json.dumps([])
@@ -125,7 +125,7 @@ class TestHandlers(common.DMSTestCase):
                 'unknown'
             )
 
-    @patch('google.appengine.api.urlfetch.fetch')
+    @patch('google.appengine.api.urlfetch.fetch', autospec=True)
     def test_build_status_remote_download_error(self, fetch):
         for platform, url in common.PLATFORM_W_URLS:
             fetch.side_effect = urlfetch.DownloadError('error')
@@ -136,7 +136,7 @@ class TestHandlers(common.DMSTestCase):
                 'unknown'
             )
 
-    @patch('google.appengine.api.urlfetch.fetch')
+    @patch('google.appengine.api.urlfetch.fetch', autospec=True)
     def test_build_status_remote_value_error(self, fetch):
         for platform, url in common.PLATFORM_W_URLS:
             fetch.side_effect = ValueError
@@ -154,9 +154,9 @@ class TestHandlers(common.DMSTestCase):
     def test_root_modules_redirect(self):
         self.testapp.get('/modules')
 
-    @patch('dtmm_utils.BaseRequestHandler.dorender')
-    @patch('dtmm_utils.development')
-    @patch('logging.error')
+    @patch('dtmm_utils.BaseRequestHandler.dorender', autospec=True)
+    @patch('dtmm_utils.development', autospec=True)
+    @patch('logging.error', autospec=True)
     def test_base_handler_not_development(self, _, development, dorender):
         dorender.return_value = 'world'
         development.return_value = False
@@ -165,10 +165,10 @@ class TestHandlers(common.DMSTestCase):
         handler = dtmm_utils.BaseRequestHandler(MagicMock(), MagicMock())
         handler.handle_exception(Exception(), MagicMock())
 
-    @patch('dtmm_utils.users')
-    @patch('dtmm_utils.development')
-    @patch('dtmm_utils.BaseRequestHandler.dorender')
-    @patch('logging.error')
+    @patch('dtmm_utils.users', autospec=True)
+    @patch('dtmm_utils.development', autospec=True)
+    @patch('dtmm_utils.BaseRequestHandler.dorender', autospec=True)
+    @patch('logging.error', autospec=True)
     def test_base_handler_not_admin(self, _, dorender, development, users):
         dorender.return_value = 'world'
         development.return_value = False
@@ -178,10 +178,10 @@ class TestHandlers(common.DMSTestCase):
         handler = dtmm_utils.BaseRequestHandler(MagicMock(), MagicMock())
         handler.handle_exception(AssertionError(), MagicMock())
 
-    @patch('dtmm_utils.users')
-    @patch('dtmm_utils.development')
-    @patch('dtmm_utils.BaseRequestHandler.dorender')
-    @patch('logging.error')
+    @patch('dtmm_utils.users', autospec=True)
+    @patch('dtmm_utils.development', autospec=True)
+    @patch('dtmm_utils.BaseRequestHandler.dorender', autospec=True)
+    @patch('logging.error', autospec=True)
     def test_base_handler_is_admin(self, _, dorender, development, users):
         dorender.return_value = 'world'
         development.return_value = False

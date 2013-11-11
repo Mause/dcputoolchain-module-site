@@ -22,7 +22,7 @@ mock_authed_fetch.return_value.content = content
 
 
 class TestDTMMUtils(common.DMSTestCase):
-    @patch('google.appengine.api.urlfetch.fetch')
+    @patch('google.appengine.api.urlfetch.fetch', autospec=True)
     def test_authed_fetch_with_remaining(self, fetch):
         fetch.return_value.headers = {'x-ratelimit-remaining': 'lots'}
         fetch.return_value.content = (
@@ -32,7 +32,7 @@ class TestDTMMUtils(common.DMSTestCase):
         end_data = dtmm_utils.authed_fetch('http://mock.com')
         self.assertEqual(fetch.return_value.content, end_data.content)
 
-    @patch('google.appengine.api.urlfetch.fetch')
+    @patch('google.appengine.api.urlfetch.fetch', autospec=True)
     def test_authed_fetch_without_remaining(self, fetch):
         fetch.return_value.headers = {'x-ratelimit-remaining': None}
         fetch.return_value.content = (
@@ -43,8 +43,8 @@ class TestDTMMUtils(common.DMSTestCase):
 
         # a little unsure how to ensure correct behaviour here
 
-    @patch('dtmm_utils.authed_fetch', mock_authed_fetch)
-    def test_get_url_content_fetch_from_remote(self):
+    @patch('dtmm_utils.authed_fetch')
+    def test_get_url_content_fetch_from_remote(self, mock_authed_fetch):
 
         import dtmm_utils
         end_data = dtmm_utils.get_url_content(None, 'http://mock.com')
@@ -70,8 +70,8 @@ class TestDTMMUtils(common.DMSTestCase):
         end_data = dtmm_utils.get_url_content(None, 'http://mock.com')
         self.assertEqual(end_data, {'content': 'word'})
 
-    @patch('dtmm_utils.authed_fetch')
-    @patch('logging.error')
+    @patch('dtmm_utils.authed_fetch', autospec=True)
+    @patch('logging.error', autospec=True)
     def test_get_url_content_download_error_handling(self, _, authed_fetch):
         authed_fetch.side_effect = urlfetch.DownloadError
 
@@ -98,7 +98,7 @@ class TestDTMMUtils(common.DMSTestCase):
             }]
         )
 
-    @patch('dtmm_utils.get_url_content')
+    @patch('dtmm_utils.get_url_content', autospec=True)
     def test_get_live_module_data(self, get_url_content):
         get_url_content.return_value = {
             'content': base64.b64encode('''
@@ -125,7 +125,7 @@ class TestDTMMUtils(common.DMSTestCase):
             }
         )
 
-    @patch('dtmm_utils.get_url_content')
+    @patch('dtmm_utils.get_url_content', autospec=True)
     def test_get_live_hardware_data(self, get_url_content):
         get_url_content.return_value = {
             'content': base64.b64encode('''
