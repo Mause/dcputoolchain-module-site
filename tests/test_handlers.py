@@ -11,39 +11,20 @@ from mock import patch, MagicMock
 from google.appengine.api import memcache, urlfetch
 
 
+@patch('dtmm_utils.get_tree', lambda handler: common.TEST_HANDLERS_GET_TREE)
+@patch('dtmm_utils.get_url_content', lambda handler, url: common.TEST_HANDLERS_URL_CONTENT)
 class TestHandlers(common.DMSTestCase):
     def setUp(self):
         super(TestHandlers, self).setUp()
         self.testbed.init_mail_stub()
 
-        self.get_tree_patcher = patch(
-            'dtmm_utils.get_tree',
-            lambda handler: common.TEST_HANDLERS_GET_TREE
-        )
-        self.get_tree_patcher.start()
-
-        self.get_url_content_patcher = patch(
-            'dtmm_utils.get_url_content',
-            lambda handler, url: common.TEST_HANDLERS_URL_CONTENT
-        )
-        self.get_url_content_patcher.start()
-
         from main import app
         self.testapp = webtest.TestApp(app)
 
-    def tearDown(self):
-        self.get_tree_patcher.stop()
-        self.get_url_content_patcher.stop()
-        super(TestHandlers, self).tearDown()
-
     # human interface
 
-    @patch('dtmm_utils.get_tree')
-    def test_human_tree(self, get_tree):
+    def test_human_tree(self):
         self.testapp.get('/human/tree')
-
-        get_tree.return_value = None
-        self.assertRaises(webtest.AppError, self.testapp.get, ('/human/tree'))
 
     def test_human_search(self):
         self.testapp.get('/human/search')
