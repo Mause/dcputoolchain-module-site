@@ -1,4 +1,5 @@
 import common
+import test_data
 
 # unit testing specific imports
 import unittest2
@@ -49,7 +50,7 @@ class TestHumans(common.DMSTestCase):
             self.assertTrue(re.match(
                 r'rgb\(\d+?, \d+?, \d+?\)', colour))
 
-    @patch('dtmm_utils._get_live_data', lambda handler, fragment: common.DATA_TREE_DATA)
+    @patch('dtmm_utils._get_live_data', lambda handler, fragment: test_data.DATA_TREE_DATA)
     def test_data_tree(self):
         import humans
 

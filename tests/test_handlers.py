@@ -1,4 +1,5 @@
 import common
+import test_data
 
 # unit testing specific imports
 import json
@@ -11,8 +12,8 @@ from mock import patch, MagicMock
 from google.appengine.api import memcache, urlfetch
 
 
-@patch('dtmm_utils.get_tree', lambda handler: common.TEST_HANDLERS_GET_TREE)
-@patch('dtmm_utils.get_url_content', lambda handler, url: common.TEST_HANDLERS_URL_CONTENT)
+@patch('dtmm_utils.get_tree', lambda handler: test_data.TEST_HANDLERS_GET_TREE)
+@patch('dtmm_utils.get_url_content', lambda handler, url: test_data.TEST_HANDLERS_URL_CONTENT)
 class TestHandlers(common.DMSTestCase):
     def setUp(self):
         super(TestHandlers, self).setUp()
@@ -73,7 +74,7 @@ class TestHandlers(common.DMSTestCase):
 
     def test_download_modules_success(self):
         response = self.testapp.get('/modules/download', {'name': 'assert.lua'})
-        content = base64.b64decode(common.TEST_HANDLERS_URL_CONTENT['content'])
+        content = base64.b64decode(test_data.TEST_HANDLERS_URL_CONTENT['content'])
 
         self.assertEqual(response.body, content)
 
@@ -88,13 +89,13 @@ class TestHandlers(common.DMSTestCase):
 
     @patch('google.appengine.api.urlfetch.fetch', autospec=True)
     def test_build_status_memcache_passing(self, fetch):
-        for platform, url in common.PLATFORM_W_URLS:
+        for platform, url in test_data.PLATFORM_W_URLS:
             memcache.set('build_status_{}'.format(platform), 'passing')
             self.testapp.get(url)
 
     @patch('google.appengine.api.urlfetch.fetch', autospec=True)
     def test_build_status_remote_passing(self, fetch):
-        for platform, url in common.PLATFORM_W_URLS:
+        for platform, url in test_data.PLATFORM_W_URLS:
             fetch.return_value.content = json.dumps({'-1': {'text': 'successful'}})
             self.testapp.get(url)
 
@@ -105,7 +106,7 @@ class TestHandlers(common.DMSTestCase):
 
     @patch('google.appengine.api.urlfetch.fetch', autospec=True)
     def test_build_status_remote_failing(self, fetch):
-        for platform, url in common.PLATFORM_W_URLS:
+        for platform, url in test_data.PLATFORM_W_URLS:
             fetch.return_value.content = json.dumps({'-1': {'text': 'failed'}})
             self.testapp.get(url)
 
@@ -116,7 +117,7 @@ class TestHandlers(common.DMSTestCase):
 
     @patch('google.appengine.api.urlfetch.fetch', autospec=True)
     def test_build_status_remote_get_empty(self, fetch):
-        for platform, url in common.PLATFORM_W_URLS:
+        for platform, url in test_data.PLATFORM_W_URLS:
             fetch.return_value.content = json.dumps([])
             self.testapp.get(url)
 
@@ -127,7 +128,7 @@ class TestHandlers(common.DMSTestCase):
 
     @patch('google.appengine.api.urlfetch.fetch', autospec=True)
     def test_build_status_remote_download_error(self, fetch):
-        for platform, url in common.PLATFORM_W_URLS:
+        for platform, url in test_data.PLATFORM_W_URLS:
             fetch.side_effect = urlfetch.DownloadError('error')
             self.testapp.get(url)
 
@@ -138,7 +139,7 @@ class TestHandlers(common.DMSTestCase):
 
     @patch('google.appengine.api.urlfetch.fetch', autospec=True)
     def test_build_status_remote_value_error(self, fetch):
-        for platform, url in common.PLATFORM_W_URLS:
+        for platform, url in test_data.PLATFORM_W_URLS:
             fetch.side_effect = ValueError
             self.testapp.get(url)
 

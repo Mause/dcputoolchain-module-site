@@ -1,4 +1,5 @@
 import common
+import test_data
 
 import webtest
 from mock import patch
@@ -6,7 +7,7 @@ from google.appengine.api import memcache
 
 
 @patch('dtmm_utils.get_modules', autospec=True)
-@patch('dtmm_utils._get_live_data', lambda handler, fragment: common.DATA_TREE_DATA)
+@patch('dtmm_utils._get_live_data', lambda handler, fragment: test_data.DATA_TREE_DATA)
 class TestPrettyTree(common.DMSTestCase):
     def setUp(self, *args, **kwargs):
         super(TestPrettyTree, self).setUp(*args, **kwargs)
