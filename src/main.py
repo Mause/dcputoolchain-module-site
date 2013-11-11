@@ -56,13 +56,11 @@ from humans import (
 )
 
 # the dtmm_utils file
+import dtmm_utils
+
 from dtmm_utils import (
-    get_modules,
-    get_module_names,
-    get_url_content,
     BaseRequestHandler,
-    rpart,
-    development
+    rpart
 )
 
 
@@ -72,7 +70,7 @@ class SearchModulesHandler(BaseRequestHandler):
         "Handles get requests"
         query = self.request.get('q')
 
-        filenames = get_module_names(self)
+        filenames = dtmm_utils.get_module_names(self)
         filenames = filter(lambda filename: query in filename, filenames)
 
         self.response.headers['Content-Type'] = 'text/plain'
@@ -85,7 +83,7 @@ class DownloadModulesHandler(BaseRequestHandler):
     def get(self):
         "Handlers get requests"
 
-        data = get_modules(self)
+        data = dtmm_utils.get_modules(self)
 
         module_name = self.request.get('name')
         if module_name not in map(itemgetter('path'), data):
@@ -97,7 +95,7 @@ class DownloadModulesHandler(BaseRequestHandler):
             for fragment in data
         }
 
-        encoded_content = get_url_content(self, data_dict[module_name])
+        encoded_content = dtmm_utils.get_url_content(self, data_dict[module_name])
         content = base64.b64decode(encoded_content['content'])
 
         self.response.headers['Content-Type'] = 'text/plain'
@@ -109,7 +107,7 @@ class ListModulesHandler(BaseRequestHandler):
     "returns a list of accessable modules"
     def get(self):
         "Handlers get requests"
-        modules = get_module_names(self)
+        modules = dtmm_utils.get_module_names(self)
 
         self.response.headers['Content-Type'] = 'text/plain'
         self.response.headers['Cache-Control'] = 'no-Cache'
@@ -216,8 +214,8 @@ app = webapp2.WSGIApplication(
         (r'/flush', FlushHandler),
         (r'/', RedirectToHumanHandler)
     ],
-    debug=development()
+    debug=dtmm_utils.development()
 )
 
 logging.info('Running in {} mode'.format(
-    'development' if development() else 'production'))
+    'development' if dtmm_utils.development() else 'production'))
