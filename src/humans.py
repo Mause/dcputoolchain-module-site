@@ -134,10 +134,6 @@ class TreeHandler(dtmm_utils.BaseRequestHandler):
     def get(self):
         data = dtmm_utils.get_tree(self)
 
-        if not data:
-            self.error(408)
-            return
-
         self.dorender(
             'tree.html',
             {
