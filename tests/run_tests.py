@@ -52,7 +52,8 @@ SUB_UNITS = [
     'test_dtmm_utils',
     'test_handlers',
     'test_module_utils',
-    'test_pretty_tree'
+    'test_pretty_tree',
+    'test_search'
 ]
 
 
