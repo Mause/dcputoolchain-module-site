@@ -40,15 +40,12 @@ from __future__ import (
 )
 
 # generic imports
-import os
-import json
 import base64
 import logging
 from operator import itemgetter
 
 # google appengine imports
 import webapp2
-from google.appengine.api import urlfetch
 from google.appengine.api import memcache
 
 # humans.py file
@@ -63,11 +60,12 @@ from humans import (
 
 # the dtmm_utils file
 import dtmm_utils
-
 from dtmm_utils import (
     BaseRequestHandler,
     rpart
 )
+
+from build_status import BuildStatusHandler
 
 
 class SearchModulesHandler(BaseRequestHandler):
@@ -133,71 +131,6 @@ class FlushHandler(BaseRequestHandler):
 
     def post(self):
         flusher(self)
-
-
-class BuildStatusHandler(BaseRequestHandler):
-    def get(self, platform):
-        end_status = 'unknown'
-        FMT_STRING = 'http://bb.dcputoolcha.in:8080/json/builders/build_{}/builds?select=-1&as_text=1'
-        # ensure the platform is valid
-        if platform in ['mac', 'linux', 'windows']:
-            # create the build status url
-            url = FMT_STRING.format(platform)
-            logging.info(url)
-            # check whether the build status is cached
-            cached_status = memcache.get('build_status_%s' % (platform))
-
-            if not cached_status:
-                logging.info('Okay, no cached status, hitting the buildbot')
-
-                content = None
-                try:
-                    # try to pull build status from the buildbot
-                    content = urlfetch.fetch(url).content
-                    raw_data = json.loads(content)
-                except urlfetch.DownloadError:
-                    logging.info('Could not get the info from the build server')
-                    end_status = 'unknown'
-                except ValueError:
-                    logging.info(
-                        'No JSON object could be decoded, from the buildbot '
-                        'output\nOutput was as follows; %s' % (content))
-                    end_status = 'unknown'
-                else:
-                    # if no exceptions occured
-                    if '-1' in raw_data and 'text' in raw_data['-1']:
-                        status_text = raw_data['-1']['text']
-
-                        if 'successful' in status_text:
-                            logging.info('Builds are passing')
-
-                            end_status = 'passing'
-                        elif ('failed' in status_text or
-                                'exception' in status_text):
-                            logging.info('Builds are failing')
-
-                            end_status = 'failing'
-                    else:
-                        logging.info('Build status is unknown')
-                        end_status = 'unknown'
-
-                memcache.set('build_status_%s' % (platform), end_status, 60)
-            else:
-                # if the build status was indeed cached
-                # inform the user so
-                logging.info('Cached status found')
-                # set the build status to the cached build status
-                end_status = cached_status
-
-        # create the filename of the build status image
-        filename = os.path.join(os.path.dirname(__file__), 'results/%s.png' % (end_status))
-
-        self.response.headers['Content-Type'] = 'image/png'
-        # try to ensure github and the browser do not cache the build status
-        self.response.headers['Cache-Control'] = 'no-Cache'
-
-        with open(filename, 'rb') as fh:
-            self.response.write(fh.read())
 
 
 class RootModulesHandler(BaseRequestHandler):
