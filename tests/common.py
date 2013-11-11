@@ -42,6 +42,17 @@ PLATFORM_URLS = ['/status/{}.png'.format(platform) for platform in PLATFORMS]
 
 PLATFORM_W_URLS = list(zip(PLATFORMS, PLATFORM_URLS))
 
+# setup the test environment
+import os
+import sys
+sys.path.insert(0, 'src')
+sys.path.insert(0, '..%ssrc' % os.sep)
+sys.path.insert(0, 'C:\\Program Files (x86)\\Google\\google_appengine\\')
+
+# this needs to be done before anything to do with gae gets imported
+from run_tests import setup_environ
+setup_environ()
+
 import unittest2
 from google.appengine.ext import testbed
 from google.appengine.api import memcache
@@ -51,10 +62,11 @@ class DMSTestCase(unittest2.TestCase):
     def setUp(self):
         # setup the testbed
         self.testbed = testbed.Testbed()
-        self.testbed.activate()
         self.testbed.setup_env(
             APPENGINE_RUNTIME='python27',
-            app_id='dcputoolchain-module-site')
+            app_id='dcputoolchain-module-site'
+        )
+        self.testbed.activate()
 
         # initiate the stubs
         self.testbed.init_datastore_v3_stub()
@@ -68,14 +80,5 @@ class DMSTestCase(unittest2.TestCase):
         self.testbed.deactivate()
 
 
-# setup the test environment
-import os
-import sys
-sys.path.insert(0, 'src')
-sys.path.insert(0, '..%ssrc' % os.sep)
-sys.path.insert(0, 'C:\\Program Files (x86)\\Google\\google_appengine\\')
-
-# this needs to be done before anything to do with gae gets imported
-if __name__ == '__main__':
-    from run_tests import setup_environ
-    setup_environ()
+def main():
+    unittest2.main()
