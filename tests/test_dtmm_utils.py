@@ -4,7 +4,7 @@ import json
 import base64
 import hashlib
 import unittest2
-from mock import patch, MagicMock
+from mock import patch, MagicMock, Mock
 
 from google.appengine.api import memcache, urlfetch
 
@@ -73,13 +73,14 @@ class TestDTMMUtils(common.DMSTestCase):
     @patch('dtmm_utils.authed_fetch')
     @patch('logging.error')
     def test_get_url_content_download_error_handling(self, _, authed_fetch):
-        import dtmm_utils
-
-        mock_handler = MagicMock()
         authed_fetch.side_effect = urlfetch.DownloadError
 
+        import dtmm_utils
+
+        mock_handler = Mock()
         dtmm_utils.get_url_content(mock_handler, 'http://mock.com')
-        self.assertEqual(mock_handler.error.call_args[0][0], 408)
+
+        mock_handler.error.assert_called_with(408)
 
     @patch('dtmm_utils.authed_fetch', mock_authed_fetch)
     def test_get_tree(self):
