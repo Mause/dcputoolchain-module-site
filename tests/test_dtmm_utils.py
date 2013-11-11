@@ -20,6 +20,11 @@ class TestDTMMUtils(common.DMSTestCase):
         end_data = dtmm_utils.authed_fetch('http://mock.com')
         self.assertEqual(fetch.return_value.content, end_data.content)
 
+        fetch.assert_called_with(
+            url='http://mock.com?client_auth_data=%7Bu%27client_secret%27%3A+u%27false_data%27%2C+u%27client_id%27%3A+u%27false_data%27%7D',
+            headers={'X-Admin-Contact': 'admin@lysdev.com'}
+        )
+
     @patch('google.appengine.api.urlfetch.fetch', autospec=True)
     def test_authed_fetch_without_remaining(self, fetch):
         fetch.return_value.headers = {'x-ratelimit-remaining': None}
@@ -29,6 +34,10 @@ class TestDTMMUtils(common.DMSTestCase):
         import dtmm_utils
         dtmm_utils.authed_fetch('http://mock.com')
 
+        fetch.assert_called_with(
+            url='http://mock.com?client_auth_data=%7Bu%27client_secret%27%3A+u%27false_data%27%2C+u%27client_id%27%3A+u%27false_data%27%7D',
+            headers={'X-Admin-Contact': 'admin@lysdev.com'}
+        )
         # a little unsure how to ensure correct behaviour here
 
     @patch('dtmm_utils.authed_fetch')
@@ -46,7 +55,10 @@ class TestDTMMUtils(common.DMSTestCase):
         mock_authed_fetch.return_value.content = json.dumps(content)
 
         import dtmm_utils
-        end_data = dtmm_utils.get_url_content(None, 'http://mock.com')
+        end_data = dtmm_utils.get_url_content(None, url)
+        self.assertEqual(end_data, content)
+
+        mock_authed_fetch.assert_called_with(url)
         self.assertEqual(
             memcache.get(hashlib.md5(url).hexdigest()),
             content
@@ -85,6 +97,10 @@ class TestDTMMUtils(common.DMSTestCase):
             }]
         }
         mock_authed_fetch.return_value.content = json.dumps(content)
+
+        import dtmm_utils
+        end_data = dtmm_utils.get_tree()
+        self.assertEqual(end_data, content['tree'])
 
     @patch('dtmm_utils.get_url_content', autospec=True)
     def test_get_live_module_data(self, get_url_content):
