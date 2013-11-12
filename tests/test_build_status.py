@@ -1,6 +1,7 @@
 import common
 import test_data
 
+import os
 from mock import patch, ANY, MagicMock
 
 from google.appengine.api import memcache
@@ -49,6 +50,21 @@ class TestBuildStatus(common.DMSHandlerTestCase):
         self.testapp.get('/status/linux.png')
 
         notify_status.assert_called_with(ANY, 'unknown')
+
+
+@patch('webapp2.RequestHandler.response', autospec=True)
+class TestNotifyStatus(common.DMSTestCase):
+    def test_notify_status(self, response):
+        path = os.path.join(os.path.dirname(__file__), '../src/results/passing.png')
+        with open(path, 'rb') as fh:
+            data = fh.read()
+
+        import build_status
+        handler = build_status.BuildStatusHandler(MagicMock(), MagicMock())
+        handler.notify_status('passing')
+
+        handler.response.write.assert_called_with(data)
+
 
 if __name__ == '__main__':
     common.main()
