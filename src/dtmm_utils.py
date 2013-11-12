@@ -131,7 +131,7 @@ def get_url_content(handler, url):
     A wrapper around authed_fetch_json, caches results to help keep wait time short
     """
 
-    url_hash = hashlib.md5(url).hexdigest()
+    url_hash = md5_hash(url)
     result = memcache.get(url_hash)
 
     if result is None:
@@ -230,3 +230,7 @@ def development():
 
 def rpart(path):
     return path.rpartition('/')[-1]
+
+
+def md5_hash(string):
+    return hashlib.md5(string).hexdigest()

@@ -60,14 +60,14 @@ class TestDTMMUtils(common.DMSTestCase):
 
         mock_authed_fetch.assert_called_with(url)
         self.assertEqual(
-            memcache.get(hashlib.md5(url).hexdigest()),
+            memcache.get(dtmm_utils.md5_hash(url)),
             content
         )
 
     def test_get_url_content_retrieve_from_memcache(self):
         import dtmm_utils
 
-        url_digest = hashlib.md5('http://mock.com').hexdigest()
+        url_digest = dtmm_utils.md5_hash('http://mock.com')
 
         memcache.set(url_digest, {'content': 'word'})
         end_data = dtmm_utils.get_url_content(None, 'http://mock.com')
