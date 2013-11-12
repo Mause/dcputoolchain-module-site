@@ -24,10 +24,16 @@ class TestBuildStatus(common.DMSHandlerTestCase):
 
             self.assertEqualMemcache('build_status_' + platform, 'failing')
 
-    def test_build_status_unknown(self, get_url_content):
+    def test_build_status_unknown_with_bad_data(self, get_url_content):
         for platform, url in test_data.PLATFORM_W_URLS:
             get_url_content.return_value = []
-            get_url_content.side_effect = lambda *args: DEFAULT
+            self.testapp.get(url)
+
+            self.assertEqualMemcache('build_status_' + platform, 'unknown')
+
+    def test_build_status_unknown_with_no_status(self, get_url_content):
+        for platform, url in test_data.PLATFORM_W_URLS:
+            get_url_content.return_value = {'-1': {'text': 'garbage'}}
             self.testapp.get(url)
 
             self.assertEqualMemcache('build_status_' + platform, 'unknown')
