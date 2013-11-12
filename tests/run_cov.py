@@ -27,17 +27,16 @@ import run_tests
 cov = coverage.coverage()
 cov.start()
 
-run_tests.main()
+try:
+    run_tests.main()
+finally:
+    cov.stop()
+    cov.save()
 
-cov.stop()
-cov.save()
-
-# import pudb
-# pudb.set_trace()
-cov.html_report(omit=[
-    "*.google_appengine*",
-    "*dms_venv*",
-    "*slpp*",
-    "*tests*",
-    "*appengine_config*"
-])
+    cov.html_report(omit=[
+        "*.google_appengine*",
+        "*dms_venv*",
+        "*slpp*",
+        "*tests*",
+        "*appengine_config*"
+    ])
