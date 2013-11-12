@@ -30,7 +30,8 @@ class BuildStatusHandler(dtmm_utils.BaseRequestHandler):
 
         # ensure the platform is valid
         if platform not in ['mac', 'linux', 'windows']:
-            return self.notify_status('unknown')
+            self.notify_status('unknown')
+            return
 
         status = memcache.get(key)
         if not status:
@@ -60,4 +61,4 @@ class BuildStatusHandler(dtmm_utils.BaseRequestHandler):
 
             memcache.set(key, status)
 
-        return self.notify_status(status)
+        self.notify_status(status)
