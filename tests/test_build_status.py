@@ -1,8 +1,7 @@
 import common
 import test_data
 
-import json
-from mock import patch, DEFAULT, Mock
+from mock import patch
 
 from google.appengine.api import memcache
 
@@ -43,6 +42,11 @@ class TestBuildStatus(common.DMSHandlerTestCase):
 
         values = memcache.get_multi(test_data.PLATFORMS, 'build_status_')
         self.assertTrue(not any(values))
+
+    def test_build_status_with_memcache(self, _):
+        memcache.set('build_status_linux', 'unknown')
+        self.testapp.get('/status/linux.png')
+
 
 if __name__ == '__main__':
     common.main()
