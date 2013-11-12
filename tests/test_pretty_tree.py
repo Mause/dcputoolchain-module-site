@@ -23,20 +23,13 @@
 import common
 import test_data
 
-import webtest
 from mock import patch
 from google.appengine.api import memcache
 
 
 @patch('dtmm_utils.get_modules', autospec=True)
 @patch('dtmm_utils._get_live_data', lambda handler, fragment: test_data.DATA_TREE_DATA)
-class TestPrettyTree(common.DMSTestCase):
-    def setUp(self, *args, **kwargs):
-        super(TestPrettyTree, self).setUp(*args, **kwargs)
-
-        from main import app
-        self.testapp = webtest.TestApp(app)
-
+class TestPrettyTree(common.DMSHandlerTestCase):
     def test_human_tree_pretty_single_module(self, get_modules):
         get_modules.return_value = [{'path': 'assert.lua'}]
 

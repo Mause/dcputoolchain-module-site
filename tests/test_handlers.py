@@ -36,13 +36,10 @@ from google.appengine.api import memcache, urlfetch
 
 @patch('dtmm_utils.get_tree', lambda handler: test_data.TEST_HANDLERS_GET_TREE)
 @patch('dtmm_utils.get_url_content', lambda handler, url: test_data.TEST_HANDLERS_URL_CONTENT)
-class TestHandlers(common.DMSTestCase):
+class TestHandlers(common.DMSHandlerTestCase):
     def setUp(self):
         super(TestHandlers, self).setUp()
         self.testbed.init_mail_stub()
-
-        from main import app
-        self.testapp = webtest.TestApp(app)
 
     # human interface
 

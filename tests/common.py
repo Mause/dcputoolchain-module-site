@@ -26,6 +26,7 @@ import sys
 sys.path.insert(0, 'src')
 sys.path.insert(0, os.path.join('..', 'src'))
 
+import webtest
 import test_data
 import unittest2
 
@@ -76,6 +77,14 @@ class DMSTestCase(unittest2.TestCase):
 
     def tearDown(self):
         self.testbed.deactivate()
+
+
+class DMSHandlerTestCase(DMSTestCase):
+    def setUp(self, *args, **kwargs):
+        super(DMSHandlerTestCase, self).setUp(*args, **kwargs)
+
+        from main import app
+        self.testapp = webtest.TestApp(app)
 
 
 # this needs to be done before anything to do with gae gets imported
