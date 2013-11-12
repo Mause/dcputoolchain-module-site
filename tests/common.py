@@ -78,6 +78,12 @@ class DMSTestCase(unittest2.TestCase):
     def tearDown(self):
         self.testbed.deactivate()
 
+    def assertEqualMemcache(self, key, compare_to):
+        if type(key) == tuple:
+            key = key[1] + key[0]
+        value = memcache.get(key)
+        self.assertEqual(value, compare_to)
+
 
 class DMSHandlerTestCase(DMSTestCase):
     def setUp(self, *args, **kwargs):
