@@ -40,6 +40,7 @@ def setup_environ():
     POSSIBLE_LOCATIONS = [
         'C:\\Program Files (x86)\\Google\\google_appengine\\',
         '~/.google_appengine/',
+        '~/google_appengine',
         '.'
     ]
 

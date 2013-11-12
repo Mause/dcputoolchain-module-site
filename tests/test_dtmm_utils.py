@@ -61,7 +61,6 @@ class TestDTMMUtils(common.DMSTestCase):
             headers={'X-Admin-Contact': 'admin@lysdev.com'}
         )
         self.assertEqualMemcache('requests_remaining', None)
-        # a little unsure how to ensure correct behaviour here
 
     @patch('dtmm_utils.authed_fetch')
     def test_get_url_content_fetch_from_remote(self, mock_authed_fetch):
