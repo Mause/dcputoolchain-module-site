@@ -27,7 +27,7 @@ import json
 from mock import patch, Mock, MagicMock
 
 
-mock_get_tree = Mock(return_value=[{
+mock_get_modules = Mock(return_value=[{
     u'url': '',
     u'sha': u'7cc95910b367f08159cf207c08918ae5d4c04bb5',
     u'mode': u'100644',
@@ -51,7 +51,7 @@ mock_fetch.return_value.content = json.dumps({'content': base64.b64encode(
 
 
 @patch('google.appengine.api.urlfetch.fetch', mock_fetch)
-@patch('dtmm_utils.get_tree', mock_get_tree)
+@patch('dtmm_utils.get_modules', mock_get_modules)
 class TestSearch(common.DMSTestCase):
     def test_search_with_type(self, *args, **kwargs):
         import humans

@@ -35,7 +35,7 @@ TEST_HANDLERS_URL_CONTENT = {
     "encoding": "base64"
 }
 
-TEST_GET_TREE = TEST_HANDLERS_GET_TREE = [{
+TEST_GET_MODULES = [{
     u'url': u'https://api.github.com/repos/DCPUTeam/DCPUModules/git/blobs/443f114dceaca63eda1771fbf61d55cf85685225',
     u'sha': u'443f114dceaca63eda1771fbf61d55cf85685225',
     u'mode': u'100644',

@@ -92,7 +92,7 @@ def get_live_module_data(handler, fragment):
     return get_module_data(_get_live_data(handler, fragment))
 
 
-def get_tree(handler=None):
+def _get_tree(handler=None):
     """
     Returns the file hierarchy/tree
     """
@@ -107,7 +107,7 @@ def get_modules(handler=None):
     """
     Returns the file hierarchy/tree, filtered by a .lua extension
     """
-    tree = get_tree(handler)
+    tree = _get_tree(handler)
 
     return [
         fragment

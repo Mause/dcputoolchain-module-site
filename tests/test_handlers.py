@@ -34,7 +34,7 @@ from mock import patch, MagicMock
 # from google.appengine.api import memcache
 
 
-@patch('dtmm_utils.get_tree', lambda handler: test_data.TEST_HANDLERS_GET_TREE)
+@patch('dtmm_utils.get_modules', lambda handler: test_data.TEST_GET_MODULES)
 @patch('dtmm_utils.get_url_content', lambda handler, url: test_data.TEST_HANDLERS_URL_CONTENT)
 class TestHandlers(common.DMSHandlerTestCase):
     def setUp(self):

@@ -120,8 +120,20 @@ class TestDTMMUtils(common.DMSTestCase):
         mock_authed_fetch.return_value.content = json.dumps(content)
 
         import dtmm_utils
-        end_data = dtmm_utils.get_tree()
+        end_data = dtmm_utils._get_tree()
         self.assertEqual(end_data, content['tree'])
+
+    @patch('dtmm_utils._get_tree')
+    def test_get_modules(self, _get_tree):
+        _get_tree.return_value = [
+            {'path': 'bad_file.bleh'},
+            {'path': 'good_file.lua'}
+        ]
+
+        import dtmm_utils
+        modules = dtmm_utils.get_modules()
+
+        self.assertEqual(modules, [_get_tree.return_value[1]])
 
     @patch('dtmm_utils.get_url_content', autospec=True)
     def test_get_live_module_data(self, get_url_content):
