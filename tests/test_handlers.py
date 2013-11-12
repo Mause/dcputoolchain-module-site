@@ -37,12 +37,7 @@ from mock import patch, MagicMock
 @patch('dtmm_utils.get_modules', lambda handler: test_data.TEST_GET_MODULES)
 @patch('dtmm_utils.get_url_content', lambda handler, url: test_data.TEST_HANDLERS_URL_CONTENT)
 class TestHandlers(common.DMSHandlerTestCase):
-    def setUp(self):
-        super(TestHandlers, self).setUp()
-        self.testbed.init_mail_stub()
-
     # human interface
-
     def test_human_tree(self):
         self.testapp.get('/human/tree')
 
@@ -112,45 +107,6 @@ class TestHandlers(common.DMSHandlerTestCase):
 
     def test_root_modules_redirect(self):
         self.testapp.get('/modules')
-
-    @patch('dtmm_utils.BaseRequestHandler.dorender', autospec=True)
-    @patch('dtmm_utils.development', autospec=True)
-    @patch('logging.error', autospec=True)
-    def test_base_handler_not_development(self, _, development, dorender):
-        dorender.return_value = 'world'
-        development.return_value = False
-
-        import dtmm_utils
-        handler = dtmm_utils.BaseRequestHandler(MagicMock(), MagicMock())
-        handler.handle_exception(Exception(), MagicMock())
-
-    @patch('dtmm_utils.users', autospec=True)
-    @patch('dtmm_utils.development', autospec=True)
-    @patch('dtmm_utils.BaseRequestHandler.dorender', autospec=True)
-    @patch('logging.error', autospec=True)
-    def test_base_handler_not_admin(self, _, dorender, development, users):
-        dorender.return_value = 'world'
-        development.return_value = False
-        users.is_current_user_admin.return_value = False
-
-        import dtmm_utils
-        handler = dtmm_utils.BaseRequestHandler(MagicMock(), MagicMock())
-        handler.handle_exception(AssertionError(), MagicMock())
-
-    @patch('dtmm_utils.users', autospec=True)
-    @patch('dtmm_utils.development', autospec=True)
-    @patch('dtmm_utils.BaseRequestHandler.dorender', autospec=True)
-    @patch('logging.error', autospec=True)
-    def test_base_handler_is_admin(self, _, dorender, development, users):
-        dorender.return_value = 'world'
-        development.return_value = False
-        users.is_current_user_admin.return_value = True
-
-        import dtmm_utils
-        handler = dtmm_utils.BaseRequestHandler(MagicMock(), MagicMock())
-
-        self.assertRaises(
-            Exception, handler.handle_exception, (Exception(), MagicMock()))
 
     def test_flush_handler(self):
         self.testapp.get('/flush')

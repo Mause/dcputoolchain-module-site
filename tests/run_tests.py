@@ -35,7 +35,8 @@ SUB_UNITS = [
     'test_module_utils',
     'test_pretty_tree',
     'test_search',
-    'test_build_status'
+    'test_build_status',
+    'test_base_request_handler'
 ]
 
 
