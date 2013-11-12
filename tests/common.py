@@ -42,6 +42,8 @@ def setup_environ():
         'C:\\Program Files (x86)\\Google\\google_appengine\\',
         '~/.google_appengine/',
         '~/google_appengine',
+        './google_appengine',
+        'google_appengine',
         '..',
         '.'
     ]
