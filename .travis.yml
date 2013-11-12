@@ -8,6 +8,5 @@ before_script:
 #  - "svn --quiet checkout http://googleappengine.googlecode.com/svn/trunk/python ."
   - "wget \"https://googleappengine.googlecode.com/files/google_appengine_1.8.6.zip\" -O google_appengine.zip"
   - "unzip -q google_appengine.zip"
-  - "ls"
 # command to run tests
 script: python tests/run_tests.py
