@@ -74,8 +74,7 @@ class TestHumans(common.DMSTestCase):
         import humans
 
         humans.data_tree(MagicMock(), [
-            {'path': 'assert.lua', 'url': 'mock'},
-            {'path': 'assert.py'}
+            {'path': 'assert.lua', 'url': 'mock'}
         ])
 
 

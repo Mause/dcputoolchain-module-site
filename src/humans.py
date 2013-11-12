@@ -138,7 +138,7 @@ class PrettyTreeHandler(dtmm_utils.BaseRequestHandler):
 class TreeHandler(dtmm_utils.BaseRequestHandler):
     """A simple debugging interface"""
     def get(self):
-        data = dtmm_utils.get_tree(self)
+        data = dtmm_utils.get_modules(self)
 
         self.dorender(
             'tree.html',
@@ -152,17 +152,15 @@ class InspectHandler(dtmm_utils.BaseRequestHandler):
     """Returns a data tree specific to a module"""
     def get(self):
         "handlers get requests"
-        tree = dtmm_utils.get_tree(self)
-        tree = filter(bool, tree)
-        assert tree, repr(tree)
-
         module_name = self.request.get('name')
-        to_give = [
-            fragment
-            for fragment in tree
-            if fragment['path'].split('/')[-1] == module_name]
-        logging.info(str(to_give))
-        self.response.write(data_tree(self, to_give))
+
+        tree = dtmm_utils.get_modules(self)
+        tree = filter(
+            lambda fragment: dtmm_utils.rpart(fragment['path']) == module_name,
+            tree
+        )
+
+        self.response.write(data_tree(self, tree))
 
 
 class HumanSearch(dtmm_utils.BaseRequestHandler):
@@ -227,44 +225,54 @@ def search(handler, query, requested_type=''):
 
 # the theory for this colour generator was taken from;
 # http://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
-def pretty_colours(how_many):
+def pretty_colours(how_many, s=0.5, v=0.95):
     """uses golden ratio to create pleasant/pretty colours
     returns in rgb form"""
     golden_ratio_conjugate = (1 + math.sqrt(5)) / 2
     hue = random.random()  # use random start value
-    final_colours = []
+
+    colours = []
     for tmp in range(how_many):
         hue += golden_ratio_conjugate * (tmp / (5 * random.random()))
         hue = hue % 1
-        converted = hsv_to_rgb(hue, 0.5, 0.95)
-        temp_c = map(lambda x: int(round(x * 256)), converted)
-        final_colours.append('rgb({}, {}, {})'.format(*temp_c))
-    return final_colours
+        colours.append(hsv_to_rgb(hue, s, v))
+
+    colours = map(
+        lambda colour: map(lambda x: int(x * 256), colour),
+        colours
+    )
+
+    return map(
+        lambda c: 'rgb({}, {}, {})'.format(*c),
+        colours
+    )
 
 
 def data_tree(handler, data):
     "given a data tree, will return a html-based representation"
-    if not data:
-        return None
 
     modules = []
     for fragment in data:
-        if fragment['path'].endswith('.lua'):
-            cur_module = {}
-            cur_module['cur_path'] = dtmm_utils.rpart(fragment['path'])
-            cur_module['module_data'] = dtmm_utils.get_live_module_data(
+        cur_path = dtmm_utils.rpart(fragment['path'])
+        module_data = dtmm_utils.get_live_module_data(handler, fragment)
+
+        if module_data['Type'].lower() == 'hardware':
+            hardware_data = dtmm_utils.get_live_hardware_data(
                 handler, fragment)
 
-            if cur_module['module_data']['Type'].lower() == 'hardware':
-                hardware_data = dtmm_utils.get_live_hardware_data(
-                    handler, fragment)
+            hardware_data = {
+                'ID': hex(hardware_data['ID']),
+                'Version': hex(hardware_data['Version']),
+                'Manufacturer': hex(hardware_data['Manufacturer'])
+            }
+        else:
+            hardware_data = None
 
-                cur_module['hardware_data'] = {
-                    'ID': hex(hardware_data['ID']),
-                    'Version': hex(hardware_data['Version']),
-                    'Manufacturer': hex(hardware_data['Manufacturer'])
-                }
-            modules.append(cur_module)
+        modules.append({
+            'cur_path': cur_path,
+            'module_data': module_data,
+            'hardware_data': hardware_data
+        })
 
     return handler.dorender(
         'data_tree.html',
