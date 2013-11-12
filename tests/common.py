@@ -23,6 +23,7 @@
 # setup the test environment
 import os
 import sys
+sys.path.insert(0, '..')
 sys.path.insert(0, 'src')
 sys.path.insert(0, os.path.join('..', 'src'))
 
@@ -41,6 +42,7 @@ def setup_environ():
         'C:\\Program Files (x86)\\Google\\google_appengine\\',
         '~/.google_appengine/',
         '~/google_appengine',
+        '..',
         '.'
     ]
 
