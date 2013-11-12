@@ -33,7 +33,7 @@ from google.appengine.api import memcache, urlfetch
 class TestDTMMUtils(common.DMSTestCase):
     @patch('google.appengine.api.urlfetch.fetch', autospec=True)
     def test_authed_fetch_with_remaining(self, fetch):
-        fetch.return_value.headers = {'x-ratelimit-remaining': 'lots'}
+        fetch.return_value.headers = {'x-ratelimit-remaining': 4000}
         fetch.return_value.content = (
             'Lorem ipsum dolor sit amet, consectetur adipisicing elit.')
 
@@ -45,6 +45,7 @@ class TestDTMMUtils(common.DMSTestCase):
             url='http://mock.com?client_auth_data=%7Bu%27client_secret%27%3A+u%27false_data%27%2C+u%27client_id%27%3A+u%27false_data%27%7D',
             headers={'X-Admin-Contact': 'admin@lysdev.com'}
         )
+        self.assertEqualMemcache('requests_remaining', 4000)
 
     @patch('google.appengine.api.urlfetch.fetch', autospec=True)
     def test_authed_fetch_without_remaining(self, fetch):
@@ -59,6 +60,7 @@ class TestDTMMUtils(common.DMSTestCase):
             url='http://mock.com?client_auth_data=%7Bu%27client_secret%27%3A+u%27false_data%27%2C+u%27client_id%27%3A+u%27false_data%27%7D',
             headers={'X-Admin-Contact': 'admin@lysdev.com'}
         )
+        self.assertEqualMemcache('requests_remaining', None)
         # a little unsure how to ensure correct behaviour here
 
     @patch('dtmm_utils.authed_fetch')

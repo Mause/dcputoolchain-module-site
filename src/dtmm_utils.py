@@ -168,6 +168,7 @@ def authed_fetch(url, headers=None):
     remaining = r.headers.get('x-ratelimit-remaining')
     if remaining:
         logging.info('{} requests remaining for this hour.'.format(remaining))
+        memcache.set('requests_remaining', int(remaining))
     else:
         logging.info(
             'Could not determine number of requests remaining for this hour')
