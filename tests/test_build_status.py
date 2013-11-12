@@ -54,7 +54,7 @@ class TestBuildStatus(common.DMSHandlerTestCase):
 
 @patch('webapp2.RequestHandler.response', autospec=True)
 class TestNotifyStatus(common.DMSTestCase):
-    def test_notify_status(self, response):
+    def test_notify_status(self, _):
         path = os.path.join(os.path.dirname(__file__), '../src/results/passing.png')
         with open(path, 'rb') as fh:
             data = fh.read()
