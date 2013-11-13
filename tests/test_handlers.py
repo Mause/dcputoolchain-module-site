@@ -36,7 +36,8 @@ from mock import patch
 class TestHandlers(common.DMSHandlerTestCase):
     # human interface
     def test_human_tree(self):
-        self.testapp.get('/human/tree')
+        response = self.testapp.get('/human/tree')
+        self.assertEqual(response.status_int, 200)
 
     def test_human_search(self):
         response = self.testapp.get('/human/search')
@@ -52,20 +53,21 @@ class TestHandlers(common.DMSHandlerTestCase):
             form.set('q', sub[0])
             form.select('type', sub[1])
             response = form.submit()
-            self.assertEqual(response.status, '200 OK')
+            self.assertEqual(response.status_int, 200)
 
             response = self.testapp.get(
                 '/human/search?',
                 {'q': sub[0], 'type': sub[1]}
             )
-            self.assertEqual(response.status, '200 OK')
+            self.assertEqual(response.status_int, 200)
 
     def test_human_inspect(self):
-        self.testapp.get('/human/inspect?name=assert.lua')
+        response = self.testapp.get('/human/inspect?name=assert.lua')
+        self.assertEqual(response.status_int, 200)
 
     def test_human(self):
         response = self.testapp.get('/human')
-        self.assertEqual(response.status, '200 OK')
+        self.assertEqual(response.status_int, 200)
 
     # machine interface
 
@@ -81,6 +83,7 @@ class TestHandlers(common.DMSHandlerTestCase):
         response = self.testapp.get('/modules/search?q=nonexistant')
 
         self.assertEqual(response.body, '')
+        self.assertEqual(response.status_int, 200)
 
     def test_download_modules_failure(self):
         self.assertRaises(webtest.AppError,
@@ -102,11 +105,20 @@ class TestHandlers(common.DMSHandlerTestCase):
         )
 
     def test_redirect(self):
-        self.testapp.get('/')
-        self.testapp.post('/')
+        response = self.testapp.get('/')
+        response = response.follow()
+
+        self.assert_(
+            response.request.url.endswith('/human')
+        )
 
     def test_root_modules_redirect(self):
-        self.testapp.get('/modules')
+        response = self.testapp.get('/modules')
+        response = response.follow()
+
+        self.assert_(
+            response.request.url.endswith('/human/')
+        )
 
     def test_flush_handler(self):
         self.testapp.get('/flush')
