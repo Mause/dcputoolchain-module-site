@@ -42,7 +42,9 @@ class TestHandlers(common.DMSHandlerTestCase):
         self.testapp.get('/human/tree')
 
     def test_human_search(self):
-        self.testapp.get('/human/search')
+        response = self.testapp.get('/human/search')
+        form = response.form
+
         queries = ['', 'random', 'words']
 
         import humans
@@ -50,16 +52,16 @@ class TestHandlers(common.DMSHandlerTestCase):
         subtests = itertools.product(queries, custom_module_types)
 
         for sub in subtests:
-            args = (
-                '/human/search?',
-                {
-                    'q': sub[0],
-                    'type': sub[1]
-                }
-            )
+            form.set('q', sub[0])
+            form.select('type', sub[1])
+            response = form.submit()
+            self.assertEqual(response.status, '200 OK')
 
-            self.testapp.get(*args)
-            self.testapp.post(*args)
+            response = self.testapp.get(
+                '/human/search?',
+                {'q': sub[0], 'type': sub[1]}
+            )
+            self.assertEqual(response.status, '200 OK')
 
     def test_human_inspect(self):
         self.testapp.get('/human/inspect?name=assert.lua')
