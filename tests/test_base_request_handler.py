@@ -1,6 +1,6 @@
 import common
 
-from mock import patch, MagicMock
+from mock import patch, MagicMock, ANY
 
 
 @patch('logging.error', autospec=True)
@@ -42,11 +42,18 @@ class TestBaseRequestHandler(common.DMSTestCase):
         development.return_value = False
         users.is_current_user_admin.return_value = False
 
+        import webapp2
+        response = MagicMock(name='response', spec=webapp2.Response)
+
         import dtmm_utils
-        handler = dtmm_utils.BaseRequestHandler(MagicMock(), MagicMock())
+        handler = dtmm_utils.BaseRequestHandler(MagicMock(), response)
+
         handler.handle_exception(AssertionError(), MagicMock())
+        dorender.assert_called_with(ANY, 'unexpected_result.html', {})
+        self.assertEqual(response.status, 500)
 
         handler.handle_exception(Exception(), MagicMock())
+        self.assertEqual(response.status, 500)
 
     def test_base_handler_is_admin(self, dorender, development, users, error):
         dorender.return_value = 'world'
