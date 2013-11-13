@@ -59,10 +59,6 @@ class RedirectToHumanHandler(dtmm_utils.BaseRequestHandler):
         "handles get requests"
         self.redirect('/human')
 
-    def post(self):
-        "handles post requests"
-        self.redirect('/human')
-
 
 class HomeHandler(dtmm_utils.BaseRequestHandler):
     "Returns a list of the human pages"
