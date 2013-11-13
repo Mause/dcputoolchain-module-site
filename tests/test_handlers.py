@@ -67,7 +67,8 @@ class TestHandlers(common.DMSHandlerTestCase):
         self.testapp.get('/human/inspect?name=assert.lua')
 
     def test_human(self):
-        self.testapp.get('/human')
+        response = self.testapp.get('/human')
+        self.assertEqual(response.status, '200 OK')
 
     # machine interface
 
