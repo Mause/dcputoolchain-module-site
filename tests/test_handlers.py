@@ -24,14 +24,11 @@ import common
 import test_data
 
 # unit testing specific imports
-# import json
 import base64
 import webtest
 import unittest2
 import itertools
-from mock import patch, MagicMock
-
-# from google.appengine.api import memcache
+from mock import patch
 
 
 @patch('dtmm_utils.get_modules', lambda handler: test_data.TEST_GET_MODULES)
