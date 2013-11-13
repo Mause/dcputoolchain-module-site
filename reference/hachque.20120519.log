@@ -1,0 +1,43 @@
+
+Session Start: Sat May 19 18:17:28 2012
+Session Ident: hachque
+[18:17] Session Ident: hachque (freenode, Lord_DeathMatch) (~quassel@2001:44b8:416b:6400:b5f8:ce93:7c50:a3ca)
+[18:17] <hachque> hey
+-
+01[18:17] hachque is ~quassel@2001:44b8:416b:6400:b5f8:ce93:7c50:a3ca * James
+01[18:17] hachque on #0x10c #0x10c-dev #0x10c-std #0x10c-dcpu 
+01[18:17] hachque using calvino.freenode.net Milan, IT
+01[18:17] hachque is logged in as hachque
+01[18:17] hachque End of /WHOIS list.
+-
+01[18:17] <Lord_DeathMatch> hi :)
+[18:17] <hachque> can you set up some kind of online module system?
+01[18:18] <Lord_DeathMatch> how do you mean?
+[18:18] <hachque> just a repository that can be queried for modules
+[18:18] <hachque> like
+[18:18] <hachque> /modules/search?q=blah
+[18:18] <hachque> returns the result as just newline-seperated results
+[18:18] <hachque> and then
+[18:18] <hachque> /modules/download?name=blah
+[18:18] <hachque> would give the lua script
+01[18:18] <Lord_DeathMatch> yeah, i can do that
+01[18:18] <Lord_DeathMatch> easy wnough
+01[18:18] <Lord_DeathMatch> *enough
+[18:19] <hachque> later on we could make it so that people could upload their own scripts to the repo
+[18:19] <hachque> but initially we just need that
+01[18:19] <Lord_DeathMatch> im not doing anything tonight, i can write a prototype
+[18:19] <hachque> kk, that would be cool
+[18:19] <hachque> also
+01[18:19] <Lord_DeathMatch> yeah?
+[18:19] <hachque> do you want to remove the documentation compilation steps in build_for_windows
+[18:19] <hachque> since build_for_linux already does that
+[18:19] <hachque> no point doing it twice
+01[18:20] <Lord_DeathMatch> yeah, but is it possible to add a make command that just builds the documentation
+01[18:20] <Lord_DeathMatch> ?
+01[18:20] <Lord_DeathMatch> then i put into a seperate factoy
+01[18:20] <Lord_DeathMatch> *i can
+[18:20] <hachque> I was more thinking that since both jobs will the built as new commits come in
+01[18:21] <Lord_DeathMatch> fair enough :)
+01[18:21] <Lord_DeathMatch> ill do it now
+[18:21] <hachque> awesome
+Session Close: Sat May 19 19:06:51 2012

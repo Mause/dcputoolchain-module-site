@@ -1,0 +1,50 @@
+
+Session Start: Sun May 20 19:51:02 2012
+Session Ident: hachque
+[19:51] Session Ident: hachque (freenode, Lord_DeathMatch) (~quassel@2001:44b8:416b:6400:618d:a9ce:1ed8:a0ab)
+[19:51] <hachque> for?
+-
+01[19:51] hachque is ~quassel@2001:44b8:416b:6400:618d:a9ce:1ed8:a0ab * James
+01[19:51] hachque on #0x10c #0x10c-dev #0x10c-std #0x10c-dcpu 
+01[19:51] hachque using gibson.freenode.net Oslo, Norway
+01[19:51] hachque is logged in as hachque
+01[19:51] hachque End of /WHOIS list.
+-
+Session Close: Sun May 20 20:08:09 2012
+
+Session Start: Sun May 20 20:08:09 2012
+Session Ident: hachque
+01[20:08] <Lord_DeathMatch> for the link i sent you :P the one to upload modules :P
+01[20:08] <Lord_DeathMatch> http://irc.lysdev.com:8080/modules/add
+[20:09] <hachque> ah okay
+[20:09] <hachque> well it's open source, so there's no point having a password
+[20:09] <hachque> modules interface should just be HTTP-only
+[20:09] <hachque> *modules add interface
+[20:09] <hachque> like you did with the search form
+01[20:11] <Lord_DeathMatch> what, as opposed to https?
+01[20:11] <Lord_DeathMatch> theres no javascript or anything like that
+01[20:11] <Lord_DeathMatch> its python
+[20:12] <hachque> nah I mean
+[20:12] <hachque> d/w about providing a programmable interface to add modules
+[20:12] <hachque> it's not needed
+[20:12] <hachque> only need programmable interfaces for install/remove/search
+01[20:13] <Lord_DeathMatch> righteo
+01[20:13] <Lord_DeathMatch> though im apprehensive of proving a free-for-all remove interface :P
+01[20:13] <Lord_DeathMatch> *providing
+01[20:25] <Lord_DeathMatch> hachque: anything special for 'install'? or do you mean just serving the file?
+[20:25] <hachque> just serve the file
+[20:25] <hachque> and you don't need to do anything for remove
+[20:25] <hachque> since that's all local
+01[20:25] <Lord_DeathMatch> oh, righteo
+01[20:25] <Lord_DeathMatch> cool
+01[20:26] <Lord_DeathMatch> hachque: do we want to be able to search the contents of the files too?
+[20:26] <hachque> aww
+[20:26] <hachque> not really
+[20:26] <hachque> although
+[20:26] <hachque> it would be good if you could evaluate the file in Lua
+[20:26] <hachque> and then pull out the module information
+[20:26] <hachque> so they could search by module name
+01[20:27] <Lord_DeathMatch> yeah, i dont know how well that would go down in python though
+01[20:29] <Lord_DeathMatch> well what do you know: http://code.google.com/p/slpp/
+01[20:29] <Lord_DeathMatch> huh
+Session Close: Sun May 20 22:02:49 2012
