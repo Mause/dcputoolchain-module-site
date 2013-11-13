@@ -25,7 +25,7 @@ import test_data
 
 # unit testing specific imports
 import unittest2
-from mock import patch, MagicMock
+from mock import patch, MagicMock, ANY
 
 
 class TestHumans(common.DMSTestCase):
@@ -72,10 +72,37 @@ class TestHumans(common.DMSTestCase):
     @patch('dtmm_utils._get_live_data', lambda handler, fragment: test_data.DATA_TREE_DATA)
     def test_data_tree(self):
         import humans
+        import dtmm_utils
 
-        humans.data_tree(MagicMock(), [
+        handler = MagicMock(name='handler', spec=dtmm_utils.BaseRequestHandler)
+        humans.data_tree(handler, [
             {'path': 'assert.lua', 'url': 'mock'}
         ])
+
+        handler.dorender.assert_called_with(
+            'data_tree.html',
+            {
+                'modules': [
+                    {
+                        'cur_path': 'assert.lua',
+                        'hardware_data': {
+                            'Version': '0x7c2',
+                            'ID': '0x74fa4cae',
+                            'Manufacturer': '0x21544948'
+                        },
+
+                        'module_data': {
+                            'URL': 'False URL',
+                            'SDescription': 'Deprecated HMD2043 hardware device',
+                            'Version': '1.1',
+                            'Type': 'Hardware',
+                            'Name': 'HMD2043'
+                        }
+                    }
+                ]
+            },
+            write=False
+        )
 
 
 def main():
