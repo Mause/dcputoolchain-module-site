@@ -19,4 +19,4 @@ Finally, this project makes use of SirAnthony's simple lua-python data structure
 
 P.S: if you make use of some of the code here, please let me know and/or attribute some credit to me :smile:
 
-Please see [reference.txt](reference.txt) for some details behind the original design spec.
+Please see [reference.md](reference.md) for some details behind the original design spec.
