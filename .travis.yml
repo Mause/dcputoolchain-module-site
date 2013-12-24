@@ -3,10 +3,10 @@ python:
   - "2.7"
 # command to install dependencies
 install: "pip install -r requirements.txt --use-mirrors"
-before_script: 
+before_script:
   - "sudo apt-get install libtidy-dev"
 #  - "svn --quiet checkout http://googleappengine.googlecode.com/svn/trunk/python ."
-  - "wget \"https://googleappengine.googlecode.com/files/google_appengine_1.8.6.zip\" -O google_appengine.zip"
+  - "wget \"https://googleappengine.googlecode.com/files/google_appengine_1.8.8.zip\" -O google_appengine.zip"
   - "unzip -q google_appengine.zip"
 # command to run tests
 script: python tests/run_tests.py
