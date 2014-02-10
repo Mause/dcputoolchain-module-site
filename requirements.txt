@@ -1,4 +1,5 @@
 # for testing
 unittest2==0.5.1
 mock==1.0.1
-WebTest==2.0.9
+WebTest==2.0.14
+coverage
